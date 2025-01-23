@@ -36,4 +36,4 @@ Feel free to fork this repository, contribute, or use any of the apps in your pr
 
 ## License
 
-This repository is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This repository is licensed under the MIT License. See the [LICENSE](LICENSE.txt) file for more details.
