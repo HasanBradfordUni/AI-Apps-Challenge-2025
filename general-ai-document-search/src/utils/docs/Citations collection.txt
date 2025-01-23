@@ -1,0 +1,41 @@
+LeCun, Y., Bengio, Y. & Hinton, G. (2015). Deep learning. Nature, 521(7553), pp. 436–444. Available at: https://doi.org/10.1038/nature14539 (Accessed: 29 November 2024).
+
+Brown, T., Mann, B., Ryder, N., Subbiah, M., Kaplan, J., Dhariwal, P., Neelakantan, A., Shyam, P., Sastry, G., Askell, A., Agarwal, S., Herbert-Voss, A., Krueger, G., Henighan, T., Child, R., Ramesh, A., Ziegler, D.M., Wu, J., Winter, C., Hesse, C., Chen, M., Sigler, E., Litwin, M., Gray, S., Chess, B., Clark, J., Berner, C., McCandlish, S., Radford, A., Sutskever, I. & Amodei, D. (2020). Language models are few-shot learners. arXiv preprint arXiv:2005.14165. Available at: https://arxiv.org/abs/2005.14165 (Accessed: 29 November 2024).
+
+Young, T., Hazarika, D., Poria, S. & Cambria, E. (2018). Recent trends in deep learning based natural language processing. IEEE Computational Intelligence Magazine, 13(3), pp. 55–75. Available at: https://doi.org/10.1109/MCI.2018.2840738 (Accessed: 29 November 2024).
+
+Xiong, W., Droppo, J., Huang, X., Seide, F., Stolcke, A., Yu, D. & Zweig, G. (2018). The Microsoft 2017 conversational speech recognition system. ICASSP 2018 - IEEE International Conference on Acoustics, Speech and Signal Processing, pp. 5934–5938. Available at: https://doi.org/10.1109/ICASSP.2018.8462106 (Accessed: 29 November 2024).
+
+Hinton, G., Deng, L., Yu, D., Dahl, G.E., Mohamed, A., Jaitly, N., Senior, A., Vanhoucke, V., Nguyen, P., Sainath, T.N. & Kingsbury, B. (2012). Deep neural networks for acoustic modeling in speech recognition: The shared views of four research groups. IEEE Signal Processing Magazine, 29(6), pp. 82–97. Available at: https://doi.org/10.1109/MSP.2012.2205597 (Accessed: 29 November 2024).
+
+Jurafsky, D. & Martin, J.H. (2023). Speech and Language Processing: An Introduction to Natural Language Processing, Computational Linguistics, and Speech Recognition. 3rd edn. Draft available at: https://web.stanford.edu/~jurafsky/slp3/ (Accessed: 29 November 2024).
+
+Mikolov, T., Karafiát, M., Burget, L., Cernocký, J. & Khudanpur, S. (2010). Recurrent neural network based language model. INTERSPEECH 2010 – 11th Annual Conference of the International Speech Communication Association, pp. 1045–1048. Available at: https://www.isca-speech.org/archive/interspeech_2010/i10_1045.html (Accessed: 29 November 2024).
+
+Kiefer, A. (2024). Improving Automatic Transcription Using Natural Language Processing. Available at: https://digitalcommons.calpoly.edu/cgi/viewcontent.cgi?article=4454&context=theses (Accessed: 29 November 2024).
+
+Roussos, G. (2020). Transfer Learning in Speech Synthesis Exploring Pretrained Weights Adaptation and Usage of Speaker Embeddings in Neural End-to-End Speech Synthesis. Available at: https://erepo.uef.fi/bitstream/handle/123456789/23387/urn_nbn_fi_uef-20201182.pdf?sequence=1. (Accessed: 29 November 2024).
+
+Kandarkar, P. (2023). On Zero-Shot Multi-Speaker Text-to-Speech Using Deep Learning. Available at: https://spectrum.library.concordia.ca/id/eprint/992632/. (Accessed: 29 November 2024).
+
+Kim, D., & Choi, Y. H. (2024). SC VALL-E: Style-Controllable Zero-Shot Text to Speech Synthesizer. Available at: https://arxiv.org/pdf/2307.10550. (Accessed: 29 November 2024).
+
+O'Shaughnessy, D. (2023). Understanding automatic speech recognition. Computer Speech & Language. Available at: https://www.sciencedirect.com/science/article/pii/S0885230823000578. (Accessed: 29 November 2024).
+
+Yang, C. H. H., Park, T., Gong, Y., Li, Y., Chen, Z., & Lin, Y. T. (2024). Large language model-based generative error correction: A challenge and baselines for speech recognition, speaker tagging, and emotion recognition. arXiv preprint arXiv:2409.09785. Available at: https://arxiv.org/pdf/2409.09785. (Accessed: 29 November 2024).
+
+Xiong, W., Droppo, J., Huang, X., & Seide, F. (2017). Toward human parity in conversational speech recognition. IEEE International Conference on Acoustics, Speech, and Signal Processing (ICASSP). Available at: https://ieeexplore.ieee.org/document/8049322. (Accessed: 29 November 2024).
+
+Tang, Z., Yang, L., Li, Y., & Wang, J. (2019). Post text processing of Chinese speech recognition based on bidirectional LSTM networks and CRF. Electronics, 8(11). Available at: https://www.mdpi.com/2079-9292/8/11/1248. (Accessed: 29 November 2024).
+
+Prabhavalkar, R., Hori, T., & Sainath, T. N. (2023). End-to-end speech recognition: A survey. IEEE International Conference on Audio, Speech, and Signal Processing. Available at: https://ieeexplore.ieee.org/abstract/document/10301513/. (Accessed: 29 November 2024).
+
+Hemis, M., & Himeur, Y. (2024). Automatic speech recognition using advanced deep learning approaches: A survey. Information Fusion, Elsevier. Available at: https://arxiv.org/pdf/2403.01255. (Accessed: 29 November 2024).
+
+Ji, S., Chen, Y., Fang, M., Zuo, J., Lu, J. and Wang, H., 2024. WavChat: A Survey of Spoken Dialogue Models. arXiv preprint arXiv:2411.13577. Available at: https://arxiv.org/abs/2411.13577. (Accessed: 29 November 2024).
+
+Liu, Z., 2023. Comparative Analysis of Transfer Learning in Deep Learning Text-to-Speech Models on a Few-Shot, Low-Resource, Customized Dataset. arXiv preprint arXiv:2310.04982. Available at: https://arxiv.org/abs/2310.04982. (Accessed: 29 November 2024).
+
+Chen, J. and Shi, Y., 2024. Generative AI over Mobile Networks for Human Digital Twin in Human-Centric Applications: A Comprehensive Survey. TechRxiv. Available at: https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.172349525.50239637. (Accessed: 29 November 2024).
+
+Noor, M.H.M. and Ige, A.O., 2024. A Survey on State-of-the-art Deep Learning Applications and Challenges. arXiv preprint arXiv:2403.17561. Available at: https://arxiv.org/pdf/2403.17561. (Accessed: 29 November 2024).

@@ -1,0 +1,10 @@
+Flask==2.1.2
+google-cloud-vertex-ai==0.3.0
+nltk==3.6.7
+whoosh==2.7.4
+pydub==0.25.1
+SpeechRecognition==3.8.1
+PyPDF2==3.0.1
+python-docx==0.8.11
+elasticsearch==7.16.1
+docker==5.0.3
