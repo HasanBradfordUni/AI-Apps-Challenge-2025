@@ -25,7 +25,7 @@ def process_document(file_path):
 
 def extract_text_from_pdf(pdf_path):
     # Function to extract text from a PDF file
-    reader = PyPDF2.PdfFileReader(pdf_path)
+    reader = PyPDF2.PdfReader(pdf_path)
     text = ""
     for page_num in range(len(reader.pages)):
         page = reader.pages[page_num]
@@ -54,10 +54,15 @@ def extract_text_from_txt(txt_path):
 def index_document(file_name, text):
     # Function to index the processed document
     search_index[file_name] = text
+    print()
+    print("Search index now contains:")
+    print(f"Indexed document: {file_name}")
+    print(f"Document text: {text}")
+    print()
 
 def handle_document_upload(file):
     # Copy the file to the docs folder
-    file_path = f"{os.path.dirname(__file__)}/docs/{file.filename}"
+    file_path = f"{os.path.dirname(__file__)}\docs\{file.filename}"
     fileType = file.filename.split('.')[-1]
     match fileType:
         case 'pdf':

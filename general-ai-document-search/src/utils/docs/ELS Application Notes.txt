@@ -1,0 +1,83 @@
+ELS Application Notes
+
+UN Sustainable Development Goals:
+
+- Create new/improve existing software technologies that can help ensure inclusive quality education and promote lifelong learning opportunities for all, especially in foreign countries
+- Contribute to projects where software can be used to help research or implement better access to affordable and clean energy for all
+- Build software technologies that help enhance productivity and economic growth within the workspace and as an engineering leader ensure this within my own company
+
+Q1 - Tell us how you think engineering can be used in the future to address at least one of the UN’s Sustainable Development Goals, and what role would you like to play in this?
+
+A1 - In my chosen engineering sector (software engineering/computer science) I believe that I can help ensure inclusive quality education and promote lifelong learning opportunities for all, especially in foreign countries, by creating new software technologies or improving existing solutions. I also believe that I can contribute to projects where software can be used to help research or implement better access to affordable and clean energy for all. Furthermore, I have confidence that I can build software technologies that help enhance productivity and economic growth within the workspace and as an engineering leader ensure this within the company where I work.
+
+Engineering Project where you demonstrated leadership:
+
+- University Group project in Semester 2 of second year, developing extra-curricular activities system for university societies in Java
+- At start, took initiative to research roles that each team member could perform during the project
+- When did first meeting, assigned role and I was voted (by other group members) to be leader
+- Assigned tasks and did a lot of work myself, maintained communication with group members and chased up, offered support and sympathised with circumstances
+- Produced outstanding project with web pages linked to Java backend and team members thoroughly impressed with my leadership, support and general contribution, achieved 92% in this project as a team
+
+How to put funding to use and how will I use to advance leadership journey:
+
+Jacob's Opportunities (so far) [inspiration/ideas]
+"For me, it's children with complex needs, particularly relating to visual impairment. They inspire me to make the world a more accessible and inclusive space for everyone."
+- Attending Ada, the National College for Digital Skills as a guest lecturer to discuss Object-Oriented Programming concepts with their Software Engineering Degree apprentices
+- Attending the Innovation Late event, hosted by the Royal Academy of Engineering, in celebration of National Engineering Day
+- Policy Fellowship event
+
+My focus
+- Business management and People skills orientated events
+- Building, Developing and Adapting softwares to not just meet business/industry challenges but also help mitigate social and environmental challenges
+- Enhance my public speaking skills and educate students with guest lectures on key software engineering/computer science topics such as OOP, Code Maintenance, Design Principles, Agile Methodologies, Software Architecture, etc.
+
+
+VIDEO:
+
+What influenced or inspired you to become an engineer?
+
+- Problem solving aspects, how engineers deal with problems head on and develop solutions, often with seamless collaboration and overcoming many hardships along the way
+- It's far easier to build a company around a good idea in IT than many other disciplines, because the seed of an IT company can be built with very few people and I aspire to do this in the future
+- I'm very passionate about computer science and programming and these play a huge part in the role of a software engineer/developer
+- When was younger, was amazed at how everything is run by computers these days and felt like I could make a decent contribution to that
+
+What excites you about the prospect of becoming a leader in engineering?
+
+- Increase representation of South Asian men (Pakistani, Indian, Bangladeshi, etc.) within leadership roles in Engineering sectors, especially Software Engineering
+- Develop my own personal skills and make a name for myself in the industry
+- Show what I'm capable of and fulfil my potential and future aspirations
+
+If you are selected for the scholarship, what difference will it make for you?
+
+- It could enhance my public speaking skills and give me the opportunity to educate students with guest lectures, love learning and teaching others, helping people and passing my knowledge on and more opportunities would be created to help me do that
+- It would also most likely enhance my own knowledge and skills by interacting more with like-minded professionals
+- It would help in one of my biggest goals which (as previously mentioned) is to establish my own software/IT consultancy start-up and I feel like I can gain vital business management and people-orientated skills during the scholarship
+
+MOST COMMONLY MISSPELT (typing error) WORDS:
+
+1. teh - the (90%)
+2. devlop(ment) - develop(ment) (85%)
+3. taht - that (82%)
+3. tehm - them (65%)
+4. wriiten - written (35%)
+
+
+Questions and Answers:
+
+Q1 - Tell us how you think engineering can be used in the future to address at least one of the UN’s Sustainable Development Goals, and what role would you like to play in this?
+
+A1 - In my chosen engineering sector (software engineering/computer science) I believe that I can help ensure inclusive quality education and promote lifelong learning opportunities for all, especially in foreign countries, by creating new software technologies or improving existing solutions. I'm passionate about sustainable software development and more generally the usage of clean energy throughout all aspects of our lives and so I also believe that I can contribute to projects where software can be used to help research or implement better access to affordable and clean energy for all. Furthermore, I have confidence that I can build software technologies that help enhance productivity and economic growth within the workspace and as an engineering leader ensure this within the company where I work. I strongly believe that software can help improve quality of life within and outside of the workspace and I can see myself producing software applications that fall within this category, especially regarding my breadth of knowledge surrounding AI and automation and already my current experiences in this field.
+
+Q2 – Describe an engineering project which you are proud of, and where you showed leadership. What was your contribution to the project, and what did you learn from it?
+
+A2 - In a University project in Semester 2 of second year I was part of a group of 8 or 9 other students where we were developing an extra-curricular activities system for university societies in Java. At the start, I took the initiative to research roles that each team member could perform during the project and share them with the group. When we did the first meeting to assign roles, I was voted (by other group members) to be the leader. During the project, I assigned tasks to the group members and did a lot of work myself, I maintained communication with the group members and chased up them up if they weren't present, I offered support as well and sympathised with their circumstances. In the end, we produced an outstanding project with web pages linked to the Java backend and the team members were thoroughly impressed with my leadership, support and general contribution, we achieved 92% in this project as a team. I also learnt a lot from the experience and developed my skills in collaborative work, supporting team members and managing a group of individuals. The main thing I learnt was that planning early and staying organised are key to the role of a leader and also key to ensuring the project goes as smoothly as possible
+
+Q3 - How would you put the scholarship funding to use and how will you use it to advance your opportunity to become a leader in engineering? Please be as specific as you can.
+
+A3 - In terms of the funding, there are certain areas that I would like to improve upon and that I believe would advance my opportunity in becoming a leader in engineering. One of those areas would be my People skills, I would like to attend events/workshops that work on building these skills and developing these to improve my internal team collaboration but also my collaboration with other teams and external partners. Networking events would also be great for this I believe. I would also like to develop Business management skills as I plan on creating my own software/IT consultancy start-up that can help mitigate some of the challenges I discussed in Q1. This could be done by engaging in meaningful and interactive courses targeted at software engineers that focus on team management, delegation, project planning, and budgeting. Another area I would like to focus on is Public Speaking. I would like to attend events and educate students, possibly as a guest lecturer on key software engineering/computer science topics such as OOP, Code Maintenance, Design Principles, Agile Methodologies, Software Architecture and more. I would also like to build, develop and adapt software solutions to not just meet business/industry challenges but also help mitigate social and environmental challenges within a workplace environment.
+
+Your answers are very well written. Feedback from me:
+
+    1. Q1 is good, but I’m not really getting a sense of your passion
+    2. Your lesson learnt is vague
+    3. A little vague – be more specific e.g. HOW will you develop your business management skills?
