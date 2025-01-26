@@ -4,7 +4,7 @@ def search_documents(query, indexed_documents):
 
     Parameters:
     query (str): The user's search query.
-    indexed_documents (list): A list of documents that have been indexed.
+    indexed_documents (dictionary): A mapping of document names and their text that have been indexed.
 
     Returns:
     list: A list of tuples containing the document and its relevance score, sorted by score.
