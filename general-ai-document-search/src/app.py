@@ -4,6 +4,7 @@ from utils.document_processing import process_documents
 from utils.search_algorithm import search_documents
 
 app = Flask(__name__)
+documents = {}
 
 @app.route('/')
 def index():
@@ -13,7 +14,7 @@ def index():
 def upload():
     # Handle document upload and processing
     files = request.files.getlist('documents')
-    process_documents(files)
+    documents = process_documents(files)
     page = """
     <!DOCTYPE html>
     <html lang="en">
@@ -56,7 +57,7 @@ def upload():
 @app.route('/search', methods=['POST'])
 def search():
     user_query = request.form['query']
-    results = search_documents(user_query)
+    results = search_documents(user_query, documents)
     ai_summary = generate_ai_summary(results)
     return render_template('index.html', results=results, ai_summary=ai_summary)
 

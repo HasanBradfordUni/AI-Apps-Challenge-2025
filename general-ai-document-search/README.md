@@ -23,7 +23,7 @@ The General AI Document Search application leverages AI and natural language pro
 
 ## Technical Specifications
 - **Programming Language:** Python
-- **Frameworks and Libraries:** Flask or Django, TensorFlow or PyTorch, NLTK or SpaCy, Whoosh or Elasticsearch
+- **Frameworks and Libraries:** Flask for web interface, PyPDF2 and Python Docx to process PDF and Word Documents, Elasticsearch for searching through indexed files, Sci-kit learn for machine learning, Google APIs to link to Gemini AI for search summarisation
 - **Database:** SQLite for storing metadata and document indices
 - **Deployment:** Docker for containerization and deployment on cloud services
 - **Version Control:** Git for source code management

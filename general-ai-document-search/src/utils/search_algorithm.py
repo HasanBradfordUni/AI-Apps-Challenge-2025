@@ -1,6 +1,6 @@
 def search_documents(query, indexed_documents):
     """
-    Search for documents that match the user's query and rank them based on relevance.
+    Search for documents that match the user's query and rank them based on relevance using Elastic Search.
 
     Parameters:
     query (str): The user's search query.
@@ -9,7 +9,16 @@ def search_documents(query, indexed_documents):
     Returns:
     list: A list of tuples containing the document and its relevance score, sorted by score.
     """
-    from sklearn.feature_extraction.text import TfidfVectorizer
+    import elasticsearch
+    es = elasticsearch.Elasticsearch()
+    results = []
+    for doc_name, doc_text in indexed_documents.items():
+        doc_score = es.get_relevance_score(query, doc_text)
+        results.append((doc_name, doc_score))
+    results.sort(key=lambda x: x[1], reverse=True)
+    return results
+
+"""from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity
 
     # Create a TF-IDF Vectorizer
@@ -30,4 +39,5 @@ def search_documents(query, indexed_documents):
     # Sort documents by score in descending order
     sorted_documents = sorted(scored_documents, key=lambda x: x[1], reverse=True)
     
-    return sorted_documents
+    return sorted_documents"""
+    

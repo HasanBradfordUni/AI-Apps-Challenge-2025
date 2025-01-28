@@ -103,8 +103,6 @@ def handle_document_upload(file):
 
 def process_documents(files):
     # Function to process multiple documents
-    document_text = []
     for file in files:
         text = handle_document_upload(file)
-        document_text.append(text)
-    return document_text, search_index
+    return search_index
