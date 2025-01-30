@@ -1,4 +1,6 @@
-def search_documents(query, indexed_documents):
+from elasticsearch import Elasticsearch
+
+def search_documents(query, indexed_documents, index_name="my_index"):
     """
     Search for documents that match the user's query and rank them based on relevance using Elastic Search.
 
@@ -9,15 +11,35 @@ def search_documents(query, indexed_documents):
     Returns:
     list: A list of tuples containing the document and its relevance score, sorted by score.
     """
-    import elasticsearch
-    es = elasticsearch.Elasticsearch(hosts=["http://localhost:6922"])
-    results = []
+    es = Elasticsearch(hosts=["http://localhost:9200"])
+
+    # Index documents if not already indexed
     for doc_name, doc_text in indexed_documents.items():
-        doc_score = es.get_relevance_score(query, doc_text)
-        results.append((doc_name, doc_score))
+        es.index(index=index_name, id=doc_name, body={"text": doc_text})
+
+    # Search for documents
+    search_body = {
+        "query": {
+            "match": {
+                "text": query
+            }
+        }
+    }
+    response = es.search(index=index_name, body=search_body)
+    results = [(hit["_id"], hit["_score"]) for hit in response["hits"]["hits"]]
     results.sort(key=lambda x: x[1], reverse=True)
-    print(results)
     return results
+
+if __name__ == "__main__":
+    # Example usage
+    query = "text of document"
+    indexed_documents = {
+        "doc1": "This is the text of document 1.",
+        "doc2": "This is the text of document 2.",
+        # Add more documents as needed
+    }
+    results = search_documents(query, indexed_documents)
+    print(results)
 
 """from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity

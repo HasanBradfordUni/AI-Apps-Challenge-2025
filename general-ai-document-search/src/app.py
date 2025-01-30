@@ -1,7 +1,8 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from ai.geminiPrompt import generate_ai_summary
 from utils.document_processing import process_documents
 from utils.search_algorithm import search_documents
+import os
 
 app = Flask(__name__)
 documents = {}
@@ -10,11 +11,29 @@ documents = {}
 def index():
     return render_template('index.html')
 
+@app.route('/get-directories', methods=['GET'])
+def get_directories():
+    # Replace this with the actual path where directories are stored
+    base_path = f"{os.path.dirname(__file__)}/utils/docs"
+    directories = [d for d in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, d))]
+    return jsonify({'directories': directories})
+
 @app.route('/upload', methods=['POST'])
 def upload():
     # Handle document upload and processing
     files = request.files.getlist('documents')
-    documents = process_documents(files)
+    directory = request.form.get('directory')
+    new_directory = request.form.get('new-directory')
+
+    # Determine the target directory
+    if new_directory:
+        target_directory = new_directory
+    else:
+        target_directory = directory
+
+    # Process and index the documents
+    documents = process_documents(files, target_directory)
+    
     page = """
     <!DOCTYPE html>
     <html lang="en">

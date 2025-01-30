@@ -60,9 +60,8 @@ def index_document(file_name, text):
     print(f"Document text: {text}")
     print()
 
-def handle_document_upload(file):
+def handle_document_upload(file, file_path):
     # Copy the file to the docs folder
-    file_path = f"{os.path.dirname(__file__)}\\docs\\{file.filename}"
     fileType = file.filename.split('.')[-1]
     match fileType:
         case 'pdf':
@@ -101,8 +100,12 @@ def handle_document_upload(file):
     text = process_document(file_path)
     return text
 
-def process_documents(files):
-    # Function to process multiple documents
+def process_documents(files, target_directory):
+    # Ensure the target directory exists
+    target_directory = f"{os.path.dirname(__file__)}\\docs\\{target_directory}"
+    os.makedirs(target_directory, exist_ok=True)
+
     for file in files:
-        text = handle_document_upload(file)
+        file_path = os.path.join(target_directory, file.filename)
+        text = handle_document_upload(file, file_path)
     return search_index
