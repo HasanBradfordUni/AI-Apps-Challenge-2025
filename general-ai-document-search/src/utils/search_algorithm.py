@@ -10,12 +10,13 @@ def search_documents(query, indexed_documents):
     list: A list of tuples containing the document and its relevance score, sorted by score.
     """
     import elasticsearch
-    es = elasticsearch.Elasticsearch()
+    es = elasticsearch.Elasticsearch(hosts=["http://localhost:6922"])
     results = []
     for doc_name, doc_text in indexed_documents.items():
         doc_score = es.get_relevance_score(query, doc_text)
         results.append((doc_name, doc_score))
     results.sort(key=lambda x: x[1], reverse=True)
+    print(results)
     return results
 
 """from sklearn.feature_extraction.text import TfidfVectorizer

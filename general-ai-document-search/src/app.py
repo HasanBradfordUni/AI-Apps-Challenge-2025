@@ -58,8 +58,8 @@ def upload():
 def search():
     user_query = request.form['query']
     results = search_documents(user_query, documents)
-    ai_summary = generate_ai_summary(results)
-    return render_template('index.html', results=results, ai_summary=ai_summary)
+    #ai_summary = generate_ai_summary(results)
+    return render_template('index.html', results=results, ai_summary="")
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6922)

@@ -178,21 +178,10 @@
         />
       </h1>
       <hr />
-
-      <div class="menuBar">
-        <ul class="nav">
-          <li class="nav" id="currentPage">
-            <a class="nav" href="#">Home</a>
-          </li>
-          <li class="nav"><a class="nav" href="about.html">About</a></li>
-          <li class="nav"><a class="nav" href="contact.html">Contact</a></li>
-          <li class="nav"><a class="nav" href="shop.html">Shop</a></li>
-        </ul>
-      </div>
     </header>
 
     <section class="mainBody">
-      <h1 class="mainHeading">Home - General AI Document Search</h1>
+      <h1 class="mainHeading">AI Apps Challenge - General AI Document Search</h1>
       <br />
       <h2 class="subHeading">
         The General AI Document Search application aims to leverage AI and natural language processing to enable users to efficiently search and retrieve relevant documents from a vast collection of files. This application provides an intelligent search interface that understands user queries in natural language and returns the most pertinent results, thereby enhancing productivity and information access.
@@ -200,15 +189,36 @@
 
       <main>
         <section>
-            <h2 class="largeText">Upload Document</h2>
+            <h2 class="largeText">Upload Documents or choose Directory to search</h2>
             <form action="/upload" method="post" enctype="multipart/form-data">
-                <input type="file" name="documents" multiple required>
-                <button type="submit">Upload</button>
+              <input type="file" name="documents" multiple>
+              <label for="directory">Choose a directory:</label>
+              <select name="directory" id="directory">
+                <!-- Options will be populated dynamically -->
+              </select>
+              <label for="new-directory">Or create a new directory:</label>
+              <input type="text" name="new-directory" id="new-directory" placeholder="New directory name">
+              <button type="submit">Upload</button>
             </form>
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                fetch('/get-directories')
+                  .then(response => response.json())
+                  .then(data => {
+                    const directorySelect = document.getElementById('directory');
+                    data.directories.forEach(dir => {
+                      const option = document.createElement('option');
+                      option.value = dir;
+                      option.textContent = dir;
+                      directorySelect.appendChild(option);
+                    });
+                  });
+              });
+            </script>
         </section>
         <section>
             <h2 class="largeText">Search Documents</h2>
-            <form action="/search" method="get">
+            <form action="/search" method="post">
                 <input type="text" name="query" placeholder="Enter your search query" required>
                 <button type="submit">Search</button>
             </form>

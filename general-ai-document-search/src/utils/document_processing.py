@@ -62,7 +62,7 @@ def index_document(file_name, text):
 
 def handle_document_upload(file):
     # Copy the file to the docs folder
-    file_path = f"{os.path.dirname(__file__)}\docs\{file.filename}"
+    file_path = f"{os.path.dirname(__file__)}\\docs\\{file.filename}"
     fileType = file.filename.split('.')[-1]
     match fileType:
         case 'pdf':
