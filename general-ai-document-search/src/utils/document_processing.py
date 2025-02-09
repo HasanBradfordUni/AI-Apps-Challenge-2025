@@ -109,3 +109,20 @@ def process_documents(files, target_directory):
         file_path = os.path.join(target_directory, file.filename)
         text = handle_document_upload(file, file_path)
     return search_index
+
+def handle_documents(target_directory):
+    # Process all documents in the target directory
+    target_directory = f"{os.path.dirname(__file__)}/docs/{target_directory}"
+    all_documents = []
+    indexed_documents = {}
+
+    for file_name in os.listdir(target_directory):
+        if os.path.isfile(os.path.join(target_directory, file_name)):
+            all_documents.append(file_name)
+
+    for doc_name in all_documents:
+        doc_path = os.path.join(target_directory, doc_name)
+        text = process_document(doc_path)
+        indexed_documents[doc_name] = text
+
+    return indexed_documents

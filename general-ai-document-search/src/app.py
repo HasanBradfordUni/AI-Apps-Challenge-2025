@@ -1,6 +1,6 @@
 from flask import Flask, request, render_template, jsonify
 from ai.geminiPrompt import generate_ai_summary
-from utils.document_processing import process_documents
+from utils.document_processing import process_documents, handle_documents
 from utils.search_algorithm import search_documents
 import os
 
@@ -76,6 +76,8 @@ def upload():
 @app.route('/search', methods=['POST'])
 def search():
     user_query = request.form['query']
+    target_directory = request.form['directory']
+    documents = handle_documents(target_directory)
     results = search_documents(user_query, documents)
     #ai_summary = generate_ai_summary(results)
     return render_template('index.html', results=results, ai_summary="")
