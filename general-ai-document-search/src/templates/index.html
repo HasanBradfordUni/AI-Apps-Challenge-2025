@@ -61,7 +61,7 @@
       }
 
       .mainBody {
-        margin-top: 6cm;
+        margin-top: 3cm;
       }
 
       .mainHeading {
@@ -155,6 +155,15 @@
       .footer-link.with-icon {
         margin-left: 30px;
       }
+
+      #results-container {
+        text-align: center;
+        color: white;
+      }
+
+      .no-bullet {
+        list-style: none;
+      }
     </style>
   </head>
 
@@ -191,11 +200,16 @@
         <section>
             <h2 class="largeText">Upload Documents or choose Directory to search</h2>
             <form action="/upload" method="post" enctype="multipart/form-data">
-              <input type="file" name="documents" multiple>
+              <div class="custom-file-upload">
+                <label for="documents">Choose documents to upload:</label>
+                <input type="file" name="documents" multiple class="file-input">
+              </div>
+              <br>
               <label for="directory">Choose a directory:</label>
               <select name="directory" id="directory">
                 <!-- Options will be populated dynamically -->
               </select>
+              <br>
               <label for="new-directory">Or create a new directory:</label>
               <input type="text" name="new-directory" id="new-directory" placeholder="New directory name">
               <button type="submit">Upload</button>
@@ -203,17 +217,19 @@
             <script>
               document.addEventListener('DOMContentLoaded', function() {
                 fetch('/get-directories')
-                  .then(response => response.json())
-                  .then(data => {
-                    const directorySelect = document.getElementById('directory');
-                    data.directories.forEach(dir => {
-                      const option = document.createElement('option');
-                      option.value = dir;
-                      option.textContent = dir;
-                      directorySelect.appendChild(option);
+                    .then(response => response.json())
+                    .then(data => {
+                        const directorySelect = document.getElementById('directory');
+                        const searchDirectorySelect = document.getElementById('search-directory');
+                        data.directories.forEach(dir => {
+                            const option = document.createElement('option');
+                            option.value = dir;
+                            option.textContent = dir;
+                            directorySelect.appendChild(option);
+                            searchDirectorySelect.appendChild(option.cloneNode(true));
+                        });
                     });
-                  });
-              });
+            });
             </script>
         </section>
         <section>
@@ -221,10 +237,13 @@
             <form action="/search" method="post">
               <label for="search-query">Search Query:</label>
               <input type="text" name="query" id="search-query" placeholder="Enter your search query" required>
+              <br>
               <label for="search-directory">Choose a directory:</label>
               <select name="directory" id="search-directory" required>
                   <!-- Options will be populated dynamically -->
               </select>
+              <br>
+              <br>
               <button type="submit">Search</button>
           </form>
         </section>
@@ -232,6 +251,20 @@
             <h2 class="largeText">Search Results</h2>
             <div id="results-container">
                 <!-- Search results will be displayed here -->
+                {% if ai_summary %}
+                  <p>AI Summary: {{ ai_summary }}</p>
+                {% else %}
+                  <p>AI Summary not generated yet</p>
+                {% endif %}
+                {% if results %}
+                  <ul class="no-bullet">
+                  {% for result in results %}
+                    <li>{{ result }}</li>
+                  {% endfor %}
+                  </ul>
+                {% else %}
+                  <p>No results found.</p>
+                {% endif %}
             </div>
         </section>
     </main>
@@ -346,7 +379,7 @@
         </div>
       </div>
       <hr />
-      <h1>Copyright Akhtar Hasan (aka Python Programmer) 2025</h1>
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
     </footer>
   </body>
 </html>
