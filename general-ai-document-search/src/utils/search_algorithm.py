@@ -64,8 +64,14 @@ def search_documents(query, indexed_documents):
     
     # Sort documents by score in descending order
     sorted_documents = sorted(scored_documents, key=lambda x: x[1], reverse=True)
-    
-    return sorted_documents
+
+    search_results = []
+    for doc in sorted_documents:
+        # Convert the np.float64 value stored in doc[1] to a percentage
+        score_percentage = doc[1] * 100
+        thisResult = f"Doc Name: {doc[0]}, Text Preview: {indexed_documents[doc[0]][:100]}..., Relevance Score: {score_percentage}%"
+        search_results.append(thisResult)
+    return search_results
 
 # Example usage
 if __name__ == "__main__":
