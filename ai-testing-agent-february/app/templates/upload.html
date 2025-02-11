@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Upload Files</title>
+</head>
+<body>
+    <header>
+        <h1>AI Testing Agent</h1>
+        <hr />
+    </header>
+    <section class="mainBody">
+        <h1 class='mainHeading'>Upload Your Files</h1>
+        <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+            <label for="project_name">Project Name:</label>
+            <input type="text" id="project_name" name="project_name" required>
+            
+            <label for="expected_results">Upload Expected Results (PDF):</label>
+            <input type="file" id="expected_results" name="expected_results" accept=".pdf" required>
+            
+            <label for="actual_results">Upload Actual Results (Screenshot):</label>
+            <input type="file" id="actual_results" name="actual_results" accept=".png, .jpg, .jpeg" required>
+            
+            <label for="test_query">Test Query:</label>
+            <textarea id="test_query" name="test_query" required></textarea>
+            
+            <label for="context">Additional Context:</label>
+            <textarea id="context" name="context"></textarea>
+            
+            <button type="submit">Submit</button>
+        </form>
+        <button onclick="window.location.href='/'">Go back</button>
+    </section>
+</body>
+</html>

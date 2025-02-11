@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Evaluation Results</title>
+</head>
+<body>
+    <header>
+        <h1>AI Testing Agent Results</h1>
+        <hr />
+    </header>
+    <section class="resultsBody">
+        <h2>Evaluation Summary</h2>
+        <p>{{ ai_summary }}</p>
+        
+        <h3>Detailed Comparison</h3>
+        <div class="comparison">
+            <h4>Expected Results:</h4>
+            <pre>{{ expected_results }}</pre>
+            <h4>Actual Results:</h4>
+            <pre>{{ actual_results }}</pre>
+        </div>
+        
+        <button onclick="copyToClipboard('summary')">Copy Summary</button>
+        <button onclick="copyToClipboard('detailed')">Copy Detailed Comparison</button>
+        
+        <button onclick="window.location.href='/'">Go back</button>
+    </section>
+
+    <script>
+        function copyToClipboard(type) {
+            let textToCopy;
+            if (type === 'summary') {
+                textToCopy = document.querySelector('p').innerText;
+            } else {
+                textToCopy = document.querySelector('.comparison').innerText;
+            }
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+    </script>
+</body>
+</html>
