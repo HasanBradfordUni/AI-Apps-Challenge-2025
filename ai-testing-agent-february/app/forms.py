@@ -4,6 +4,7 @@ from wtforms.validators import DataRequired
 
 class UploadForm(FlaskForm):
     project_name = StringField('Project Name', validators=[DataRequired()])
+    project_description = TextAreaField('Project Description')
     expected_results = FileField('Upload Expected Results (PDF)', validators=[DataRequired()])
     actual_results = FileField('Upload Actual Results (Screenshot)', validators=[DataRequired()])
     test_query = StringField('Test Query', validators=[DataRequired()])

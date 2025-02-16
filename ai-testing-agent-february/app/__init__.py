@@ -2,10 +2,22 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
 
-app = Flask(__name__)
-app.config.from_pyfile('../instance/config.py')
+db = SQLAlchemy()
+csrf = CSRFProtect()
 
-db = SQLAlchemy(app)
-csrf = CSRFProtect(app)
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object('instance.config.Config')
 
-from app import routes, models, forms
+    db.init_app(app)
+    csrf.init_app(app)
+
+    with app.app_context():
+        from . import routes, models, forms
+        db.create_all()
+
+    # Register the blueprint
+    from .routes import app as routes_blueprint
+    app.register_blueprint(routes_blueprint)
+
+    return app

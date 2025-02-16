@@ -5,6 +5,7 @@ db = SQLAlchemy()
 class UserInput(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     project_name = db.Column(db.String(100), nullable=False)
+    test_query = db.Column(db.String(250), nullable=False)
     additional_details = db.Column(db.Text, nullable=True)
     context = db.Column(db.Text, nullable=True)
 
