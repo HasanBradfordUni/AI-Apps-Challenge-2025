@@ -10,6 +10,7 @@
         body {
             background-color: black;
             text-align: center;
+            color: white;
         }
 
         header {
@@ -126,24 +127,34 @@
 
     <section class="mainBody">
         <h1 class='mainHeading'>Upload Your Files for the AI Apps Challenge - AI Testing Agent</h1>
+        <br>
         <form action="{{ url_for('app.upload') }}" method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
             <label for="project_name">Project Name:</label>
             <input type="text" id="project_name" name="project_name" required>
-            
-            <label for="expected_results">Upload Expected Results (PDF):</label>
-            <input type="file" id="expected_results" name="expected_results" accept=".pdf" required>
-            
-            <label for="actual_results">Upload Actual Results (Screenshot):</label>
-            <input type="file" id="actual_results" name="actual_results" accept=".png, .jpg, .jpeg" required>
-            
+            <br>
+            <br>
+            <div class="custom-file-upload">
+                <label for="expected_results">Upload Expected Results (PDF):</label>
+                <input type="file" id="expected_results" name="expected_results" accept=".pdf" required class="file-input">
+            </div>
+            <br>
+            <div class="custom-file-upload">
+                <label for="actual_results">Upload Actual Results (Screenshot):</label>
+                <input type="file" id="actual_results" name="actual_results" accept=".png, .jpg, .jpeg" required class="file-input">
+            </div>
+            <br>
             <label for="test_query">Test Query:</label>
             <textarea id="test_query" name="test_query" required></textarea>
             
             <label for="context">Additional Context:</label>
             <textarea id="context" name="context"></textarea>
-            
+            <br>
+            <br>
             <button type="submit">Submit</button>
+            <br>
         </form>
+        <br>
         <button onclick="window.location.href='/'">Go back</button>
     </section>
 
