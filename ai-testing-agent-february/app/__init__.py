@@ -1,23 +1,19 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import CSRFProtect
+# Register the blueprint
+from .routes import app as routes_blueprint
 
-db = SQLAlchemy()
 csrf = CSRFProtect()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('instance.config.Config')
+    app.config['SECRET_KEY'] = 'your_secret_key_here'  # Set your secret key here
 
-    db.init_app(app)
     csrf.init_app(app)
+    app.register_blueprint(routes_blueprint)
 
     with app.app_context():
-        from . import routes, models, forms
-        db.create_all()
-
-    # Register the blueprint
-    from .routes import app as routes_blueprint
-    app.register_blueprint(routes_blueprint)
+        from . import routes
 
     return app

@@ -3,6 +3,16 @@ from PIL import Image
 import pytesseract
 import os
 
+import vertexai
+from vertexai.generative_models import GenerativeModel
+import google.auth
+
+credentials, project_id = google.auth.default()
+
+vertexai.init(project="generalpurposeai", location="us-central1")
+
+model = GenerativeModel(model_name="gemini-1.5-pro")
+
 # Configure pytesseract to use the installed Tesseract executable
 pytesseract.pytesseract.tesseract_cmd = f"{os.path.dirname(__file__)}\\bin\\tesseract"
 
@@ -29,3 +39,15 @@ def process_files(expected_results, actual_results):
     image_text = pytesseract.image_to_string(actual_results_image)
     
     return expected_results_text, image_text
+
+def generate_ai_comparison(project_name, query, expected_results, actual_results):
+    # Function to generate an AI comparison based on the user query, expected results, and actual results
+    response = model.generate_text(prompt=f"I am conducting a software test for my project {project_name}. Can you compare the expected results: {expected_results} with the actual results: {actual_results} based on the testing query: {query}")
+    return response.text
+
+def generate_summary(evaluation_results):
+    # Function to generate a summary based on the evaluation results
+    summary = ""
+    for result in evaluation_results:
+        summary += f"{result}\n"
+    return summary
