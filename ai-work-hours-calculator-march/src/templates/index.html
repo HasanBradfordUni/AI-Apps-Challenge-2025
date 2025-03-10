@@ -208,31 +208,31 @@
       <h2 class="subHeading">
         The General AI Document Search application aims to leverage AI and natural language processing to enable users to efficiently search and retrieve relevant documents from a vast collection of files. This application provides an intelligent search interface that understands user queries in natural language and returns the most pertinent results, thereby enhancing productivity and information access.
       </h2>
-
-      <main>
-        <section>
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="UTF-8">
-              <title>Work Hours Calculator</title>
-              <link rel="stylesheet" href="{{ url_for('bootstrap.static', filename='css/bootstrap.min.css') }}">
-          </head>
-          <body>
               <div class="container">
                   <h1>Work Hours Calculator</h1>
                   <form method="POST">
                       {{ form.hidden_tag() }}
                       <div class="form-group">
-                          {{ form.username.label }} {{ form.username(class="form-control") }}
+                          {{ form.expected_hours.label }} {{ form.expected_hours(size=3) }} {{ form.time_frame() }}
                       </div>
                       <div class="form-group">
-                          {{ form.hours_worked.label }} {{ form.hours_worked(class="form-control") }}
+                          {{ form.work_hours_description.label }} {{ form.work_hours_description(rows=10, cols=80) }}
                       </div>
                       <div class="form-group">
-                          {{ form.submit(class="btn btn-primary") }}
+                          {{ form.submit() }}
                       </div>
                   </form>
+              </div>
+              <div class="ai-summary">
+                  <h2>AI Summary</h2>
+                  <p>AI has calculated the work hours for you. Here are the results:</p>
+                  <div id="results-container">
+                      <ul class="no-bullet">
+                          {% for result in ai_summary %}
+                              <li>{{ result }}</li>
+                          {% endfor %}
+                      </ul>
+                  </div>
               </div>
         </section>
     </main>

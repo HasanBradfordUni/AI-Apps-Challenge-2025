@@ -3,7 +3,7 @@ from wtforms import StringField, SubmitField, IntegerField, SelectField, TextAre
 from wtforms.validators import DataRequired
 
 class WorkHoursForm(FlaskForm):
-    expected_hours = IntegerField("Hours Worked", validators=[DataRequired()])
+    expected_hours = IntegerField("Contracted Hours", validators=[DataRequired()])
     time_frame = SelectField("Time Frame", choices=[("day", "Per Day"), ("week", "Per Week")], validators=[DataRequired()])
     work_hours_description = TextAreaField("Work Hours Description", validators=[DataRequired()])
     submit = SubmitField("Submit")
