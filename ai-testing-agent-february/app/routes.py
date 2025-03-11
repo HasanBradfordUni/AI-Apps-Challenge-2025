@@ -7,6 +7,7 @@ import os
 app = Blueprint('app', __name__)
 db_path = os.path.join(os.path.dirname(__file__), 'static', 'database.db')
 connection = create_connection(db_path)
+create_tables(connection)
 
 @app.route('/')
 def index():
@@ -29,16 +30,16 @@ def upload():
         # Save project details and evaluation results
         add_user_input(connection, project_name, test_query, additional_details=project_description, context=context)
 
-        user_input_id = get_last_row_id(connection)
+        user_input_id = get_last_row_id(connection)[0]
         
         expected_results_filename = expected_results.filename
         actual_results_filename = actual_results.filename
 
-        add_uploaded_file(connection, "expected_results", expected_results_filename, user_input_id)
-        add_uploaded_file(connection, "actual_results", actual_results_filename, user_input_id)
+        add_uploaded_file(connection, "expected", expected_results_filename, user_input_id)
+        add_uploaded_file(connection, "actual", actual_results_filename, user_input_id)
 
         comparison_result = generate_ai_comparison(project_name, test_query, expected_result_text, actual_result_text)
-        evaluation_summary = generate_summary(comparison_result)
+        evaluation_summary = generate_summary(comparison_result, project_name, test_query)
         
         add_evaluation_result(connection, user_input_id, expected_result_text, actual_result_text, comparison_result, evaluation_summary)
 

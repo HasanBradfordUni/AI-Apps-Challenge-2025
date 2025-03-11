@@ -15,8 +15,9 @@ def index():
         work_hours_description = form.work_hours_description.data
         # Here you can call the AI model to generate a summary
         summary = generate_work_hours_summary(contracted_hours, work_hours_description)
+        print(summary)
         # Here you can add logic to process the work hours
-        return render_template('index.html', ai_summary=summary)
+        return render_template('index.html', form=form, ai_summary=summary)
     return render_template('index.html', form=form)
 
 if __name__ == '__main__':

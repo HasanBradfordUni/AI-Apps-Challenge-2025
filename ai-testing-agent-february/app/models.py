@@ -4,7 +4,7 @@ from sqlite3 import Error
 def create_connection(path):
     connection = None
     try:
-        connection = sqlite3.connect(path)
+        connection = sqlite3.connect(path, check_same_thread=False)
         print("Connection to SQLite DB successful")
     except Error as e:
         print(f"The error '{e}' occurred")
@@ -59,7 +59,7 @@ def create_tables(connection):
         expected_results TEXT NOT NULL,
         actual_results TEXT NOT NULL,
         comparison TEXT NOT NULL,
-        summary TEXT,
+        summary TEXT NOT NULL,
         FOREIGN KEY (user_input_id) REFERENCES user_input (id)
     );
     """
@@ -77,28 +77,28 @@ def execute_query(connection, query):
     
 def add_user_input(connection, project_name, test_query, additional_details, context):
     cursor = connection.cursor()
-    cursor.execute(f"""
+    cursor.execute("""
     INSERT INTO user_input (project_name, test_query, additional_details, context)
-    VALUES ('{project_name}', '{test_query}', '{additional_details}', '{context}')
-    """)
+    VALUES (?, ?, ?, ?)
+    """, (project_name, test_query, additional_details, context))
     connection.commit()
     return cursor.lastrowid
 
 def add_uploaded_file(connection, file_type, file_path, user_input_id):
     cursor = connection.cursor()
-    cursor.execute(f"""
+    cursor.execute("""
     INSERT INTO uploaded_file (file_type, file_path, user_input_id)
-    VALUES ('{file_type}', '{file_path}', '{user_input_id}')
-    """)
+    VALUES (?, ?, ?)
+    """, (file_type, file_path, user_input_id))
     connection.commit()
     return cursor.lastrowid
 
 def add_evaluation_result(connection, user_input_id, expected_results, actual_results, comparison, summary):
     cursor = connection.cursor()
-    cursor.execute(f"""
+    cursor.execute("""
     INSERT INTO evaluation_result (user_input_id, expected_results, actual_results, comparison, summary)
-    VALUES ('{user_input_id}', '{expected_results}', '{actual_results}', '{comparison}', '{summary}')
-    """)
+    VALUES (?, ?, ?, ?, ?)
+    """, (user_input_id, expected_results, actual_results, comparison, summary))
     connection.commit()
     return cursor.lastrowid
 
