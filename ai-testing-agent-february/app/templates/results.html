@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
     <title>Evaluation Results</title>
     <style>
         body {
@@ -107,6 +108,11 @@
         .footer-link.with-icon {
             margin-left: 30px;
         }
+
+        .ai-result-text {
+            color: white;
+            font-size: 20px;
+        }
     </style>
 </head>
 <body>
@@ -122,22 +128,40 @@
     <section class="resultsBody">
         <h1 class="mainHeading">AI Testing Agent Results</h1>
         <br>
-        <h2>Evaluation Summary</h2>
-        <p>{{ ai_summary }}</p>
-        
-        <h3>Detailed Comparison</h3>
-        <div class="comparison">
-            <h4>Expected Results:</h4>
-            <pre>{{ expected_results }}</pre>
-            <h4>Actual Results:</h4>
-            <pre>{{ actual_results }}</pre>
+        <h2 class="subHeading">Evaluation Summary</h2>
+        <p id="results-container" class="ai-result-text">{{ ai_result2 }}</p>
+        <br>
+        <h2 class="subHeading">Detailed Comparison</h3>
+        <div id="comparison" class="ai-result-text">
+            <pre>{{ ai_result1 }}</pre>
+        </div>
+        <br>
+        <h2 class="subHeading">Summary Part</h3>
+        <div id="summary" class="ai-result-text">
+            <pre>{{ ai_result3 }}</pre>
         </div>
         
         <button onclick="copyToClipboard('summary')">Copy Summary</button>
-        <button onclick="copyToClipboard('detailed')">Copy Detailed Comparison</button>
+        <button onclick="copyToClipboard('detailed')">Copy Full Evaluation</button>
         
         <button onclick="window.location.href='/'">Go back</button>
     </section>
+    <br>
+    <hr>
+    <br>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const resultsContainer = document.getElementById('results-container');
+        const comparisonContainer = document.getElementById('comparison');
+        const markdownContent = resultsContainer.innerText;
+        const markdownContent2 = comparisonContainer.innerText;
+        const htmlContent = marked.parse(markdownContent);
+        const htmlContent2 = marked.parse(markdownContent2);
+        resultsContainer.innerHTML = htmlContent;
+        comparisonContainer.innerHTML = htmlContent2;
+      });
+    </script>
 
     <footer>
         <div class="footer">
@@ -203,9 +227,9 @@
         function copyToClipboard(type) {
             let textToCopy;
             if (type === 'summary') {
-                textToCopy = document.querySelector('p').innerText;
+                textToCopy = document.getElementById('summary').innerText;
             } else {
-                textToCopy = document.querySelector('.comparison').innerText;
+                textToCopy = document.getElementById('results-container').innerText;
             }
             navigator.clipboard.writeText(textToCopy).then(() => {
                 alert('Copied to clipboard!');
