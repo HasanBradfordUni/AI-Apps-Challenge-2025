@@ -177,6 +177,26 @@
       .no-bullet > li{
         margin-bottom:15px;
       }
+
+      .ai-summary {
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+        color: white;
+      }
+
+      .button {
+        background-color: #35424a;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      .button:hover {
+        background-color: #45a049;
+      }
     </style>
   </head>
 
@@ -209,20 +229,23 @@
         The AI Powered Work Hours Calculator is a flexible and intuitive application designed to help users calculate their work hours effortlessly. This tool leverages the power of AI to interpret and process work hours input in any format, making it perfect for those who want a detailed breakdown of their hours worked, overtime, and undertime. Additionally, it includes a time-based calculator for performing arithmetic operations on hours, streamlining time-related calculations.      
       </h2>
               <div class="container">
-                  <h1>Work Hours Calculator</h1>
+                  <h3 class="largeText">Input Work Hours below</h3>
                   <form method="POST">
                       {{ form.hidden_tag() }}
                       <div class="form-group">
                           {{ form.expected_hours.label }} {{ form.expected_hours(size=3) }} {{ form.time_frame() }}
                       </div>
+                      <br>
                       <div class="form-group">
                           {{ form.work_hours_description.label(class="work-hours-label") }} {{ form.work_hours_description(rows=10, cols=80, class="text-field") }}
                       </div>
+                      <br>
                       <div class="form-group">
-                          {{ form.submit() }}
+                          {{ form.submit(class="button") }}
                       </div>
                   </form>
               </div>
+              <br>
               <div class="ai-summary">
                   <h2>AI Summary</h2>
                   <p>AI has calculated the work hours for you. Here are the results:</p>
@@ -235,6 +258,7 @@
         </section>
     </main>
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <!--
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -244,6 +268,7 @@
         resultsContainer.innerHTML = htmlContent;
       });
     </script>
+    -->
 
       <hr />
       <br />
