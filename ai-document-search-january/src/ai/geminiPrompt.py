@@ -10,7 +10,7 @@ model = GenerativeModel(model_name="gemini-1.5-pro")
 
 def generate_ai_summary(query, documents):
     # Function to generate an AI summary based on the user query and relevant documents
-    response = model.generate_text(prompt=f"Summarize the following documents based on the query: {query}. Documents: {documents}")
+    response = model.generate_content(f"Summarize the following documents based on the query: {query}. Documents: {documents}")
     return response.text
 
 def main():

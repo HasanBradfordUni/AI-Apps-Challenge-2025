@@ -15,7 +15,17 @@ def index():
         work_hours_description = form.work_hours_description.data
         # Here you can call the AI model to generate a summary
         summary = generate_work_hours_summary(contracted_hours, work_hours_description)
-        print(summary)
+        responses = summary.split("\n")
+        summary = ""
+        for response in responses:
+            response = response.strip("#").strip("*")
+            if response.startswith("Total"):
+                summary += "<h2>"+response+"</h2><br>"
+            elif response.startswith("Overtime") or response.startswith("Undertime"):
+                summary += "<h3>"+response+"</h3><br>"
+            else:
+                summary += response+"<br>"
+            print(summary)
         # Here you can add logic to process the work hours
         return render_template('index.html', form=form, ai_summary=summary)
     return render_template('index.html', form=form)
