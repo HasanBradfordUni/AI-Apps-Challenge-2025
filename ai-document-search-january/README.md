@@ -35,7 +35,7 @@ The General AI Document Search application leverages AI and natural language pro
    ```
 2. Navigate to the project directory:
    ```
-   cd general-ai-document-search
+   cd ai-document-search-january
    ```
 3. Install the required dependencies:
    ```
