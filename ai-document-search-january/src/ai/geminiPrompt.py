@@ -2,8 +2,8 @@ import vertexai
 from vertexai.generative_models import GenerativeModel
 import google.auth
 import os
-from search_algorithm import search_documents
-from document_processing import handle_documents
+#from search_algorithm import search_documents
+#from document_processing import handle_documents
 
 credentials, project_id = google.auth.default()
 

@@ -1,4 +1,4 @@
-from elasticsearch import Elasticsearch
+#from elasticsearch import Elasticsearch
 import os
 from utils.document_processing import handle_documents
 

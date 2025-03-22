@@ -262,10 +262,10 @@
         </section>
         <section id="results">
             <h2 class="largeText">Search Results</h2>
-            <div id="results-container">
+            <div>
                 <!-- Search results will be displayed here -->
                 {% if ai_summary %}
-                  <p>AI Summary: {{ ai_summary }}</p>
+                  <p id="results-container">AI Summary: {{ ai_summary }}</p>
                 {% else %}
                   <p>AI Summary not generated yet</p>
                 {% endif %}
@@ -282,6 +282,15 @@
         </section>
     </main>
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const resultsContainer = document.getElementById('results-container');
+        const markdownContent = resultsContainer.innerText;
+        const htmlContent = marked.parse(markdownContent);
+        resultsContainer.innerHTML = htmlContent;
+      });
+    </script>
 
       <hr />
       <br />
