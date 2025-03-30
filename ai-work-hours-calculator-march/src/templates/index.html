@@ -197,6 +197,33 @@
       .button:hover {
         background-color: #45a049;
       }
+
+      .calculator {
+        margin: 20px auto;
+        width: 300px;
+        text-align: center;
+      }
+
+      .calc-display {
+        background-color: #222;
+        color: #fff;
+        padding: 10px;
+        font-size: 1.5em;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+
+      .calc-buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 5px;
+      }
+
+      .calc-buttons .button {
+        padding: 15px;
+        font-size: 1em;
+        border-radius: 5px;
+      }
     </style>
   </head>
 
@@ -255,9 +282,102 @@
                     {% endif %}
                   </div>
               </div>
+              <div class="calculator">
+                <h3 class="largeText">Manual Work Hours Calculator</h3>
+                <h4>Use the calculator below to perform arithmetic operations on work hours. You can add, subtract, multiply, or divide hours and minutes.</h4>
+                <p>For example, to add 2 hours and 30 minutes to 1 hour and 15 minutes, you would enter:</p>
+                <p>2.30 + 1.15 = 3.45</p>
+                <p>Note: This calculator only works with 24 hour time format. For example, 1:00 PM should be entered as 13:00.</p>
+                <div id="calc-display" class="calc-display">0</div>
+                <div class="calc-buttons">
+                  <button class="button" onclick="appendToCalc('7')">7</button>
+                  <button class="button" onclick="appendToCalc('8')">8</button>
+                  <button class="button" onclick="appendToCalc('9')">9</button>
+                  <button class="button" onclick="setOperator('+')">+</button>
+                  <button class="button" onclick="appendToCalc('4')">4</button>
+                  <button class="button" onclick="appendToCalc('5')">5</button>
+                  <button class="button" onclick="appendToCalc('6')">6</button>
+                  <button class="button" onclick="setOperator('-')">-</button>
+                  <button class="button" onclick="appendToCalc('1')">1</button>
+                  <button class="button" onclick="appendToCalc('2')">2</button>
+                  <button class="button" onclick="appendToCalc('3')">3</button>
+                  <button class="button" onclick="setOperator('*')">*</button>
+                  <button class="button" onclick="appendToCalc('0')">0</button>
+                  <button class="button" onclick="appendToCalc('.')">.</button>
+                  <button class="button" onclick="setOperator('/')">/</button>
+                  <button class="button" onclick="calculate()">=</button>
+                  <button class="button" onclick="appendToCalc('.15')">.15</button>
+                  <button class="button" onclick="appendToCalc('.30')">.30</button>
+                  <button class="button" onclick="appendToCalc('.45')">.45</button>
+                  <button class="button" onclick="appendToCalc('.00')">.00</button>
+                  <button class="button" onclick="clearCalc()">C</button>
+                  <button class="button" onclick="backButton()">B</button>
+                </div>
+              </div>
+
+              <script>
+                let currentInput = '';
+                let operator = '';
+                let firstOperand = '';
+
+                function appendToCalc(value) {
+                  currentInput += value;
+                  updateDisplay(currentInput);
+                }
+
+                function setOperator(op) {
+                  if (currentInput !== '') {
+                    firstOperand = currentInput;
+                    currentInput = '';
+                    operator = op;
+                    updateDisplay(op);
+                  }
+                }
+
+                function calculate() {
+                  if (firstOperand && currentInput && operator) {
+                    const data = {
+                      firstOperand: firstOperand,
+                      secondOperand: currentInput,
+                      operator: operator
+                    };
+
+                    fetch('/calculate', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify(data)
+                    })
+                      .then(response => response.json())
+                      .then(result => {
+                        updateDisplay(result.result);
+                        currentInput = result.result;
+                        firstOperand = '';
+                        operator = '';
+                      })
+                      .catch(error => console.error('Error:', error));
+                  }
+                }
+
+                function clearCalc() {
+                  currentInput = '';
+                  operator = '';
+                  firstOperand = '';
+                  updateDisplay('0');
+                }
+
+                function backButton() {
+                  currentInput = currentInput.slice(0, -1);
+                  updateDisplay(currentInput || '0');
+                }
+
+                function updateDisplay(value) {
+                  document.getElementById('calc-display').innerText = value;
+                }
+              </script>
         </section>
     </main>
-    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
     <!--
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>

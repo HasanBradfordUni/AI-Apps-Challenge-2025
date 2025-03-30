@@ -1,6 +1,7 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request, jsonify
 from utils.forms import WorkHoursForm
 from ai.geminiPrompt import generate_work_hours_summary
+from datetime import *
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'randomString'
@@ -29,6 +30,49 @@ def index():
         # Here you can add logic to process the work hours
         return render_template('index.html', form=form, ai_summary=summary)
     return render_template('index.html', form=form)
+
+@app.route('/calculate', methods=['GET'])
+def calculate():
+    data = request.get_json()
+    firstOperand = data['firstOperand']
+    secondOperand = data['secondOperand']
+    operator = data['operator']
+    
+    try:
+        result = calculate_hours(firstOperand, secondOperand, operator)
+        return jsonify({'result': result})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+def calculate_hours(firstOperand, secondOperand, operator):
+    firstOperand = firstOperand.split(".")
+    secondOperand = secondOperand.split(".")
+    if operator == '+':
+        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) + datetime.timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
+        result = str(result).split(",")
+        result = result[2].split(":")
+        result = str(int(result[0])) + "." + str(int(result[1]))
+        return result
+    elif operator == '-':
+        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) - datetime.timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
+        result = str(result).split(",")
+        result = result[2].split(":")
+        result = str(int(result[0])) + "." + str(int(result[1]))
+        return result
+    elif operator == '*':
+        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) * int(secondOperand[0])
+        result = str(result).split(",")
+        result = result[2].split(":")
+        result = str(int(result[0])) + "." + str(int(result[1]))
+        return result
+    elif operator == '/':
+        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) / int(secondOperand[0])
+        result = str(result).split(",")
+        result = result[2].split(":")
+        result = str(int(result[0])) + "." + str(int(result[1]))
+        return result
+    else:
+        raise ValueError("Invalid operator")
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6922)
