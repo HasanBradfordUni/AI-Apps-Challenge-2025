@@ -59,7 +59,15 @@ def results(project_id):
     evaluation_results = get_evaluation_result(connection, project_id)
     comparison = evaluation_results[4]
     evaluation = evaluation_results[5]
+    evaluation = evaluation.replace("\n", "  <br>  ")
     summary = ""
-    if "Summary" in evaluation:
-        summary = evaluation.split("Summary:")[1]
+    evaluation_lower = evaluation.lower()
+    if "overall" in evaluation_lower:
+        print("Summary found")
+        print("Overall summary:",evaluation_lower.split("overall"))
+        summary = evaluation.split("Overall" if "Overall" in evaluation else "overall")[-1]  # Preserve original case for display
+    elif "conclusion" in evaluation_lower:
+        print("Summary found")
+        print("Conclusion summary:",evaluation_lower.split("conclusion"))
+        summary = evaluation.split("Conclusion" if "Conclusion" in evaluation else "conclusion")[-1]  # Preserve original case for display
     return render_template('results.html', ai_result1=comparison, ai_result2=evaluation, ai_result3=summary)

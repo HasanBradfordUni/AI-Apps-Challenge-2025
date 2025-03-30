@@ -154,12 +154,17 @@
       document.addEventListener('DOMContentLoaded', function() {
         const resultsContainer = document.getElementById('results-container');
         const comparisonContainer = document.getElementById('comparison');
+        const summaryContainer = document.getElementById('summary');
+        const summaryText = summaryContainer.innerText;
         const markdownContent = resultsContainer.innerText;
         const markdownContent2 = comparisonContainer.innerText;
         const htmlContent = marked.parse(markdownContent);
         const htmlContent2 = marked.parse(markdownContent2);
+        const htmlContent3 = marked.parse(summaryText);
         resultsContainer.innerHTML = htmlContent;
         comparisonContainer.innerHTML = htmlContent2;
+        summaryContainer.innerHTML = htmlContent3;
+        resultsContainer.style.whiteSpace = 'pre-wrap';
       });
     </script>
 

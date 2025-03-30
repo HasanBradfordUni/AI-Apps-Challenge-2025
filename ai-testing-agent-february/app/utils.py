@@ -55,5 +55,13 @@ def generate_ai_comparison(project_name, query, expected_results, actual_results
 
 def generate_summary(evaluation_results, project_name, query, project_description="", context=""):
     # Function to generate a summary based on the evaluation results
-    summary = model.generate_content(f"I am conducting a software test for my project {project_name}. Based on my expected result and actual result comparison: {evaluation_results} and on the testing query: {query}, can you provide a summary of the evaluation (i.e. how successful my software programme is for this query, based on the test)?")
+    if project_description != "" and context != "":
+        prompt = f"I am conducting a software test for my project {project_name}. It is {project_description}. Based on my expected result and actual result comparison: {evaluation_results} and on the testing query: {query}, can you provide a summary of the evaluation (i.e. how successful my software programme is for this query, based on the test)? Also consider any additional context given here: {context}."
+    elif project_description != "":
+        prompt = f"I am conducting a software test for my project {project_name}. It is {project_description}. Based on my expected result and actual result comparison: {evaluation_results} and on the testing query: {query}, can you provide a summary of the evaluation (i.e. how successful my software programme is for this query, based on the test)?"
+    elif context != "":
+        prompt = f"I am conducting a software test for my project {project_name}. Based on my expected result and actual result comparison: {evaluation_results} and on the testing query: {query}, can you provide a summary of the evaluation (i.e. how successful my software programme is for this query, based on the test)? Also consider any additional context given here: {context}."
+    else:
+        prompt = f"I am conducting a software test for my project {project_name}. Based on my expected result and actual result comparison: {evaluation_results} and on the testing query: {query}, can you provide a summary of the evaluation (i.e. how successful my software programme is for this query, based on the test)?"
+    summary = model.generate_content(prompt)
     return summary.text
