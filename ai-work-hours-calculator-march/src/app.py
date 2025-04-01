@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from utils.forms import WorkHoursForm
 from ai.geminiPrompt import generate_work_hours_summary
-from datetime import *
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'randomString'
@@ -14,7 +14,6 @@ def index():
         time_frame = form.time_frame.data
         contracted_hours = f"{contracted_hours} hours per {time_frame}"
         work_hours_description = form.work_hours_description.data
-        # Here you can call the AI model to generate a summary
         summary = generate_work_hours_summary(contracted_hours, work_hours_description)
         responses = summary.split("\n")
         summary = ""
@@ -27,18 +26,17 @@ def index():
             else:
                 summary += response+"<br>"
             print(summary)
-        # Here you can add logic to process the work hours
         return render_template('index.html', form=form, ai_summary=summary)
     return render_template('index.html', form=form)
 
-@app.route('/calculate', methods=['GET'])
+@app.route('/calculate', methods=['POST'])
 def calculate():
-    data = request.get_json()
-    firstOperand = data['firstOperand']
-    secondOperand = data['secondOperand']
-    operator = data['operator']
-    
     try:
+        data = request.get_json()
+        firstOperand = data['firstOperand']
+        secondOperand = data['secondOperand']
+        operator = data['operator']
+        
         result = calculate_hours(firstOperand, secondOperand, operator)
         return jsonify({'result': result})
     except Exception as e:
@@ -48,27 +46,27 @@ def calculate_hours(firstOperand, secondOperand, operator):
     firstOperand = firstOperand.split(".")
     secondOperand = secondOperand.split(".")
     if operator == '+':
-        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) + datetime.timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
+        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) + timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
         result = str(result).split(",")
-        result = result[2].split(":")
+        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
         result = str(int(result[0])) + "." + str(int(result[1]))
         return result
     elif operator == '-':
-        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) - datetime.timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
+        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) - timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
         result = str(result).split(",")
-        result = result[2].split(":")
+        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
         result = str(int(result[0])) + "." + str(int(result[1]))
         return result
     elif operator == '*':
-        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) * int(secondOperand[0])
+        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) * int(secondOperand[0])
         result = str(result).split(",")
-        result = result[2].split(":")
+        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
         result = str(int(result[0])) + "." + str(int(result[1]))
         return result
     elif operator == '/':
-        result = datetime.timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) / int(secondOperand[0])
+        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) / int(secondOperand[0])
         result = str(result).split(",")
-        result = result[2].split(":")
+        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
         result = str(int(result[0])) + "." + str(int(result[1]))
         return result
     else:
