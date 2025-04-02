@@ -34,22 +34,26 @@ The **AI Powered Work Hours Calculator** is a flexible and intuitive application
 - **Deployment:** Dockerized application ready for deployment on AWS, Azure, or other cloud platforms.
 - **Database:** SQLlite to store user inputs and results.
 
-## Installation and Setup
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/yourusername/ai-work-hours-calculator.git
-   cd ai-work-hours-calculator
+## Setup Instructions
+1. Clone the repository:
    ```
-2. **Install Dependencies:**
-   ```bash
+   git clone <repository-url>
+   ```
+2. Navigate to the project directory:
+   ```
+   cd ai-work-hours-calculator-march
+   ```
+3. Install the required dependencies:
+   ```
    pip install -r requirements.txt
    ```
-3. **Set Up API Keys:** Configure the `.env` file with API keys for AI chatbot services.
-4. **Run the Application:**
-   ```bash
-   python app.py
+4. Run the application:
    ```
-5. **Access the Application:** Open `http://localhost:6922` in your browser.
+   python src/app.py
+   ```
+
+5. **Access the Application:** 
+   Open `http://localhost:6922` in your browser.
 
 ## Usage
 1. Enter your work hours into the text box in your preferred format.
