@@ -1,76 +1,52 @@
-from flask import Flask, render_template, redirect, url_for, request, jsonify
-from utils.forms import WorkHoursForm
-from ai.geminiPrompt import generate_work_hours_summary
-from datetime import datetime, timedelta
+from flask import Flask, request, render_template, jsonify
+#from utils.document_processing import process_uploaded_file, convert_file_format
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'randomString'
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    form = WorkHoursForm()
-    if form.validate_on_submit():
-        contracted_hours = form.expected_hours.data
-        time_frame = form.time_frame.data
-        contracted_hours = f"{contracted_hours} hours per {time_frame}"
-        work_hours_description = form.work_hours_description.data
-        summary = generate_work_hours_summary(contracted_hours, work_hours_description)
-        responses = summary.split("\n")
-        summary = ""
-        for response in responses:
-            response = response.strip("#").strip("*")
-            if response.startswith("Total"):
-                summary += "<h2>"+response+"</h2><br>"
-            elif response.startswith("Overtime") or response.startswith("Undertime"):
-                summary += "<h3>"+response+"</h3><br>"
-            else:
-                summary += response+"<br>"
-            print(summary)
-        return render_template('index.html', form=form, ai_summary=summary)
-    return render_template('index.html', form=form)
+    """Render the main page with a form for uploading and processing documents."""
+    if request.method == 'POST':
+        # Check if a file is uploaded
+        if 'file' not in request.files:
+            return render_template('index.html', error="No file uploaded.")
 
-@app.route('/calculate', methods=['POST'])
-def calculate():
+        file = request.files['file']
+        if file.filename == '':
+            return render_template('index.html', error="No file selected.")
+
+        # Process the uploaded file
+        try:
+            extracted_text = process_uploaded_file(file)
+            return render_template('index.html', extracted_text=extracted_text)
+        except Exception as e:
+            error_message = f"Error processing file: {str(e)}"
+            return render_template('index.html', error=error_message)
+
+    return render_template('index.html')
+
+@app.route('/convert', methods=['POST'])
+def convert():
+    """Convert an uploaded document to a specified format."""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    target_format = request.form.get('format')
+    if not target_format:
+        return jsonify({'error': 'No target format specified'}), 400
+
     try:
-        data = request.get_json()
-        firstOperand = data['firstOperand']
-        secondOperand = data['secondOperand']
-        operator = data['operator']
-        
-        result = calculate_hours(firstOperand, secondOperand, operator)
-        return jsonify({'result': result})
+        # Convert the file to the specified format
+        converted_file_path = convert_file_format(file, target_format)
+        return jsonify({'message': 'File converted successfully', 'file_path': converted_file_path})
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
-def calculate_hours(firstOperand, secondOperand, operator):
-    firstOperand = firstOperand.split(".")
-    secondOperand = secondOperand.split(".")
-    if operator == '+':
-        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) + timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
-        result = str(result).split(",")
-        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
-        result = str(int(result[0])) + "." + str(int(result[1]))
-        return result
-    elif operator == '-':
-        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) - timedelta(hours=int(secondOperand[0]), minutes=int(secondOperand[1]))
-        result = str(result).split(",")
-        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
-        result = str(int(result[0])) + "." + str(int(result[1]))
-        return result
-    elif operator == '*':
-        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) * int(secondOperand[0])
-        result = str(result).split(",")
-        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
-        result = str(int(result[0])) + "." + str(int(result[1]))
-        return result
-    elif operator == '/':
-        result = timedelta(hours=int(firstOperand[0]), minutes=int(firstOperand[1])) / int(secondOperand[0])
-        result = str(result).split(",")
-        result = result[1].split(":") if len(result) > 1 else result[0].split(":")
-        result = str(int(result[0])) + "." + str(int(result[1]))
-        return result
-    else:
-        raise ValueError("Invalid operator")
+        return jsonify({'error': f"Error converting file: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6922)
