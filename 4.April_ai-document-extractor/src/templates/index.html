@@ -289,7 +289,7 @@
         The AI Document Extractor & Converter is a dynamic and modular application designed to simplify the process of extracting, processing, and converting data from various document formats. With support for Word, PDF, and plain text files, the tool leverages AI-powered data extraction techniques to provide users with a seamless experience. Through its intuitive web-based interface, users can upload documents, customize configurations, and generate outputs in desired formats, all with real-time feedback and logging.      
       </h2>
       <div class="container">
-        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+        <form id="upload-form" action="/" method="post" enctype="multipart/form-data">
           <label for="file-upload">Upload Document</label>
           <input type="file" id="file-upload" name="file" accept=".pdf, .docx, .txt" required>
 
@@ -301,8 +301,10 @@
               <option value="pdf">PDF</option>
               <option value="docx">DOCX</option>
               <option value="csv">CSV</option>
+              <option value="txt">TXT</option>
           </select>
-
+          <br>
+          <br>
           <div class="button-container">
               <button type="submit">Upload & Convert</button>
           </div>

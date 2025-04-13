@@ -47,7 +47,7 @@ The **AI Document Extractor & Converter** is a dynamic and modular application d
    ```
 2. Navigate to the project directory:
    ```
-   cd ai-document-extractor-april
+   cd 4.April_ai-document-extractor
    ```
 3. Install the required dependencies:
    ```

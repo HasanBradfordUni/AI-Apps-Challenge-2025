@@ -20,8 +20,8 @@ Welcome to the AI Apps Challenge 2025! This repository chronicles my ambitious p
 ## Project Milestones
 
 Throughout the year, I’ll share my progress through a series of videos that dive deep into each stage of the challenge:
-1. **Video 1:** At the start - The Challenge (coming soon)
-2. **Video 2:** How I'm getting on [Mid-March Review] (coming soon)
+1. **Video 1:** At the start - The Challenge (published 2 Feb 2025)
+2. **Video 2:** How I'm getting on [Mid-April Review] (coming soon)
 3. **Video 3:** How I've done so far [Mid-Year Review] (coming soon)
 4. **Video 4:** Next Steps [Mid-September Review] (coming soon)
 5. **Video 5:** How I Attempted to Create 12 AI Apps in 12 Months and How It Went [Final Review] (coming soon)

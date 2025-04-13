@@ -41,7 +41,7 @@ The **AI Powered Work Hours Calculator** is a flexible and intuitive application
    ```
 2. Navigate to the project directory:
    ```
-   cd ai-work-hours-calculator-march
+   cd 3.March_ai-work-hours-calculator
    ```
 3. Install the required dependencies:
    ```

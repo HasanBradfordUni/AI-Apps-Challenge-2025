@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, jsonify
-#from utils.document_processing import process_uploaded_file, convert_file_format
+from utils.document_processing import handle_document_upload, process_uploaded_file, convert_file_format
 import os
 
 app = Flask(__name__)
@@ -19,7 +19,9 @@ def index():
 
         # Process the uploaded file
         try:
-            extracted_text = process_uploaded_file(file)
+            file_path = handle_document_upload(file)
+            # Extract text from the uploaded file
+            extracted_text = process_uploaded_file(file_path)
             return render_template('index.html', extracted_text=extracted_text)
         except Exception as e:
             error_message = f"Error processing file: {str(e)}"

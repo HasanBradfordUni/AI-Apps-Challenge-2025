@@ -25,7 +25,7 @@ The AI Testing Agent is an AI powered web application designed to assist users i
    ```
 2. Navigate to the project directory:
    ```
-   cd ai-testing-agent
+   cd 2.February_ai-testing-agent
    ```
 3. Install the required dependencies:
    ```
