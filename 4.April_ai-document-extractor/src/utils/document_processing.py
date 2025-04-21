@@ -49,13 +49,17 @@ def extract_text_from_txt(txt_path):
 
 def handle_document_upload(file):
     # Copy the file to the docs folder
-    fileType = file.name
-    # Create the docs folder if it doesn't exist
-    path = os.path.join(os.getcwd(), 'docs')
+    fileType = file.filename.split('.')[-1]
+    # Get the path of this file
+    file_path = os.path.dirname(__file__)
+    print(file_path)
+    path = os.path.join(file_path, 'docs', 'uploads')
+    print(path)
+    # Create the docs/uploads folder if it doesn't exist
     if not os.path.exists(path):
         os.makedirs(path)
     # Define the file path in the docs folder
-    file_path = os.path.join('docs', file.filename)
+    file_path = os.path.join(path, file.filename)
     # Check if the file already exists in the docs folder
     if os.path.exists(file_path):
         # If it exists, delete the existing file
@@ -94,17 +98,27 @@ def handle_document_upload(file):
                     f.write(line.decode('utf-8'))
         case _:
             print(f"Unsupported file type: {fileType}")
+    return file_path
 
 def convert_file_format(file, target_format):
-    # Function to convert a file to a specified format
-    file_path = os.path.join('docs', file.filename)
-    handle_document_upload(file, file_path)
+    # Handle the uploaded file and save it to the docs folder first
+    file_path = handle_document_upload(file)
+    if file_path is None:
+        return None
 
     # Process the uploaded file based on its type
     extracted_text = process_uploaded_file(file_path)
 
+    # Construct the new file path for the converted file
+    base_folder = os.path.dirname(file_path)
+    base_name = os.path.basename(file_path)
+    path = os.path.join(base_folder, '..', 'converted')
+    # Create the converted folder if it doesn't exist
+    if not os.path.exists(path):
+        os.makedirs(path)
+    # Define the file path in the converted folder
+    converted_file_path = os.path.join(path, base_name.split('.')[0] + '.' + target_format)
     # Save the extracted text to a new file in the target format
-    converted_file_path = os.path.splitext(file_path)[0] + '.' + target_format
     with open(converted_file_path, 'w') as f:
         f.write(extracted_text)
 

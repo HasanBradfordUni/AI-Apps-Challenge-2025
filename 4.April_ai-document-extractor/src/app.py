@@ -19,7 +19,15 @@ def index():
 
         # Process the uploaded file
         try:
+            # Check if the file type is supported
+            filename = file.filename
+            if not any(filename.lower().endswith(ext) for ext in ['.pdf', '.docx', '.txt', '.png', '.jpg', '.jpeg']):
+                return render_template('index.html', error="Unsupported file type. Please upload PDF, DOCX, TXT, or image files.")
+                
             file_path = handle_document_upload(file)
+            if file_path is None:
+                return render_template('index.html', error="Failed to process the file. Unsupported file type.")
+                
             # Extract text from the uploaded file
             extracted_text = process_uploaded_file(file_path)
             return render_template('index.html', extracted_text=extracted_text)
@@ -29,7 +37,7 @@ def index():
 
     return render_template('index.html')
 
-@app.route('/convert', methods=['POST'])
+@app.route('/convert', methods=['GET', 'POST'])
 def convert():
     """Convert an uploaded document to a specified format."""
     if 'file' not in request.files:
