@@ -289,26 +289,56 @@
         The AI Document Extractor & Converter is a dynamic and modular application designed to simplify the process of extracting, processing, and converting data from various document formats. With support for Word, PDF, and plain text files, the tool leverages AI-powered data extraction techniques to provide users with a seamless experience. Through its intuitive web-based interface, users can upload documents, customize configurations, and generate outputs in desired formats, all with real-time feedback and logging.      
       </h2>
       <div class="container">
-        <form id="upload-form" action="{{ url_for('convert') }}" method="post" enctype="multipart/form-data">
-          <label for="file-upload">Upload Document</label>
+      <h1 style="color: white">Upload Document</h1>
+      <p class="largeText">Upload your document and get the extracted text!</p>
+        <form id="upload-form" action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
+          <label for="file-upload" style="color: black;">Upload Document</label>
           <input type="file" id="file-upload" name="file" accept=".pdf, .docx, .txt" required>
 
-          <label for="output-file-name">Output File Name</label>
+          <label for="output-file-name" style="color: black;">Output File Name</label>
           <input type="text" id="output-file-name" name="output-filename" placeholder="Enter output file name" required>
 
-          <label for="target-format">Convert To</label>
-          <select id="target-format" name="format" required>
-              <option value="pdf">PDF</option>
-              <option value="docx">DOCX</option>
-              <option value="csv">CSV</option>
-              <option value="txt">TXT</option>
-          </select>
-          <br>
-          <br>
           <div class="button-container">
               <button type="submit">Upload & Convert</button>
           </div>
+        </form>
+      <br />
+      <h1 style="color: white">Convert options</h1>
+      <p class="largeText">Choose the format and configurations for the AI document conversion:</p>
+        <form id="convert-form" action="{{ url_for('convert') }}" method="post" enctype="multipart/form-data">
+          {{ form.hidden_tag() }}
+        
+        {{ form.table_handling.label }}<br />
+        {{ form.table_handling() }}
+        <br />
+        <br />
+        {{ form.field_mapping.label }}<br />
+        {{ form.field_mapping.description }}<br />
+        {{ form.field_mapping(rows=4, cols=32) }}
+        <br />
+        <br />
+        {{ form.placeholder_text.label }}<br />
+        {{ form.placeholder_text.description }}
+        {{ form.placeholder_text() }}
+        <br />
+        <br />
+        {{ form.page_range.label }}<br />
+        {{ form.page_range.description }}
+        {{ form.page_range() }}
+        <br />
+        <br />
+        {{ form.output_formatting.label }}<br />
+        {{ form.output_formatting() }}
+        <br />
+        <br />
+        {{ form.additional_notes.label }}<br />
+        {{ form.additional_notes.description }}<br />
+        {{ form.additional_notes(rows=4, cols=32) }}
+        <br />
+        <br />
+        {{ form.submit() }}
       </form>
+      <br />
       {% if extracted_text %}
       <div class="flash-message">
           <h3>Extracted Text:</h3>

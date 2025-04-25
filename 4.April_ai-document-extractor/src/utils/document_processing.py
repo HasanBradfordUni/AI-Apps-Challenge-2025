@@ -100,7 +100,7 @@ def handle_document_upload(file):
             print(f"Unsupported file type: {fileType}")
     return file_path
 
-def convert_file_format(file, target_format):
+def convert_file_format(file, ai_info, output_name, config_options):
     # Handle the uploaded file and save it to the docs folder first
     file_path = handle_document_upload(file)
     if file_path is None:
@@ -111,13 +111,12 @@ def convert_file_format(file, target_format):
 
     # Construct the new file path for the converted file
     base_folder = os.path.dirname(file_path)
-    base_name = os.path.basename(file_path)
     path = os.path.join(base_folder, '..', 'converted')
     # Create the converted folder if it doesn't exist
     if not os.path.exists(path):
         os.makedirs(path)
     # Define the file path in the converted folder
-    converted_file_path = os.path.join(path, base_name.split('.')[0] + '.' + target_format)
+    converted_file_path = os.path.join(path, output_name + file_path.split('.')[-1])
     # Save the extracted text to a new file in the target format
     with open(converted_file_path, 'w') as f:
         f.write(extracted_text)
