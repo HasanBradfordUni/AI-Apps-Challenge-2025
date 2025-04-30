@@ -6,16 +6,50 @@ credentials, project_id = google.auth.default()
 
 vertexai.init(project="generalpurposeai", location="us-central1")
 
-model = GenerativeModel(model_name="gemini-1.5-pro")
+model = GenerativeModel(model_name="gemini-2.0-flash")
 
-def generate_work_hours_summary(contracted_hours, work_hours_description):
-    # Function to generate an AI summary based on the user query and relevant documents
-    response = model.generate_content(f"""Given that an employee is contracted to work {contracted_hours}, 
-                                   the following is a summary of the work hours description over a number of days: {work_hours_description}. 
-                                   Can you provide a summmary breakdown of how many hours they have worked each day and the total hours worked, 
-                                   summarise overtime/undertime and total difference based on the contracted hours as well and try to format it as similar 
-                                   as possible to the provided work hours description (don't include the actual timings in the response).""")
-    return response.text
+def generate_conversion_insights(file_content, config_options):
+    """
+    Generate AI insights to assist with document conversion.
+    
+    Args:
+        file_content (str): The extracted text content of the uploaded document.
+        config_options (dict): The configuration options selected by the user.
+    
+    Returns:
+        dict: AI-generated insights for document conversion.
+    """
+    prompt = f"""
+    You are an AI assistant helping with document conversion. The user has uploaded a document with the following content:
+    
+    {file_content}
+    
+    The user has selected the following configuration options:
+    - Table Handling: {config_options.get('Table Handling:', 'Not specified')}
+    - Field Mapping: {config_options.get('Field Mapping:', 'Not specified')}
+    - Placeholder Text: {config_options.get('Placeholder Text:', 'Not specified')}
+    - Page Range: {config_options.get('Page Range:', 'Not specified')}
+    - Output Formatting: {config_options.get('Output Formatting:', 'Not specified')}
+    - Additional Notes: {config_options.get('Additional Notes:', 'None')}
+    
+    Based on this information, provide the following:
+    1. Suggestions for field mappings (if applicable).
+    2. Recommendations for handling tables in the document.
+    3. Placeholder text suggestions for empty fields.
+    4. Any additional insights or recommendations for improving the conversion process.
+    """
+    
+    # Generate AI response
+    response = model.generate_content(prompt)
+    print("AI Response:", response.text)
+    
+    # Parse and return the response
+    return {
+        "field_mappings": response.text.find("field_mappings", "No suggestions provided."),
+        "table_handling": response.text.find("table_handling", "No recommendations provided."),
+        "placeholder_text": response.text.find("placeholder_text", "No suggestions provided."),
+        "additional_insights": response.text.find("additional_insights", "No additional insights provided.")
+    }
 
 def main():
     # Main function to demonstrate the AI summary generation process

@@ -1,16 +1,19 @@
 from flask import Flask, request, render_template, jsonify
 from utils.document_processing import handle_document_upload, process_uploaded_file, convert_file_format
 from utils.forms import ConfigOptionsForm
+from ai.geminiPrompt import generate_conversion_insights
 import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'randomString'
 input_file = None
 output_name = ""
-ai_processed_info = {}
+extracted_text = ""
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # Initialize global variables
+    global input_file, output_name, extracted_text
     form = ConfigOptionsForm()
     """Render the main page with a form for uploading and processing documents."""
     if request.method == 'POST':
@@ -48,11 +51,8 @@ def index():
 @app.route('/convert', methods=['GET', 'POST'])
 def convert():
     """Convert an uploaded document to a specified format."""
-    if not output_name or not input_file:
-        return jsonify({'error': 'No file specified'}), 400
-
     form = ConfigOptionsForm()
-    config_options = []
+    config_options = {}
 
     if form.validate_on_submit():
         table_handling = form.table_handling.data
@@ -63,18 +63,22 @@ def convert():
         additional_notes = form.additional_notes.data
 
         #Append required options to config_options
-        config_options.append(f"Table Handling: {table_handling}")
-        config_options.append(f"Output Formatting: {output_formatting}")
+        config_options["Table Handling:"] = table_handling
+        config_options["Output Formatting:"] = output_formatting
             
         # Append optional options if provided
         if field_mapping:
-            config_options.append(f"Field Mapping: {field_mapping}")
+            config_options["Field Mapping:"] = field_mapping
         if placeholder_text:
-            config_options.append(f"Placeholder Text: {placeholder_text}")
+            config_options["Placeholder Text:"] = placeholder_text
         if page_range:
-            config_options.append(f"Page Range: {page_range}")
+            config_options["Page Range:"] = page_range
         if additional_notes:
-            config_options.append(f"Additional Notes: {additional_notes}")
+            config_options["Additional Notes:"] = additional_notes
+        
+        ai_processed_info = generate_conversion_insights(extracted_text, config_options)
+        if ai_processed_info is None:
+            return jsonify({'error': 'Failed to generate AI insights'}), 500
 
         try:
             # Convert the file to the specified format
