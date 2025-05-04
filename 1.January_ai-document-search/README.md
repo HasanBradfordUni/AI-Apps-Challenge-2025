@@ -1,63 +1,64 @@
-# General AI Document Search
+# AI Apps Challenge 2025
 
-## Project Overview
-The General AI Document Search application leverages AI and natural language processing to enable users to efficiently search and retrieve relevant documents from a vast collection of files. It provides an intelligent search interface that understands user queries in natural language and returns the most pertinent results.
+### © Hasan Akhtar 2025, All Rights Reserved
 
-## Objectives
-1. Develop an AI-powered search engine capable of processing natural language queries.
-2. Implement a user-friendly interface for uploading, indexing, and searching documents.
-3. Ensure the system can handle various document formats (e.g., PDFs, Word documents, text files).
-4. Provide accurate and relevant search results with minimal response time.
-5. Provide an AI Summary on the top using APIs such as Gemini, ChatGPT, etc.
-6. Integrate the application with common document storage solutions (optional).
+<br>
+<hr>
 
-## Key Features
-- Natural Language Processing for understanding user queries.
-- Document Indexing for quick retrieval.
-- Robust Search Algorithm for ranking documents based on relevance.
-- Simple and intuitive User Interface for document uploads and search queries.
-- Multi-format Support for various document types.
-- AI Summary generation based on user queries and relevant documents.
-- Scalability to handle large volumes of documents and multiple simultaneous queries.
-- Optional integration with popular document storage platforms.
+## General AI Document Search - January Project 
 
-## Technical Specifications
-- **Programming Language:** Python
-- **Frameworks and Libraries:** Flask for web interface, PyPDF2 and Python Docx to process PDF and Word Documents, Elasticsearch for searching through indexed files, Sci-kit learn for machine learning, Google APIs to link to Gemini AI for search summarisation
-- **Database:** SQLite for storing metadata and document indices
-- **Deployment:** Docker for containerization and deployment on cloud services
-- **Version Control:** Git for source code management
+### Project Overview  
+The **General AI Document Search** application is an AI-powered tool designed to help users **efficiently search and retrieve relevant documents** from a vast collection of files. Utilizing **natural language processing**, the system enables users to perform queries in **everyday language** and receive **accurate, context-aware results**. Additionally, the application **generates AI-powered summaries** of search results using APIs like **Gemini** or **ChatGPT**, enhancing retrieval efficiency.
 
-## Setup Instructions
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   ```
-2. Navigate to the project directory:
-   ```
-   cd 1.January_ai-document-search
-   ```
-3. Install the required dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
-4. Run the application:
-   ```
-   python src/app.py
-   ```
+### Features  
+- **User-Friendly Web Interface:** A streamlined UI allowing users to **upload, index, and search documents** with ease.  
+- **AI-Powered Search:** Uses **natural language processing** to interpret user queries accurately.  
+- **Robust Indexing System:** Efficiently organizes and indexes documents for **quick retrieval**.  
+- **AI Summary Generation:** Provides **automated summaries** for search results using AI models.  
+- **Multi-Format Support:** Compatible with **PDFs, Word documents, and text files**.  
+- **Scalability & Performance:** Handles **large document volumes** and **multiple simultaneous queries** efficiently.  
+- **Optional Cloud Integration:** Future development may include integration with platforms like **Google Drive or Dropbox**.  
 
-## Usage
-- Access the application through your web browser at `http://localhost:6922`.
-- Upload documents and enter search queries to retrieve relevant results.
+### Technical Specifications  
+- **Programming Language:** Python  
+- **Framework:** Flask  
+- **Libraries:**  
+  - PyPDF2 and python-docx for document processing  
+  - Elasticsearch for fast indexing and search retrieval  
+  - Sci-kit learn for machine learning enhancements  
+  - Google APIs for AI-generated search summaries  
+- **Database:** SQLite for storing document metadata and indexes  
+- **Deployment:** Docker containerization for cloud hosting on AWS or Azure  
+- **Version Control:** Git for managing development and updates  
 
-## Expected Outcomes
-- A fully functional AI-powered document search application.
-- Increased efficiency in document retrieval and access.
-- Improved user experience through an intuitive search interface.
-- Clear search results via the AI Summary at the top.
+### Installation  
+1. Clone the repository:  
+   ```bash  
+   git clone <repository-url>  
+   ```  
+2. Navigate to the project directory:  
+   ```bash  
+   cd 1.January_ai-document-search  
+   ```  
+3. Install the required dependencies:  
+   ```bash  
+   pip install -r requirements.txt  
+   ```  
 
-## Risks and Mitigations
-- **Data Privacy:** Implement encryption and access control measures.
-- **Performance:** Optimize the search algorithm and indexing process.
-- **AI Summary Accuracy:** Ensure the AI Summary is accurate and helpful.
-- **Integration Challenges:** Test integration with different document storage platforms.
+### Running the Application  
+To start the application, run the following command:  
+```bash  
+python src/app.py  
+```  
+The application will start on `localhost` at port `6922`.  
+
+### Usage  
+- Open the web interface and **upload documents** to be indexed.  
+- Enter **search queries** in natural language and retrieve relevant results.  
+- View **AI-generated summaries** for quick insights into search results.  
+
+### Contributing  
+Contributions are welcome! Please submit a pull request or open an issue for **feature suggestions** or **improvements**.  
+
+### License  
+This project is licensed under the MIT License. See the [LICENSE](../LICENSE.txt) file for details.  
