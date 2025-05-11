@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Has AI - CV Details</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
+    <!-- Add JavaScript for dynamically adding skills, education, and experience fields -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Skill fields
+            document.getElementById('add-skill').addEventListener('click', function() {
+                let skillsCount = document.querySelectorAll('.skill-item').length;
+                let skillsDiv = document.createElement('div');
+                skillsDiv.className = 'skill-item';
+                skillsDiv.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Skill Name</label>
+                            <input type="text" name="skills-${skillsCount}-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Proficiency</label>
+                            <select name="skills-${skillsCount}-proficiency">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('skills-container').appendChild(skillsDiv);
+            });
+
+            // Similar functions for education and experience
+            // ...
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <h1>
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="The Has AI logo" width="50" height="50" class="logo">
+            Has AI
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="The Has AI logo" width="50" height="50" class="logo">
+        </h1>
+        <hr>
+    </header>
+
+    <section class="mainBody">
+        <button class="back-button" onclick="{{ url_for('index') }}">Back to Home</button>
+        <h1 class="mainHeading">CV Details</h1>
+        <div class="form-container">
+            <form method="POST" action="" enctype="multipart/form-data">
+                {{ form.hidden_tag() }}
+                
+                <div class="form-group">
+                    {{ form.cv_file.label }}
+                    {{ form.cv_file(class="form-control") }}
+                    <small>Upload your CV in PDF format for best results</small>
+                </div>
+                
+                <h3>Skills</h3>
+                <div id="skills-container">
+                    <!-- Skill form fields will be rendered here -->
+                    {% for skill_form in form.skills %}
+                        <div class="skill-item">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ skill_form.skill_name.label }} {{ skill_form.skill_name(class="form-control") }}
+                                </div>
+                                <div class="form-group">
+                                    {{ skill_form.proficiency.label }} {{ skill_form.proficiency(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" id="add-skill" class="add-button">Add Skill</button>
+                
+                <h3>Education</h3>
+                <div id="education-container">
+                    <!-- Education form fields will be rendered here -->
+                    {% for education_form in form.education %}
+                        <div class="education-item">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ education_form.institution.label }} {{ education_form.institution(class="form-control") }}
+                                </div>
+                                <div class="form-group">
+                                    {{ education_form.degree.label }} {{ education_form.degree(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ education_form.start_date.label }} {{ education_form.start_date(class="form-control") }}
+                                </div>
+                                <div class="form-group">
+                                    {{ education_form.end_date.label }} {{ education_form.end_date(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" id="add-education" class="add-button">Add Education</button>
+                
+                <h3>Experience</h3>
+                <div id="experience-container">
+                    <!-- Experience form fields will be rendered here -->
+                    {% for experience_form in form.experience %}
+                        <div class="experience-item">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ experience_form.company.label }} {{ experience_form.company(class="form-control") }}
+                                </div>
+                                <div class="form-group">
+                                    {{ experience_form.position.label }} {{ experience_form.position(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    {{ experience_form.start_date.label }} {{ experience_form.start_date(class="form-control") }}
+                                </div>
+                                <div class="form-group">
+                                    {{ experience_form.end_date.label }} {{ experience_form.end_date(class="form-control") }}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                {{ experience_form.exp_description.label }} {{ experience_form.exp_description(class="form-control", rows=3) }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button type="button" id="add-experience" class="add-button">Add Experience</button>
+                
+                <div class="form-group submit-group">
+                    {{ form.submit(class="cta-button") }}
+                </div>
+            </form>
+            <button class="back-button" onclick="window.history.back();">Back to Profile Page</button>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer">
+            <div class="w-container">
+                <div class="w-row">
+                    <div class="w-col w-col-4">
+                        <h3>About</h3>
+                        <div></div>
+                        <div>Has AI</div>
+                        <div>Website made with Python, Flask & Html</div>
+                        <div>Has AI</div>
+                        <div>AI Projects for all</div>
+                        <div>
+                            Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+                        </div>
+                    </div>
+                    <div class="w-col w-col-4">
+                        <h3>Useful Links</h3>
+                        <div class="footer-link-row">
+                            <a href="index.html" target="_blank" class="footer-link">Home</a>
+                            <a href="shop.html" target="_blank" class="footer-link">Shop</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="about.html" target="_blank" class="footer-link">About</a>
+                            <a href="#" target="_blank" class="footer-link" id="accountLinkFooter">Account</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="contact.html" target="_blank" class="footer-link">Contact</a>
+                            <a href="cart.html" target="_blank" class="footer-link">Cart</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="login.html" target="_blank" class="footer-link">Login</a>
+                            <a href="register.html" target="_blank" class="footer-link">Sign-up</a>
+                        </div>
+                    </div>
+                    <div class="f-col">
+                        <h3>Socials</h3>
+                        <div>
+                            <img src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg" width="20" alt="" class="info-icon">
+                            <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon">X (Twitter)</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg" width="20" alt="" class="info-icon">
+                            <a href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg" class="footer-link with-icon">YouTube</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg" width="20" alt="" class="info-icon">
+                            <a href="https://github.com/AkhHas2005" class="footer-link with-icon">GitHub</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg" width="20" alt="" class="info-icon">
+                            <a href="https://www.instagram.com/pythonprogrammeryt/" class="footer-link with-icon">Instagram</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+</body>
+</html>

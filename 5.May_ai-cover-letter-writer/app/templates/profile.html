@@ -3,117 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Cover Letter Writer - Create Profile</title>
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <title>Upload Files</title>
-    <style>
-        body {
-            background-color: black;
-            text-align: center;
-            color: white;
-        }
-
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background-color: goldenrod;
-        }
-
-        img.logo {
-            border-style: solid;
-            border-color: white;
-            vertical-align: middle;
-            margin-left: 2cm;
-            margin-right: 2cm;
-        }
-
-        .mainBody {
-            margin-top: 3cm;
-        }
-
-        .mainHeading {
-            color: crimson;
-            font-size: xx-large;
-        }
-
-        footer {
-            height: 350px;
-            background-color: goldenrod;
-        }
-
-        .footer {
-            padding-top: 35px;
-            padding-bottom: 35px;
-            background-color: goldenrod;
-            box-sizing: border-box;
-            height: 250px;
-        }
-
-        .w-container {
-            max-width: 940px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .w-container .w-row {
-            margin-left: -10px;
-            margin-right: -10px;
-        }
-
-        .w-col {
-            float: left;
-            min-height: 1px;
-            padding-left: 10px;
-            padding-right: 10px;
-            position: relative;
-        }
-
-        .f-col {
-            float: right;
-            min-height: 1px;
-            padding-left: 10px;
-            padding-right: 10px;
-            width: 30%;
-            position: relative;
-            margin-top: -200px;
-        }
-
-        .w-col-4 {
-            width: 33.3333%;
-        }
-
-        .footer-link-row {
-            display: flex;
-            justify-content: space-evenly;
-        }
-
-        .footer-link {
-            color: crimson;
-            border-bottom: 1px solid red;
-            margin-bottom: 6px;
-            padding-bottom: 10px;
-            font-size: 14px;
-            font-weight: 300;
-            text-decoration: none;
-            display: block;
-        }
-
-        .footer-link:hover {
-            color: rgb(122, 106, 17);
-            text-decoration: underline;
-        }
-
-        .info-icon {
-            float: left;
-            vertical-align: middle;
-            max-width: 100%;
-        }
-
-        .footer-link.with-icon {
-            margin-left: 30px;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
+    <!-- Inherit the same CSS styles from index.html -->
 </head>
 <body>
     <header>
@@ -126,38 +20,36 @@
     </header>
 
     <section class="mainBody">
-        <h1 class='mainHeading'>Upload Your Files for the AI Apps Challenge - AI Testing Agent</h1>
-        <br>
-        <form action="{{ url_for('app.upload') }}" method="POST" enctype="multipart/form-data">
-            {{ form.hidden_tag() }}
-            <label for="project_name">Project Name:</label>
-            <input type="text" id="project_name" name="project_name" required>
-            <label for="project_description">Project Details:</label>
-            <textarea id="project_description" name="project_description"></textarea>
-            <br>
-            <br>
-            <div class="custom-file-upload">
-                <label for="expected_results">Upload Expected Results (PDF):</label>
-                <input type="file" id="expected_results" name="expected_results" accept=".pdf" required class="file-input">
-            </div>
-            <br>
-            <div class="custom-file-upload">
-                <label for="actual_results">Upload Actual Results (Screenshot):</label>
-                <input type="file" id="actual_results" name="actual_results" accept=".png, .jpg, .jpeg" required class="file-input">
-            </div>
-            <br>
-            <label for="test_query">Test Query:</label>
-            <textarea id="test_query" name="test_query" required></textarea>
-            
-            <label for="context">Additional Context:</label>
-            <textarea id="context" name="context"></textarea>
-            <br>
-            <br>
-            <button type="submit">Submit</button>
-            <br>
-        </form>
-        <br>
-        <button onclick="window.location.href='/'">Go back</button>
+        <h1 class="mainHeading">Create Your Profile</h1>
+        <div class="form-container">
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.name.label }} {{ form.name(class="form-control") }}
+                    {% if form.name.errors %}
+                        <div class="error">
+                            {% for error in form.name.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.email.label }} {{ form.email(class="form-control") }}
+                    {% if form.email.errors %}
+                        <div class="error">
+                            {% for error in form.email.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    {{ form.submit(class="cta-button") }}
+                </div>
+            </form>
+        </div>
+        <button class="back-button" onclick="window.history.back();">Back to Home</button>
     </section>
 
     <footer>

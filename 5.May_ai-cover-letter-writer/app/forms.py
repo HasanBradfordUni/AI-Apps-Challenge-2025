@@ -18,7 +18,7 @@ class UserForm(FlaskForm):
     submit = SubmitField('Save Profile')
 
 class SkillForm(FlaskForm):
-    name = StringField('Skill', validators=[DataRequired()])
+    skill_name = StringField('Skill', validators=[DataRequired()])
     proficiency = SelectField('Proficiency', choices=[
         ('beginner', 'Beginner'),
         ('intermediate', 'Intermediate'),
@@ -36,7 +36,7 @@ class EducationForm(FlaskForm):
 class ExperienceForm(FlaskForm):
     company = StringField('Company', validators=[DataRequired()])
     position = StringField('Position', validators=[DataRequired()])
-    description = TextAreaField('Description')
+    exp_description = TextAreaField('Description')
     start_date = DateField('Start Date', format='%Y-%m-%d')
     end_date = DateField('End Date', format='%Y-%m-%d')
 

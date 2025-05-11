@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Has AI - Cover Letter History</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
+</head>
+<body>
+    <header>
+        <h1>
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="The Has AI logo" width="50" height="50" class="logo">
+            Has AI
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="The Has AI logo" width="50" height="50" class="logo">
+        </h1>
+        <hr>
+    </header>
+
+    <section class="mainBody">
+        <button class="back-button" onclick="window.history.back();">Back to Home</button>
+        <h1 class="mainHeading">Your Cover Letters</h1>
+        
+        {% if letters %}
+            <div class="letters-container">
+                {% for letter in letters %}
+                    <div class="letter-card">
+                        <div class="letter-summary">
+                            <h3>{{ letter[2] }}</h3>
+                            <p>Company: {{ letter[3] }}</p>
+                            <p>Created: {{ letter[6] }}</p>
+                        </div>
+                        <div class="letter-actions">
+                            <a href="{{ url_for('app.view_letter', letter_id=letter[0]) }}" class="cta-button">View Letter</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-letters">
+                <p>You haven't created any cover letters yet.</p>
+                <a href="{{ url_for('app.job_details') }}" class="cta-button">Create Your First Letter</a>
+            </div>
+        {% endif %}
+        <button class="back-button" onclick="window.history.back();">Back to Home</button>
+    </section>
+
+    <footer>
+        <div class="footer">
+            <div class="w-container">
+                <div class="w-row">
+                    <div class="w-col w-col-4">
+                        <h3>About</h3>
+                        <div></div>
+                        <div>Has AI</div>
+                        <div>Website made with Python, Flask & Html</div>
+                        <div>Has AI</div>
+                        <div>AI Projects for all</div>
+                        <div>
+                            Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+                        </div>
+                    </div>
+                    <div class="w-col w-col-4">
+                        <h3>Useful Links</h3>
+                        <div class="footer-link-row">
+                            <a href="index.html" target="_blank" class="footer-link">Home</a>
+                            <a href="shop.html" target="_blank" class="footer-link">Shop</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="about.html" target="_blank" class="footer-link">About</a>
+                            <a href="#" target="_blank" class="footer-link" id="accountLinkFooter">Account</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="contact.html" target="_blank" class="footer-link">Contact</a>
+                            <a href="cart.html" target="_blank" class="footer-link">Cart</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="login.html" target="_blank" class="footer-link">Login</a>
+                            <a href="register.html" target="_blank" class="footer-link">Sign-up</a>
+                        </div>
+                    </div>
+                    <div class="f-col">
+                        <h3>Socials</h3>
+                        <div>
+                            <img src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg" width="20" alt="" class="info-icon">
+                            <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon">X (Twitter)</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg" width="20" alt="" class="info-icon">
+                            <a href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg" class="footer-link with-icon">YouTube</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg" width="20" alt="" class="info-icon">
+                            <a href="https://github.com/AkhHas2005" class="footer-link with-icon">GitHub</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg" width="20" alt="" class="info-icon">
+                            <a href="https://www.instagram.com/pythonprogrammeryt/" class="footer-link with-icon">Instagram</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+</body>
+</html>

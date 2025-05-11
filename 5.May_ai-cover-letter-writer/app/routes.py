@@ -77,6 +77,8 @@ def results(project_id):
     return render_template('results.html', ai_result1=comparison, ai_result2=evaluation, ai_result3=summary)
 """
 
+cv_text = ""
+
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
     form = UserForm()
@@ -91,6 +93,7 @@ def profile():
 
 @app.route('/cv', methods=['GET', 'POST'])
 def cv_details():
+    global cv_text
     if 'user_id' not in session:
         flash('Please create a profile first', 'warning')
         return redirect(url_for('app.profile'))
@@ -100,7 +103,6 @@ def cv_details():
         # Process CV file if uploaded
         if form.cv_file.data:
             cv_text = extract_text_from_pdf(form.cv_file.data)
-            session['cv_text'] = cv_text
         
         # Save skills
         for skill in form.skills.data:
@@ -164,7 +166,6 @@ def generate_letter():
         flash('Please complete all previous steps first', 'warning')
         return redirect(url_for('app.index'))
     
-    cv_text = session.get('cv_text', '')
     job_description = session.get('job_description', '')
     
     # Generate cover letter

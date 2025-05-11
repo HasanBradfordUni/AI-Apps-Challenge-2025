@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Has AI - AI Testing Agent</title>
+    <title>Has AI - AI Cover Letter Writer</title>
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
@@ -157,26 +157,37 @@
             margin-left: 30px;
         }
 
-        #results-container {
-            text-align: center;
+        .feature-card {
+            background-color: #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: left;
+        }
+
+        .feature-card h3 {
+            color: goldenrod;
+        }
+
+        .feature-card p {
+            color: #ddd;
+        }
+
+        .cta-button {
+            background-color: crimson;
             color: white;
-        }
-
-        .no-bullet {
-            list-style: none;
-            width: 90%;
-            padding: 0;
-            text-align: center;
-            overflow: auto;
-            color: crimson;
-            background-color: rebeccapurple;
+            border: none;
+            padding: 12px 24px;
             border-radius: 5px;
-            margin: 5% 5%;
-            font: 1.2em 'Arial';
+            font-size: 16px;
+            cursor: pointer;
+            margin: 20px 10px;
+            transition: background-color 0.3s;
         }
 
-        .no-bullet > li {
-            margin-bottom: 15px;
+        .cta-button:hover {
+            background-color: darkred;
         }
     </style>
 </head>
@@ -191,19 +202,40 @@
     </header>
 
     <section class="mainBody">
-        <h1 class="mainHeading">Welcome to the AI Apps Challenge - AI Testing Agent</h1>
-        <br />
+      <h1 class="mainHeading">Welcome to the AI Apps Challenge - AI Cover Letter Writer</h1>
+      <br />
       <h2 class="subHeading">
-        This application allows you to evaluate the performance of your software tests by comparing expected results with actual outcomes and generating an AI Evaluation.
+        This application allows you to craft professional cover letters by combining your CV with job descriptions and generating an AI-powered personalized letter.
       </h2>
-        <h3>Get Started</h3>
-        <p>Upload your files and input your project details to begin the evaluation process.</p>
-        <a href="{{ url_for('app.upload') }}">
-            <button>Upload Files</button>
+      <div class="feature-card">
+        <h3>Generate Custom Cover Letters</h3>
+        <p>Upload your CV and job description to generate a tailored cover letter that highlights your most relevant skills and experiences.</p>
+      </div>
+    
+      <div class="feature-card">
+        <h3>Customize Your Tone</h3>
+        <p>Choose from professional, enthusiastic, confident, or creative writing styles to match the company culture and position.</p>
+      </div>
+    
+      <div class="feature-card">
+        <h3>Edit and Refine</h3>
+        <p>Easily review, edit, and refine your AI-generated cover letter before finalizing it for your application.</p>
+        </div>
+
+        <h3>Get Started Now</h3>
+        <p>Begin by creating your profile and uploading your CV to generate your first AI-powered cover letter.</p>
+
+        <a href="{{ url_for('app.profile') }}">
+            <button class="cta-button">Create Profile</button>
         </a>
-        <a href="{{ url_for('app.upload') }}">
-            <button>View Results</button>
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('app.cv_details') }}">
+            <button class="cta-button">Upload CV</button>
         </a>
+        <a href="{{ url_for('app.letter_history') }}">
+            <button class="cta-button">View My Letters</button>
+        </a>
+        {% endif %}
     </section>
 
     <footer>
