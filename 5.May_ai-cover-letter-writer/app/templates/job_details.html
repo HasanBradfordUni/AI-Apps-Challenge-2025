@@ -19,7 +19,7 @@
     </header>
 
     <section class="mainBody">
-        <button class="back-button" onclick="{{ url_for('index') }}">Back to Home</button>
+        <button class="back-button" onclick="window.location.href=`{{ url_for('app.index') }}`">Back to Home</button>
         <h1 class="mainHeading">Job Details</h1>
         <div class="form-container">
             <form method="POST" action="" enctype="multipart/form-data">

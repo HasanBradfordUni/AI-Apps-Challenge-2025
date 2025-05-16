@@ -143,3 +143,9 @@ def get_user_cover_letters(connection, user_id):
     query = "SELECT * FROM cover_letters WHERE user_id = ? ORDER BY created_at DESC"
     cursor.execute(query, (user_id,))
     return cursor.fetchall()
+
+def find_user_by_email(connection, email):
+    cursor = connection.cursor()
+    query = "SELECT * FROM users WHERE email = ?"
+    cursor.execute(query, (email,))
+    return cursor.fetchone()

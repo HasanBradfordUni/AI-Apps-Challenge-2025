@@ -35,8 +35,69 @@
                 document.getElementById('skills-container').appendChild(skillsDiv);
             });
 
-            // Similar functions for education and experience
-            // ...
+            // Education fields
+            document.getElementById('add-education').addEventListener('click', function() {
+                let educationCount = document.querySelectorAll('.education-item').length;
+                let educationDiv = document.createElement('div');
+                educationDiv.className = 'education-item';
+                educationDiv.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Institution</label>
+                            <input type="text" name="education-${educationCount}-institution" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Degree</label>
+                            <input type="text" name="education-${educationCount}-degree" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" name="education-${educationCount}-start_date">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" name="education-${educationCount}-end_date">
+                        </div>
+                    </div>
+                `;
+                document.getElementById('education-container').appendChild(educationDiv);
+            });
+
+            // Experience fields
+            document.getElementById('add-experience').addEventListener('click', function() {
+                let experienceCount = document.querySelectorAll('.experience-item').length;
+                let experienceDiv = document.createElement('div');
+                experienceDiv.className = 'experience-item';
+                experienceDiv.innerHTML = `
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Company</label>
+                            <input type="text" name="experience-${experienceCount}-company" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Position</label>
+                            <input type="text" name="experience-${experienceCount}-position" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <input type="date" name="experience-${experienceCount}-start_date">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" name="experience-${experienceCount}-end_date">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="experience-${experienceCount}-description" rows="3"></textarea>
+                    </div>
+                `;
+                document.getElementById('experience-container').appendChild(experienceDiv);
+            });
         });
     </script>
 </head>
@@ -51,7 +112,7 @@
     </header>
 
     <section class="mainBody">
-        <button class="back-button" onclick="{{ url_for('index') }}">Back to Home</button>
+        <button class="back-button" onclick="window.location.href=`{{ url_for('app.index') }}`">Back to Home</button>
         <h1 class="mainHeading">CV Details</h1>
         <div class="form-container">
             <form method="POST" action="" enctype="multipart/form-data">
@@ -61,6 +122,7 @@
                     {{ form.cv_file.label }}
                     {{ form.cv_file(class="form-control") }}
                     <small>Upload your CV in PDF format for best results</small>
+                    <button type="button" id="upload-cv" class="cta-button" onclick="{{ url_for('app.upload_cv') }}">Upload CV</button>
                 </div>
                 
                 <h3>Skills</h3>
