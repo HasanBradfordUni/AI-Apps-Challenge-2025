@@ -68,6 +68,8 @@ def cv_details():
         return redirect(url_for('app.profile'))
     
     form = CVForm()
+    
+    # Handle form submission
     if form.validate_on_submit():
         # Process CV file if uploaded
         if form.cv_file.data:
@@ -75,7 +77,7 @@ def cv_details():
         
         # Save skills
         for skill in form.skills.data:
-            add_skill(connection, session['user_id'], skill['name'], skill['proficiency'])
+            add_skill(connection, session['user_id'], skill['skill_name'], skill['proficiency'])
         
         # Save education
         for edu in form.education.data:
@@ -96,13 +98,41 @@ def cv_details():
                 session['user_id'], 
                 exp['company'], 
                 exp['position'], 
-                exp['description'], 
+                exp['exp_description'], 
                 exp['start_date'], 
                 exp['end_date']
             )
         
         flash('CV details saved successfully!', 'success')
         return redirect(url_for('app.job_details'))
+    
+    # Auto-populate form if CV is uploaded via AJAX
+    if request.method == 'POST' and 'cv_file' in request.files:
+        uploaded_file = request.files['cv_file']
+        if uploaded_file.filename != '':
+            try:
+                # Extract text from CV
+                cv_text = extract_text_from_pdf(uploaded_file)
+                
+                # Extract structured data using Gemini
+                cv_data = extract_cv_structure(cv_text)
+                
+                if cv_data:
+                    # Return structured data as JSON for client-side form population
+                    return jsonify({
+                        'success': True,
+                        'data': cv_data
+                    })
+                else:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Could not extract structured data from CV'
+                    })
+            except Exception as e:
+                return jsonify({
+                    'success': False,
+                    'message': f'Error processing CV: {str(e)}'
+                })
     
     return render_template('cv_details.html', form=form)
 
@@ -182,3 +212,38 @@ def refine_letter_api():
     
     refined_letter = refine_cover_letter(original_letter, feedback)
     return jsonify({'refined_letter': refined_letter})
+
+@app.route('/process_cv', methods=['POST'])
+def process_cv():
+    global cv_text
+    
+    if 'cv_file' not in request.files:
+        return jsonify({'success': False, 'message': 'No file uploaded'})
+    
+    file = request.files['cv_file']
+    if file.filename == '':
+        return jsonify({'success': False, 'message': 'No file selected'})
+    
+    try:
+        # Extract text from CV
+        cv_text = extract_text_from_pdf(file)
+        session['cv_text'] = cv_text  # Store in session for later use
+        
+        # Extract structured data using Gemini
+        cv_data = extract_cv_structure(cv_text)
+        
+        if cv_data:
+            return jsonify({
+                'success': True,
+                'data': cv_data
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Could not extract structured data from CV'
+            })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': f'Error processing CV: {str(e)}'
+        })

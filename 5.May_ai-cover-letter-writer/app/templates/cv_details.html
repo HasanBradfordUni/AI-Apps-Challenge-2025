@@ -120,10 +120,20 @@
                 
                 <div class="form-group">
                     {{ form.cv_file.label }}
-                    {{ form.cv_file(class="form-control") }}
-                    <small>Upload your CV in PDF format for best results</small>
-                    <button type="button" id="upload-cv" class="cta-button" onclick="{{ url_for('app.upload_cv') }}">Upload CV</button>
+                    {{ form.cv_file(class="form-control", id="cv-file-input") }}
+                    <small>Upload your CV in PDF format to automatically populate the form below</small>
+                    <div id="upload-status"></div>
                 </div>
+                
+                <div id="loading-indicator" style="display: none; text-align: center; margin: 20px 0;">
+                    <div class="spinner"></div>
+                    <p>Analyzing your CV with AI...</p>
+                </div>
+                    <br>
+                    <small>Note: The CV file will be used to extract information for the CV details.</small>
+                </div>
+                <br>
+                <button type="button" id="upload-cv" class="cta-button" onclick="{{ url_for('app.upload_cv') }}">Upload CV</button>
                 
                 <h3>Skills</h3>
                 <div id="skills-container">
@@ -205,6 +215,129 @@
             <button class="back-button" onclick="window.history.back();">Back to Profile Page</button>
         </div>
     </section>
+
+    <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const fileInput = document.getElementById('cv-file-input');
+                    const statusDiv = document.getElementById('upload-status');
+                    const loadingIndicator = document.getElementById('loading-indicator');
+                    
+                    fileInput.addEventListener('change', function() {
+                        if (this.files.length > 0) {
+                            const file = this.files[0];
+                            
+                            // Show loading indicator
+                            loadingIndicator.style.display = 'block';
+                            statusDiv.innerHTML = '<p>Uploading and processing your CV...</p>';
+                            
+                            // Create form data
+                            const formData = new FormData();
+                            formData.append('cv_file', file);
+                            
+                            // Send AJAX request
+                            fetch('{{ url_for("app.process_cv") }}', {
+                                method: 'POST',
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                loadingIndicator.style.display = 'none';
+                                
+                                if (data.success) {
+                                    statusDiv.innerHTML = '<p class="success">CV processed successfully! Form has been populated.</p>';
+                                    populateFormWithData(data.data);
+                                } else {
+                                    statusDiv.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                                }
+                            })
+                            .catch(error => {
+                                loadingIndicator.style.display = 'none';
+                                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                            });
+                        }
+                    });
+                    
+                    // Function to populate form with extracted CV data
+                    function populateFormWithData(data) {
+                        // Clear existing form items
+                        document.getElementById('skills-container').innerHTML = '';
+                        document.getElementById('education-container').innerHTML = '';
+                        document.getElementById('experience-container').innerHTML = '';
+                        
+                        // Populate skills
+                        if (data.skills && data.skills.length > 0) {
+                            data.skills.forEach((skill, index) => {
+                                document.getElementById('add-skill').click(); // Create a new skill field
+                                
+                                // Get the last added skill item
+                                const skillItems = document.querySelectorAll('.skill-item');
+                                const lastSkill = skillItems[skillItems.length - 1];
+                                
+                                // Set values
+                                lastSkill.querySelector('input[name$="-name"]').value = skill.skill_name;
+                                const proficiencySelect = lastSkill.querySelector('select[name$="-proficiency"]');
+                                
+                                // Set the correct option
+                                for (let i = 0; i < proficiencySelect.options.length; i++) {
+                                    if (proficiencySelect.options[i].value === skill.proficiency) {
+                                        proficiencySelect.selectedIndex = i;
+                                        break;
+                                    }
+                                }
+                            });
+                        }
+                        
+                        // Populate education
+                        if (data.education && data.education.length > 0) {
+                            data.education.forEach((edu, index) => {
+                                document.getElementById('add-education').click(); // Create a new education field
+                                
+                                // Get the last added education item
+                                const eduItems = document.querySelectorAll('.education-item');
+                                const lastEdu = eduItems[eduItems.length - 1];
+                                
+                                // Set values
+                                lastEdu.querySelector('input[name$="-institution"]').value = edu.institution;
+                                lastEdu.querySelector('input[name$="-degree"]').value = edu.degree;
+                                
+                                // Set dates if available
+                                if (edu.start_date) {
+                                    lastEdu.querySelector('input[name$="-start_date"]').value = edu.start_date;
+                                }
+                                if (edu.end_date) {
+                                    lastEdu.querySelector('input[name$="-end_date"]').value = edu.end_date;
+                                }
+                            });
+                        }
+                        
+                        // Populate experience
+                        if (data.experience && data.experience.length > 0) {
+                            data.experience.forEach((exp, index) => {
+                                document.getElementById('add-experience').click(); // Create a new experience field
+                                
+                                // Get the last added experience item
+                                const expItems = document.querySelectorAll('.experience-item');
+                                const lastExp = expItems[expItems.length - 1];
+                                
+                                // Set values
+                                lastExp.querySelector('input[name$="-company"]').value = exp.company;
+                                lastExp.querySelector('input[name$="-position"]').value = exp.position;
+                                
+                                // Set dates if available
+                                if (exp.start_date) {
+                                    lastExp.querySelector('input[name$="-start_date"]').value = exp.start_date;
+                                }
+                                if (exp.end_date) {
+                                    lastExp.querySelector('input[name$="-end_date"]').value = exp.end_date;
+                                }
+                                
+                                // Set description
+                                lastExp.querySelector('textarea[name$="-description"]').value = exp.exp_description;
+                            });
+                        }
+                    }
+                });
+    </script>
 
     <footer>
         <div class="footer">

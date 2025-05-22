@@ -30,18 +30,18 @@ class EducationForm(FlaskForm):
     institution = StringField('Institution', validators=[DataRequired()])
     degree = StringField('Degree', validators=[DataRequired()])
     field = StringField('Field of Study')
-    start_date = DateField('Start Date', format='%Y-%m-%d')
-    end_date = DateField('End Date', format='%Y-%m-%d')
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
+    end_date = DateField('End Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
 
 class ExperienceForm(FlaskForm):
     company = StringField('Company', validators=[DataRequired()])
     position = StringField('Position', validators=[DataRequired()])
     exp_description = TextAreaField('Description')
-    start_date = DateField('Start Date', format='%Y-%m-%d')
-    end_date = DateField('End Date', format='%Y-%m-%d')
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
+    end_date = DateField('End Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
 
 class CVForm(FlaskForm):
-    cv_file = FileField('Upload CV (PDF)', validators=[
+    cv_file = FileField('Upload your CV (PDF)', validators=[
         FileAllowed(['pdf'], 'PDF files only!')
     ])
     skills = FieldList(FormField(SkillForm), min_entries=1)

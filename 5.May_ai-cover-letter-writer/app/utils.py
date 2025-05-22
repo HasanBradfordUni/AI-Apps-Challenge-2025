@@ -17,6 +17,8 @@ pytesseract.pytesseract.tesseract_cmd = f"{os.path.dirname(__file__)}\\bin\\tess
 
 def extract_text_from_pdf(pdf_file):
     """Extract text from a PDF file (CV or job description)"""
+    os.makedirs(os.path.dirname(__file__) + "\\uploads", exist_ok=True)
+    
     file_path = f"{os.path.dirname(__file__)}\\uploads\\{pdf_file.filename}"
     with open(file_path, 'wb') as f:
         pdf_file.save(f)
@@ -34,6 +36,63 @@ def extract_text_from_image(image_file):
     image = Image.open(image_file)
     text = pytesseract.image_to_string(image)
     return text
+
+def extract_cv_structure(cv_text):
+    """Use Gemini AI to extract structured information from CV text"""
+    prompt = f"""
+    Extract structured information from the following CV:
+    
+    {cv_text}
+    
+    Please extract and return the information in JSON format with the following structure:
+    {{
+      "skills": [
+        {{"skill_name": "Python", "proficiency": "advanced"}},
+        {{"skill_name": "JavaScript", "proficiency": "intermediate"}},
+        ...
+      ],
+      "education": [
+        {{
+          "institution": "University Name",
+          "degree": "Degree Title",
+          "field": "Field of Study",
+          "start_date": "YYYY-MM-DD",
+          "end_date": "YYYY-MM-DD"
+        }},
+        ...
+      ],
+      "experience": [
+        {{
+          "company": "Company Name",
+          "position": "Job Title",
+          "exp_description": "Job description and achievements",
+          "start_date": "YYYY-MM-DD",
+          "end_date": "YYYY-MM-DD"
+        }},
+        ...
+      ]
+    }}
+    
+    For proficiency levels, choose from: beginner, intermediate, advanced, expert.
+    If exact dates aren't provided, use approximate dates or leave as null.
+    """
+    
+    response = model.generate_content(prompt)
+    try:
+        # Extract JSON from response
+        import json
+        import re
+        
+        # Find JSON in the response
+        json_match = re.search(r'({.*})', response.text, re.DOTALL)
+        if json_match:
+            json_str = json_match.group(1)
+            return json.loads(json_str)
+        else:
+            return None
+    except Exception as e:
+        print(f"Error parsing CV structure: {e}")
+        return None
 
 def generate_cover_letter(cv_text, job_description, tone="professional", focus_areas=None):
     """Generate a cover letter using Gemini AI based on CV and job description"""
