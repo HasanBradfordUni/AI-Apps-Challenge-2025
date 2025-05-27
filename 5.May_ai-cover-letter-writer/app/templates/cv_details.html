@@ -133,7 +133,6 @@
                     <small>Note: The CV file will be used to extract information for the CV details.</small>
                 </div>
                 <br>
-                <button type="button" id="upload-cv" class="cta-button" onclick="{{ url_for('app.upload_cv') }}">Upload CV</button>
                 
                 <h3>Skills</h3>
                 <div id="skills-container">
@@ -239,20 +238,30 @@
                                 method: 'POST',
                                 body: formData
                             })
-                            .then(response => response.json())
+                            .then(response => {
+                                // First check if the response is OK
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! Status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
                             .then(data => {
                                 loadingIndicator.style.display = 'none';
                                 
                                 if (data.success) {
                                     statusDiv.innerHTML = '<p class="success">CV processed successfully! Form has been populated.</p>';
+                                    if (data.message) {
+                                        statusDiv.innerHTML += `<p>${data.message}</p>`;
+                                    }
                                     populateFormWithData(data.data);
                                 } else {
-                                    statusDiv.innerHTML = `<p class="error">Error: ${data.message}</p>`;
+                                    statusDiv.innerHTML = `<p class="error">Error: ${data.message || 'Unknown error'}</p>`;
                                 }
                             })
                             .catch(error => {
                                 loadingIndicator.style.display = 'none';
-                                statusDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                                console.error('Error:', error);
+                                statusDiv.innerHTML = `<p class="error">Error: ${error.message || 'Unknown error'}</p>`;
                             });
                         }
                     });

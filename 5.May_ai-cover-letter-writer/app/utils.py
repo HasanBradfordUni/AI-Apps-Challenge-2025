@@ -17,19 +17,28 @@ pytesseract.pytesseract.tesseract_cmd = f"{os.path.dirname(__file__)}\\bin\\tess
 
 def extract_text_from_pdf(pdf_file):
     """Extract text from a PDF file (CV or job description)"""
-    os.makedirs(os.path.dirname(__file__) + "\\uploads", exist_ok=True)
-    
-    file_path = f"{os.path.dirname(__file__)}\\uploads\\{pdf_file.filename}"
-    with open(file_path, 'wb') as f:
-        pdf_file.save(f)
-    
-    text = ""
-    with open(file_path, 'rb') as pdf_file:
-        reader = PyPDF2.PdfReader(pdf_file)
-        for page in reader.pages:
-            text += page.extract_text()
-    
-    return text
+    try:
+        os.makedirs(os.path.dirname(__file__) + "\\uploads", exist_ok=True)
+        
+        file_path = f"{os.path.dirname(__file__)}\\uploads\\{pdf_file.filename}"
+        with open(file_path, 'wb') as f:
+            pdf_file.save(f)
+        
+        text = ""
+        with open(file_path, 'rb') as pdf_file:
+            reader = PyPDF2.PdfReader(pdf_file)
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:  # Check if page has text
+                    text += page_text + "\n\n"
+        
+        if not text.strip():
+            print("Warning: No text extracted from PDF")
+            
+        return text
+    except Exception as e:
+        print(f"Error extracting text from PDF: {str(e)}")
+        raise
 
 def extract_text_from_image(image_file):
     """Extract text from an image file"""
@@ -40,58 +49,66 @@ def extract_text_from_image(image_file):
 def extract_cv_structure(cv_text):
     """Use Gemini AI to extract structured information from CV text"""
     prompt = f"""
-    Extract structured information from the following CV:
+    You are a CV parser. Extract structured information from the following CV and return ONLY valid JSON without any additional text, explanations, or markdown formatting:
     
     {cv_text}
     
-    Please extract and return the information in JSON format with the following structure:
+    Return the information as JSON with the following structure:
     {{
       "skills": [
         {{"skill_name": "Python", "proficiency": "advanced"}},
-        {{"skill_name": "JavaScript", "proficiency": "intermediate"}},
-        ...
+        {{"skill_name": "JavaScript", "proficiency": "intermediate"}}
       ],
       "education": [
         {{
           "institution": "University Name",
-          "degree": "Degree Title",
+          "degree": "Degree Title", 
           "field": "Field of Study",
           "start_date": "YYYY-MM-DD",
           "end_date": "YYYY-MM-DD"
-        }},
-        ...
+        }}
       ],
       "experience": [
         {{
           "company": "Company Name",
           "position": "Job Title",
-          "exp_description": "Job description and achievements",
+          "exp_description": "Job description",
           "start_date": "YYYY-MM-DD",
           "end_date": "YYYY-MM-DD"
-        }},
-        ...
+        }}
       ]
     }}
-    
-    For proficiency levels, choose from: beginner, intermediate, advanced, expert.
-    If exact dates aren't provided, use approximate dates or leave as null.
     """
     
-    response = model.generate_content(prompt)
     try:
-        # Extract JSON from response
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        # Log the raw response for debugging
+        print(f"Raw Gemini response: {response_text[:100]}...")  # Print first 100 chars
+        
+        # Try to find JSON in the response
         import json
         import re
         
-        # Find JSON in the response
-        json_match = re.search(r'({.*})', response.text, re.DOTALL)
-        if json_match:
-            json_str = json_match.group(1)
-            return json.loads(json_str)
-        else:
-            return None
+        # First, try direct JSON parsing
+        try:
+            return json.loads(response_text)
+        except json.JSONDecodeError:
+            # If that fails, try to extract JSON using regex
+            json_match = re.search(r'({[\s\S]*})', response_text)
+            if json_match:
+                try:
+                    return json.loads(json_match.group(1))
+                except json.JSONDecodeError:
+                    # If regex extraction failed, try cleaning the response
+                    cleaned_text = re.sub(r'```json|```', '', response_text)
+                    return json.loads(cleaned_text)
+            else:
+                print("No JSON found in response")
+                return None
     except Exception as e:
-        print(f"Error parsing CV structure: {e}")
+        print(f"Error in extract_cv_structure: {str(e)}")
         return None
 
 def generate_cover_letter(cv_text, job_description, tone="professional", focus_areas=None):

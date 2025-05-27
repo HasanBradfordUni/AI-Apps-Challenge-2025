@@ -3,7 +3,7 @@ import os
 from .forms import UploadForm, UserForm, CVForm, JobForm, CoverLetterForm
 from .models import create_connection, create_tables, add_user, add_skill, add_education, add_experience
 from .models import save_cover_letter, get_cover_letter, get_user_cover_letters, find_user_by_email
-from .utils import extract_text_from_pdf, generate_cover_letter, refine_cover_letter, process_files
+from .utils import extract_text_from_pdf, generate_cover_letter, refine_cover_letter, extract_cv_structure, model
 
 app = Blueprint('app', __name__)
 
@@ -213,7 +213,7 @@ def refine_letter_api():
     refined_letter = refine_cover_letter(original_letter, feedback)
     return jsonify({'refined_letter': refined_letter})
 
-@app.route('/process_cv', methods=['POST'])
+@app.route('/process_cv', methods=['POST', 'GET'])
 def process_cv():
     global cv_text
     
@@ -229,21 +229,86 @@ def process_cv():
         cv_text = extract_text_from_pdf(file)
         session['cv_text'] = cv_text  # Store in session for later use
         
+        print(f"Extracted text (first 100 chars): {cv_text[:100]}...")
+        
         # Extract structured data using Gemini
         cv_data = extract_cv_structure(cv_text)
         
         if cv_data:
+            # Validate the structure of cv_data
+            if (isinstance(cv_data, dict) and 
+                'skills' in cv_data and 
+                'education' in cv_data and 
+                'experience' in cv_data):
+                
+                return jsonify({
+                    'success': True,
+                    'data': cv_data
+                })
+            else:
+                print(f"Invalid CV data structure: {cv_data}")
+                return jsonify({
+                    'success': False,
+                    'message': 'Invalid data structure from CV parsing'
+                })
+        else:
+            # Provide a fallback structure
+            fallback_data = {
+                'skills': [{'skill_name': '', 'proficiency': 'beginner'}],
+                'education': [{'institution': '', 'degree': '', 'field': '', 'start_date': None, 'end_date': None}],
+                'experience': [{'company': '', 'position': '', 'exp_description': '', 'start_date': None, 'end_date': None}]
+            }
+            
             return jsonify({
                 'success': True,
-                'data': cv_data
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Could not extract structured data from CV'
+                'data': fallback_data,
+                'message': 'Could not extract data from CV, please fill in manually'
             })
     except Exception as e:
+        print(f"Exception in process_cv: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'success': False,
             'message': f'Error processing CV: {str(e)}'
         })
+
+@app.route('/debug_cv_extraction', methods=['GET', 'POST'])
+def debug_cv_extraction():
+    if request.method == 'POST':
+        if 'cv_file' not in request.files:
+            return "No file uploaded"
+        
+        file = request.files['cv_file']
+        if file.filename == '':
+            return "No file selected"
+        
+        try:
+            # Extract text
+            text = extract_text_from_pdf(file)
+            
+            # Try to get structured data
+            response = model.generate_content(f"""
+            Extract structured information from this CV:
+            {text[:2000]}  # First 2000 chars for brevity
+            
+            Return ONLY valid JSON without explanations.
+            """)
+            
+            # Return the raw response for inspection
+            return f"""
+            <h3>Extracted Text (first 500 chars)</h3>
+            <pre>{text[:500]}</pre>
+            
+            <h3>Raw Gemini Response</h3>
+            <pre>{response.text}</pre>
+            """
+        except Exception as e:
+            return f"Error: {str(e)}"
+            
+    return """
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="cv_file">
+        <button type="submit">Upload and Test</button>
+    </form>
+    """
