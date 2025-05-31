@@ -67,20 +67,70 @@ def cv_details():
         flash('Please create a profile first', 'warning')
         return redirect(url_for('app.profile'))
     
-    form = CVForm()
-    
-    # Handle form submission
-    if form.validate_on_submit():
+    if request.method == 'POST':
         # Process CV file if uploaded
-        if form.cv_file.data:
-            cv_text = extract_text_from_pdf(form.cv_file.data)
+        if 'cv_file' in request.files and request.files['cv_file'].filename:
+            cv_text = extract_text_from_pdf(request.files['cv_file'])
         
-        # Save skills
-        for skill in form.skills.data:
+        # Process skills from dynamically added fields
+        skills = []
+        for key, value in request.form.items():
+            if key.startswith('skills-') and key.endswith('-skill_name'):
+                index = key.split('-')[1]
+                skill_name = value
+                proficiency = request.form.get(f'skills-{index}-proficiency', 'beginner')
+                
+                if skill_name.strip():  # Only add non-empty skills
+                    skills.append({
+                        'skill_name': skill_name,
+                        'proficiency': proficiency
+                    })
+        
+        # Process education from dynamically added fields
+        education = []
+        for key, value in request.form.items():
+            if key.startswith('education-') and key.endswith('-institution'):
+                index = key.split('-')[1]
+                institution = value
+                degree = request.form.get(f'education-{index}-degree', '')
+                field = request.form.get(f'education-{index}-field', '')
+                start_date = request.form.get(f'education-{index}-start_date', '')
+                end_date = request.form.get(f'education-{index}-end_date', '')
+                
+                if institution.strip() and degree.strip():  # Only add entries with required fields
+                    education.append({
+                        'institution': institution,
+                        'degree': degree,
+                        'field': field,
+                        'start_date': start_date,
+                        'end_date': end_date
+                    })
+        
+        # Process experience from dynamically added fields
+        experience = []
+        for key, value in request.form.items():
+            if key.startswith('experience-') and key.endswith('-company'):
+                index = key.split('-')[1]
+                company = value
+                position = request.form.get(f'experience-{index}-position', '')
+                exp_description = request.form.get(f'experience-{index}-exp_description', '')
+                start_date = request.form.get(f'experience-{index}-start_date', '')
+                end_date = request.form.get(f'experience-{index}-end_date', '')
+                
+                if company.strip() and position.strip():  # Only add entries with required fields
+                    experience.append({
+                        'company': company,
+                        'position': position,
+                        'exp_description': exp_description,
+                        'start_date': start_date,
+                        'end_date': end_date
+                    })
+        
+        # Save to database
+        for skill in skills:
             add_skill(connection, session['user_id'], skill['skill_name'], skill['proficiency'])
         
-        # Save education
-        for edu in form.education.data:
+        for edu in education:
             add_education(
                 connection, 
                 session['user_id'], 
@@ -91,8 +141,7 @@ def cv_details():
                 edu['end_date']
             )
         
-        # Save experience
-        for exp in form.experience.data:
+        for exp in experience:
             add_experience(
                 connection, 
                 session['user_id'], 
@@ -106,34 +155,8 @@ def cv_details():
         flash('CV details saved successfully!', 'success')
         return redirect(url_for('app.job_details'))
     
-    # Auto-populate form if CV is uploaded via AJAX
-    if request.method == 'POST' and 'cv_file' in request.files:
-        uploaded_file = request.files['cv_file']
-        if uploaded_file.filename != '':
-            try:
-                # Extract text from CV
-                cv_text = extract_text_from_pdf(uploaded_file)
-                
-                # Extract structured data using Gemini
-                cv_data = extract_cv_structure(cv_text)
-                
-                if cv_data:
-                    # Return structured data as JSON for client-side form population
-                    return jsonify({
-                        'success': True,
-                        'data': cv_data
-                    })
-                else:
-                    return jsonify({
-                        'success': False,
-                        'message': 'Could not extract structured data from CV'
-                    })
-            except Exception as e:
-                return jsonify({
-                    'success': False,
-                    'message': f'Error processing CV: {str(e)}'
-                })
-    
+    # Create an empty form for GET requests
+    form = CVForm()
     return render_template('cv_details.html', form=form)
 
 @app.route('/job', methods=['GET', 'POST'])
@@ -312,3 +335,221 @@ def debug_cv_extraction():
         <button type="submit">Upload and Test</button>
     </form>
     """
+
+@app.route('/process_text_section', methods=['POST'])
+def process_text_section():
+    """Process text input for CV sections using AI"""
+    try:
+        # Set proper content type for JSON response
+        if request.method == 'GET':
+            return jsonify({
+                'success': False,
+                'message': 'This endpoint requires a POST request with JSON data'
+            }), 405
+            
+        data = request.json
+        if not data or 'text' not in data or 'section_type' not in data:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid request data'
+            }), 400
+        
+        text = data['text']
+        section_type = data['section_type']
+        
+        if not text.strip():
+            return jsonify({
+                'success': False,
+                'message': 'No text provided'
+            }), 400
+        
+        # Construct the prompt based on section type
+        if section_type == 'skills':
+            prompt = generate_skills_prompt(text)
+            result_key = 'skills'
+        elif section_type == 'education':
+            prompt = generate_education_prompt(text)
+            result_key = 'education'
+        elif section_type == 'experience':
+            prompt = generate_experience_prompt(text)
+            result_key = 'experience'
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid section type'
+            }), 400
+        
+        print(f"Processing {section_type} with text: {text[:50]}...")
+        
+        # Process with AI
+        response = model.generate_content(prompt)
+        print(f"AI response (first 100 chars): {response.text[:100]}...")
+        
+        result = process_ai_response(response.text, result_key)
+        if result:
+            print(f"Successfully parsed result with {len(result)} items")
+            return jsonify({
+                'success': True,
+                'data': result
+            })
+        else:
+            # If parsing fails, return a fallback structure based on section type
+            print("Failed to parse AI response, using fallback")
+            if section_type == 'skills':
+                fallback = [{'skill_name': 'Please add skills manually', 'proficiency': 'beginner'}]
+            elif section_type == 'education':
+                fallback = [{'institution': 'Add institution', 'degree': 'Add degree', 
+                            'field': '', 'start_date': '', 'end_date': ''}]
+            elif section_type == 'experience':
+                fallback = [{'company': 'Add company', 'position': 'Add position', 
+                           'exp_description': '', 'start_date': '', 'end_date': ''}]
+            else:
+                fallback = []
+                
+            return jsonify({
+                'success': True,
+                'data': fallback,
+                'message': 'Could not extract structured data, using fallback values'
+            })
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        print(f"Error in process_text_section: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': f'Server error: {str(e)}'
+        }), 500
+    
+def generate_skills_prompt(text):
+    """Generate a prompt for extracting skills"""
+    return f"""
+    Extract skills and their proficiency levels from the following text:
+    
+    {text}
+    
+    Return ONLY valid JSON with the following structure:
+    [
+      {{"skill_name": "Skill Name", "proficiency": "proficiency_level"}},
+      ...
+    ]
+    
+    For proficiency levels, use one of: beginner, intermediate, advanced, expert.
+    Determine the proficiency based on any mentioned experience, levels, or certificates.
+    If no proficiency is specified, estimate based on context.
+    """
+
+def generate_education_prompt(text):
+    """Generate a prompt for extracting education"""
+    return f"""
+    Extract education information from the following text:
+    
+    {text}
+    
+    Return ONLY valid JSON with the following structure:
+    [
+      {{
+        "institution": "Institution Name",
+        "degree": "Degree Name",
+        "field": "Field of Study",
+        "start_date": "YYYY-MM-DD", 
+        "end_date": "YYYY-MM-DD"
+      }},
+      ...
+    ]
+    
+    Format dates as YYYY-MM-DD. If only year is available, use YYYY-01-01.
+    For ongoing education, use an empty string for end_date.
+    """
+
+def generate_experience_prompt(text):
+    """Generate a prompt for extracting work experience"""
+    return f"""
+    Extract work experience information from the following text:
+    
+    {text}
+    
+    Return ONLY valid JSON with the following structure:
+    [
+      {{
+        "company": "Company Name",
+        "position": "Position Title",
+        "exp_description": "Job Description",
+        "start_date": "YYYY-MM-DD",
+        "end_date": "YYYY-MM-DD"
+      }},
+      ...
+    ]
+    
+    Format dates as YYYY-MM-DD. If only year is available, use YYYY-01-01.
+    For current positions, use an empty string for end_date.
+    """
+
+def process_ai_response(response_text, result_key):
+    """Process AI response to extract JSON data with enhanced error handling"""
+    try:
+        import json
+        import re
+        
+        # Log the raw response for inspection
+        print(f"Raw response to parse: {response_text[:100]}...")
+        
+        # Clean up the response first - remove any markdown code blocks or explanations
+        cleaned_response = re.sub(r'```json|```|\n\s*```|\n\s*```json|\n\s*```|\n\s*```', '', response_text)
+        cleaned_response = re.sub(r'^.*?\[', '[', cleaned_response, flags=re.DOTALL)
+        cleaned_response = re.sub(r'\].*?$', ']', cleaned_response, flags=re.DOTALL)
+        
+        # Remove any non-JSON text before or after the JSON content
+        cleaned_response = cleaned_response.strip()
+        
+        # First attempt: direct JSON parsing
+        try:
+            print("Attempting direct JSON parsing")
+            if cleaned_response.startswith('[') and cleaned_response.endswith(']'):
+                return json.loads(cleaned_response)
+            elif cleaned_response.startswith('{') and cleaned_response.endswith('}'):
+                data = json.loads(cleaned_response)
+                if result_key in data:
+                    return data[result_key]
+                else:
+                    # For Gemini responses that contain JSON without the expected key
+                    # Try to intelligently extract the relevant array
+                    for key, value in data.items():
+                        if isinstance(value, list) and len(value) > 0:
+                            return value
+                    return data  # Return the whole object if no lists found
+        except json.JSONDecodeError as e:
+            print(f"Direct JSON parsing failed: {e}")
+            # Continue to regex approaches
+        
+        # Second attempt: find JSON array pattern using regex
+        print("Attempting regex extraction of JSON array")
+        array_pattern = r'\[\s*{.*?}\s*(,\s*{.*?}\s*)*\]'
+        array_match = re.search(array_pattern, cleaned_response, re.DOTALL)
+        if array_match:
+            try:
+                return json.loads(array_match.group(0))
+            except json.JSONDecodeError:
+                print("Array regex extraction failed")
+                # Continue to next approach
+        
+        # Third attempt: extract individual objects and build an array
+        print("Attempting to extract individual objects")
+        objects = re.findall(r'{.*?}', cleaned_response, re.DOTALL)
+        if objects:
+            try:
+                result_array = []
+                for obj_str in objects:
+                    obj = json.loads(obj_str)
+                    result_array.append(obj)
+                return result_array
+            except json.JSONDecodeError:
+                print("Individual object extraction failed")
+                # Continue to next approach
+        
+        print("All parsing attempts failed")
+        return None
+            
+    except Exception as e:
+        print(f"Error processing AI response: {str(e)}")
+        return None
