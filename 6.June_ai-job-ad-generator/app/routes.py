@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 import os
-from .forms import UploadForm, UserForm, CVForm, JobForm, CoverLetterForm
-from .models import create_connection, create_tables, add_user, add_skill, add_education, add_experience
-from .models import save_cover_letter, get_cover_letter, get_user_cover_letters, find_user_by_email
-from .utils import extract_text_from_pdf, generate_cover_letter, refine_cover_letter, extract_cv_structure, model
+from .forms import JobAdForm, RoleTypeForm, QualificationsForm, ExperienceForm, SkillsForm, OutputForm, UserForm
+from .models import create_connection, create_tables, save_job_ad, get_job_ad, get_user_job_ads, find_user_by_email
+from .models import add_user, add_template, get_templates
+from .utils import generate_job_ad, refine_job_ad, extract_text_from_pdf, format_for_pdf, model
 
 app = Blueprint('app', __name__)
 
@@ -16,28 +16,7 @@ create_tables(connection)
 def index():
     return render_template('index.html')
 
-cv_text = ""
-
-@app.route('/upload_cv', methods=['GET', 'POST'])
-def upload_cv():
-    global cv_text
-    form = UploadForm()
-    if form.validate_on_submit():
-        # Process uploaded files
-        files = request.files.getlist('files')
-        if not files:
-            flash('No files uploaded', 'error')
-            return redirect(url_for('app.upload_cv'))
-        
-        # Extract text from each file
-        for file in files:
-            if file:
-                cv_text += extract_text_from_pdf(file)
-        
-        flash('CV processed successfully!', 'success')
-        return redirect(url_for('app.profile'))
-    
-    return render_template('upload_cv.html', form=form)
+job_details = {}
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -48,508 +27,328 @@ def profile():
         if user:
             flash('Email already exists. Signing you in.', 'success')
             session['user_id'] = user[0]  # Assuming the first column is the user ID
-            return redirect(url_for('app.cv_details'))
+            return redirect(url_for('app.role_type'))
         else:
-            user_id = add_user(connection, form.name.data, form.email.data)
+            user_id = add_user(connection, form.name.data, form.email.data, form.company_name.data)
             if not user_id:
                 flash('Error creating user profile', 'error')
                 return redirect(url_for('app.index'))
             session['user_id'] = user_id
             flash('Profile saved successfully!', 'success')
-            return redirect(url_for('app.cv_details'))
+            return redirect(url_for('app.role_type'))
     
     return render_template('profile.html', form=form)
 
-@app.route('/cv', methods=['GET', 'POST'])
-def cv_details():
-    global cv_text
+@app.route('/role_type', methods=['GET', 'POST'])
+def role_type():
     if 'user_id' not in session:
         flash('Please create a profile first', 'warning')
         return redirect(url_for('app.profile'))
     
-    if request.method == 'POST':
-        # Process CV file if uploaded
-        if 'cv_file' in request.files and request.files['cv_file'].filename:
-            cv_text = extract_text_from_pdf(request.files['cv_file'])
-        
-        # Process skills from dynamically added fields
-        skills = []
-        for key, value in request.form.items():
-            if key.startswith('skills-') and key.endswith('-skill_name'):
-                index = key.split('-')[1]
-                skill_name = value
-                proficiency = request.form.get(f'skills-{index}-proficiency', 'beginner')
-                
-                if skill_name.strip():  # Only add non-empty skills
-                    skills.append({
-                        'skill_name': skill_name,
-                        'proficiency': proficiency
-                    })
-        
-        # Process education from dynamically added fields
-        education = []
-        for key, value in request.form.items():
-            if key.startswith('education-') and key.endswith('-institution'):
-                index = key.split('-')[1]
-                institution = value
-                degree = request.form.get(f'education-{index}-degree', '')
-                field = request.form.get(f'education-{index}-field', '')
-                start_date = request.form.get(f'education-{index}-start_date', '')
-                end_date = request.form.get(f'education-{index}-end_date', '')
-                
-                if institution.strip() and degree.strip():  # Only add entries with required fields
-                    education.append({
-                        'institution': institution,
-                        'degree': degree,
-                        'field': field,
-                        'start_date': start_date,
-                        'end_date': end_date
-                    })
-        
-        # Process experience from dynamically added fields
-        experience = []
-        for key, value in request.form.items():
-            if key.startswith('experience-') and key.endswith('-company'):
-                index = key.split('-')[1]
-                company = value
-                position = request.form.get(f'experience-{index}-position', '')
-                exp_description = request.form.get(f'experience-{index}-exp_description', '')
-                start_date = request.form.get(f'experience-{index}-start_date', '')
-                end_date = request.form.get(f'experience-{index}-end_date', '')
-                
-                if company.strip() and position.strip():  # Only add entries with required fields
-                    experience.append({
-                        'company': company,
-                        'position': position,
-                        'exp_description': exp_description,
-                        'start_date': start_date,
-                        'end_date': end_date
-                    })
-        
-        # Save to database
-        for skill in skills:
-            add_skill(connection, session['user_id'], skill['skill_name'], skill['proficiency'])
-        
-        for edu in education:
-            add_education(
-                connection, 
-                session['user_id'], 
-                edu['institution'], 
-                edu['degree'], 
-                edu['field'], 
-                edu['start_date'], 
-                edu['end_date']
-            )
-        
-        for exp in experience:
-            add_experience(
-                connection, 
-                session['user_id'], 
-                exp['company'], 
-                exp['position'], 
-                exp['exp_description'], 
-                exp['start_date'], 
-                exp['end_date']
-            )
-        
-        flash('CV details saved successfully!', 'success')
-        return redirect(url_for('app.job_details'))
+    form = RoleTypeForm()
     
-    # Create an empty form for GET requests
-    form = CVForm()
-    return render_template('cv_details.html', form=form)
-
-@app.route('/job', methods=['GET', 'POST'])
-def job_details():
-    if 'user_id' not in session:
-        flash('Please create a profile first', 'warning')
-        return redirect(url_for('app.profile'))
+    # Get saved templates for this user
+    templates = get_templates(connection, session['user_id'])
     
-    form = JobForm()
     if form.validate_on_submit():
-        # Process job description file if uploaded
-        job_description = ""
-        if form.job_description_file.data:
-            job_description = extract_text_from_pdf(form.job_description_file.data)
-        else:
-            job_description = form.job_description_text.data
+        # Process the role type form
+        job_details['role_title'] = form.role_title.data
+        job_details['role_type'] = form.role_type.data
+        job_details['department'] = form.department.data
+        job_details['location'] = form.location.data
+        job_details['remote_option'] = form.remote_option.data
+        job_details['salary_range'] = form.salary_range.data
+        job_details['template_name'] = form.template_name.data
         
-        session['job_title'] = form.job_title.data
-        session['company_name'] = form.company_name.data
-        session['job_description'] = job_description
+        # Check if it's a template load request
+        if form.load_template.data and form.template_id.data:
+            template_id = int(form.template_id.data)
+            for template in templates:
+                if template[0] == template_id:  # Assuming first column is ID
+                    # Load template data into session
+                    job_ad_data = get_job_ad(connection, template_id)
+                    if job_ad_data:
+                        # Parse stored JSON data
+                        import json
+                        try:
+                            stored_details = json.loads(job_ad_data[5])  # Assuming 6th column is JSON data
+                            job_details.update(stored_details)
+                            flash('Template loaded successfully', 'success')
+                            return redirect(url_for('app.qualifications'))
+                        except:
+                            flash('Error loading template data', 'error')
+            
+            flash('Selected template not found', 'error')
+            return redirect(url_for('app.role_type'))
         
-        return redirect(url_for('app.generate_letter'))
+        return redirect(url_for('app.qualifications'))
     
-    return render_template('job_details.html', form=form)
+    return render_template('role_type.html', form=form, templates=templates)
+
+@app.route('/qualifications', methods=['GET', 'POST'])
+def qualifications():
+    if 'user_id' not in session or 'role_title' not in job_details:
+        flash('Please complete all previous steps first', 'warning')
+        return redirect(url_for('app.role_type'))
+    
+    form = QualificationsForm()
+    
+    if form.validate_on_submit():
+        # Process the qualifications form
+        job_details['education_required'] = form.education_required.data
+        job_details['certifications'] = []
+        
+        # Process certifications from dynamically added fields
+        for key, value in request.form.items():
+            if key.startswith('certifications-') and key.endswith('-name'):
+                index = key.split('-')[1]
+                name = value
+                required = request.form.get(f'certifications-{index}-required', 'off') == 'on'
+                
+                if name.strip():  # Only add non-empty certifications
+                    job_details['certifications'].append({
+                        'name': name,
+                        'required': required
+                    })
+        
+        return redirect(url_for('app.experience'))
+    
+    return render_template('qualifications.html', form=form, job_details=job_details)
+
+@app.route('/experience', methods=['GET', 'POST'])
+def experience():
+    if 'user_id' not in session or 'education_required' not in job_details:
+        flash('Please complete all previous steps first', 'warning')
+        return redirect(url_for('app.qualifications'))
+    
+    form = ExperienceForm()
+    
+    if form.validate_on_submit():
+        # Process the experience form
+        job_details['years_experience'] = form.years_experience.data
+        job_details['specific_experience'] = form.specific_experience.data
+        job_details['responsibilities'] = []
+        
+        # Process responsibilities from dynamically added fields
+        for key, value in request.form.items():
+            if key.startswith('responsibilities-') and key.endswith('-description'):
+                index = key.split('-')[1]
+                description = value
+                
+                if description.strip():  # Only add non-empty responsibilities
+                    job_details['responsibilities'].append({
+                        'description': description
+                    })
+        
+        return redirect(url_for('app.skills'))
+    
+    return render_template('experience.html', form=form, job_details=job_details)
+
+@app.route('/skills', methods=['GET', 'POST'])
+def skills():
+    if 'user_id' not in session or 'years_experience' not in job_details:
+        flash('Please complete all previous steps first', 'warning')
+        return redirect(url_for('app.experience'))
+    
+    form = SkillsForm()
+    
+    if form.validate_on_submit():
+        # Process the skills form
+        job_details['required_skills'] = []
+        job_details['preferred_skills'] = []
+        
+        # Process required skills from dynamically added fields
+        for key, value in request.form.items():
+            if key.startswith('required_skills-') and key.endswith('-name'):
+                index = key.split('-')[1]
+                name = value
+                
+                if name.strip():  # Only add non-empty skills
+                    job_details['required_skills'].append({
+                        'name': name
+                    })
+        
+        # Process preferred skills from dynamically added fields
+        for key, value in request.form.items():
+            if key.startswith('preferred_skills-') and key.endswith('-name'):
+                index = key.split('-')[1]
+                name = value
+                
+                if name.strip():  # Only add non-empty skills
+                    job_details['preferred_skills'].append({
+                        'name': name
+                    })
+        
+        job_details['personality_traits'] = form.personality_traits.data
+        job_details['about_company'] = form.about_company.data
+        job_details['diversity_statement'] = form.diversity_statement.data
+        job_details['application_process'] = form.application_process.data
+        
+        # Generate job ad
+        return redirect(url_for('app.generate_ad'))
+    
+    return render_template('skills.html', form=form, job_details=job_details)
 
 @app.route('/generate', methods=['GET', 'POST'])
-def generate_letter():
-    if 'user_id' not in session or 'job_description' not in session:
+def generate_ad():
+    if 'user_id' not in session or 'required_skills' not in job_details:
         flash('Please complete all previous steps first', 'warning')
-        return redirect(url_for('app.index'))
+        return redirect(url_for('app.skills'))
     
-    job_description = session.get('job_description', '')
+    # Generate job ad
+    job_ad = generate_job_ad(job_details)
     
-    # Generate cover letter
-    cover_letter = generate_cover_letter(cv_text, job_description)
-    
-    form = CoverLetterForm(cover_letter=cover_letter)
+    form = OutputForm(job_ad=job_ad)
     if form.validate_on_submit():
-        # Save the final cover letter
-        letter_id = save_cover_letter(
+        # Save the final job ad
+        save_as_template = form.save_as_template.data
+        
+        # Prepare the job ad for saving
+        formatted_job_ad = form.job_ad.data
+        job_details['generated_ad'] = formatted_job_ad
+        
+        # Convert job_details to JSON for storage
+        import json
+        job_details_json = json.dumps(job_details)
+        
+        job_ad_id = save_job_ad(
             connection,
             session['user_id'],
-            session.get('job_title', ''),
-            session.get('company_name', ''),
-            job_description,
-            form.cover_letter.data
+            job_details['role_title'],
+            job_details['department'],
+            formatted_job_ad,
+            job_details_json,
+            is_template=save_as_template
         )
         
-        return redirect(url_for('app.view_letter', letter_id=letter_id))
+        if save_as_template and job_details['template_name']:
+            # Save as a reusable template
+            add_template(
+                connection,
+                session['user_id'],
+                job_details['template_name'],
+                job_ad_id
+            )
+            flash('Job ad saved as template!', 'success')
+        
+        return redirect(url_for('app.view_ad', ad_id=job_ad_id))
     
-    return render_template('generate_letter.html', form=form)
+    return render_template('generate_ad.html', form=form, job_details=job_details)
 
-@app.route('/view/<int:letter_id>')
-def view_letter(letter_id):
-    letter_data = get_cover_letter(connection, letter_id)
-    if not letter_data:
-        flash('Cover letter not found', 'error')
+@app.route('/view/<int:ad_id>')
+def view_ad(ad_id):
+    job_ad_data = get_job_ad(connection, ad_id)
+    if not job_ad_data:
+        flash('Job ad not found', 'error')
         return redirect(url_for('app.index'))
     
-    return render_template('view_letter.html', letter=letter_data)
+    return render_template('view_ad.html', job_ad=job_ad_data)
 
 @app.route('/history')
-def letter_history():
+def ad_history():
     if 'user_id' not in session:
         flash('Please sign in first', 'warning')
         return redirect(url_for('app.profile'))
     
-    letters = get_user_cover_letters(connection, session['user_id'])
-    return render_template('letter_history.html', letters=letters)
+    ads = get_user_job_ads(connection, session['user_id'])
+    return render_template('ad_history.html', ads=ads)
 
-@app.route('/api/refine_letter', methods=['POST'])
-def refine_letter_api():
+@app.route('/api/refine_ad', methods=['POST'])
+def refine_ad_api():
     data = request.json
-    original_letter = data.get('original_letter', '')
+    original_ad = data.get('original_ad', '')
     feedback = data.get('feedback', '')
     
-    refined_letter = refine_cover_letter(original_letter, feedback)
-    return jsonify({'refined_letter': refined_letter})
+    refined_ad = refine_job_ad(original_ad, feedback)
+    return jsonify({'refined_ad': refined_ad})
 
-@app.route('/process_cv', methods=['POST', 'GET'])
-def process_cv():
-    global cv_text
+@app.route('/download/<int:ad_id>')
+def download_ad(ad_id):
+    from flask import send_file
     
-    if 'cv_file' not in request.files:
+    job_ad_data = get_job_ad(connection, ad_id)
+    if not job_ad_data:
+        flash('Job ad not found', 'error')
+        return redirect(url_for('app.index'))
+    
+    # Format and generate PDF
+    pdf_path = format_for_pdf(job_ad_data)
+    
+    return send_file(
+        pdf_path,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f"job_ad_{ad_id}.pdf"
+    )
+
+@app.route('/process_job_description', methods=['POST'])
+def process_job_description():
+    """Extract key components from an existing job description"""
+    if 'job_description_file' not in request.files:
         return jsonify({'success': False, 'message': 'No file uploaded'})
     
-    file = request.files['cv_file']
+    file = request.files['job_description_file']
     if file.filename == '':
         return jsonify({'success': False, 'message': 'No file selected'})
     
     try:
-        # Extract text from CV
-        cv_text = extract_text_from_pdf(file)
-        session['cv_text'] = cv_text  # Store in session for later use
+        # Extract text from job description
+        job_description_text = extract_text_from_pdf(file)
         
-        print(f"Extracted text (first 100 chars): {cv_text[:100]}...")
+        # Process with AI to extract structured information
+        response = model.generate_content(f"""
+        Extract structured information from this job description:
+        {job_description_text[:3000]}  # First 3000 chars for analysis
         
-        # Extract structured data using Gemini
-        cv_data = extract_cv_structure(cv_text)
+        Return ONLY valid JSON with the following structure:
+        {{
+          "role_title": "extracted title",
+          "role_type": "full-time/part-time/etc",
+          "department": "department name",
+          "education_required": "minimum education requirement",
+          "years_experience": "number of years",
+          "required_skills": ["skill1", "skill2"],
+          "preferred_skills": ["skill1", "skill2"],
+          "responsibilities": ["responsibility1", "responsibility2"]
+        }}
+        """)
         
-        if cv_data:
-            # Validate the structure of cv_data
-            if (isinstance(cv_data, dict) and 
-                'skills' in cv_data and 
-                'education' in cv_data and 
-                'experience' in cv_data):
-                
+        # Process the response
+        try:
+            import json
+            import re
+            
+            # Clean up the response to ensure it's valid JSON
+            clean_response = re.search(r'\{.*\}', response.text, re.DOTALL)
+            if clean_response:
+                extracted_data = json.loads(clean_response.group(0))
                 return jsonify({
                     'success': True,
-                    'data': cv_data
+                    'data': extracted_data
                 })
             else:
-                print(f"Invalid CV data structure: {cv_data}")
                 return jsonify({
                     'success': False,
-                    'message': 'Invalid data structure from CV parsing'
+                    'message': 'Could not parse structured data from response'
                 })
-        else:
-            # Provide a fallback structure
-            fallback_data = {
-                'skills': [{'skill_name': '', 'proficiency': 'beginner'}],
-                'education': [{'institution': '', 'degree': '', 'field': '', 'start_date': None, 'end_date': None}],
-                'experience': [{'company': '', 'position': '', 'exp_description': '', 'start_date': None, 'end_date': None}]
-            }
-            
+        except Exception as e:
+            print(f"Error parsing AI response: {str(e)}")
             return jsonify({
-                'success': True,
-                'data': fallback_data,
-                'message': 'Could not extract data from CV, please fill in manually'
+                'success': False,
+                'message': f'Error processing job description: {str(e)}'
             })
+            
     except Exception as e:
-        print(f"Exception in process_cv: {str(e)}")
+        print(f"Exception in process_job_description: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({
             'success': False,
-            'message': f'Error processing CV: {str(e)}'
+            'message': f'Error processing job description: {str(e)}'
         })
 
-@app.route('/debug_cv_extraction', methods=['GET', 'POST'])
-def debug_cv_extraction():
-    if request.method == 'POST':
-        if 'cv_file' not in request.files:
-            return "No file uploaded"
-        
-        file = request.files['cv_file']
-        if file.filename == '':
-            return "No file selected"
-        
-        try:
-            # Extract text
-            text = extract_text_from_pdf(file)
-            
-            # Try to get structured data
-            response = model.generate_content(f"""
-            Extract structured information from this CV:
-            {text[:2000]}  # First 2000 chars for brevity
-            
-            Return ONLY valid JSON without explanations.
-            """)
-            
-            # Return the raw response for inspection
-            return f"""
-            <h3>Extracted Text (first 500 chars)</h3>
-            <pre>{text[:500]}</pre>
-            
-            <h3>Raw Gemini Response</h3>
-            <pre>{response.text}</pre>
-            """
-        except Exception as e:
-            return f"Error: {str(e)}"
-            
-    return """
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="cv_file">
-        <button type="submit">Upload and Test</button>
-    </form>
-    """
-
-@app.route('/process_text_section', methods=['POST'])
-def process_text_section():
-    """Process text input for CV sections using AI"""
-    try:
-        # Set proper content type for JSON response
-        if request.method == 'GET':
-            return jsonify({
-                'success': False,
-                'message': 'This endpoint requires a POST request with JSON data'
-            }), 405
-            
-        data = request.json
-        if not data or 'text' not in data or 'section_type' not in data:
-            return jsonify({
-                'success': False,
-                'message': 'Invalid request data'
-            }), 400
-        
-        text = data['text']
-        section_type = data['section_type']
-        
-        if not text.strip():
-            return jsonify({
-                'success': False,
-                'message': 'No text provided'
-            }), 400
-        
-        # Construct the prompt based on section type
-        if section_type == 'skills':
-            prompt = generate_skills_prompt(text)
-            result_key = 'skills'
-        elif section_type == 'education':
-            prompt = generate_education_prompt(text)
-            result_key = 'education'
-        elif section_type == 'experience':
-            prompt = generate_experience_prompt(text)
-            result_key = 'experience'
-        else:
-            return jsonify({
-                'success': False,
-                'message': 'Invalid section type'
-            }), 400
-        
-        print(f"Processing {section_type} with text: {text[:50]}...")
-        
-        # Process with AI
-        response = model.generate_content(prompt)
-        print(f"AI response (first 100 chars): {response.text[:100]}...")
-        
-        result = process_ai_response(response.text, result_key)
-        if result:
-            print(f"Successfully parsed result with {len(result)} items")
-            return jsonify({
-                'success': True,
-                'data': result
-            })
-        else:
-            # If parsing fails, return a fallback structure based on section type
-            print("Failed to parse AI response, using fallback")
-            if section_type == 'skills':
-                fallback = [{'skill_name': 'Please add skills manually', 'proficiency': 'beginner'}]
-            elif section_type == 'education':
-                fallback = [{'institution': 'Add institution', 'degree': 'Add degree', 
-                            'field': '', 'start_date': '', 'end_date': ''}]
-            elif section_type == 'experience':
-                fallback = [{'company': 'Add company', 'position': 'Add position', 
-                           'exp_description': '', 'start_date': '', 'end_date': ''}]
-            else:
-                fallback = []
-                
-            return jsonify({
-                'success': True,
-                'data': fallback,
-                'message': 'Could not extract structured data, using fallback values'
-            })
-            
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print(f"Error in process_text_section: {str(e)}")
-        return jsonify({
-            'success': False,
-            'message': f'Server error: {str(e)}'
-        }), 500
-    
-def generate_skills_prompt(text):
-    """Generate a prompt for extracting skills"""
-    return f"""
-    Extract skills and their proficiency levels from the following text:
-    
-    {text}
-    
-    Return ONLY valid JSON with the following structure:
-    [
-      {{"skill_name": "Skill Name", "proficiency": "proficiency_level"}},
-      ...
-    ]
-    
-    For proficiency levels, use one of: beginner, intermediate, advanced, expert.
-    Determine the proficiency based on any mentioned experience, levels, or certificates.
-    If no proficiency is specified, estimate based on context.
-    """
-
-def generate_education_prompt(text):
-    """Generate a prompt for extracting education"""
-    return f"""
-    Extract education information from the following text:
-    
-    {text}
-    
-    Return ONLY valid JSON with the following structure:
-    [
-      {{
-        "institution": "Institution Name",
-        "degree": "Degree Name",
-        "field": "Field of Study",
-        "start_date": "YYYY-MM-DD", 
-        "end_date": "YYYY-MM-DD"
-      }},
-      ...
-    ]
-    
-    Format dates as YYYY-MM-DD. If only year is available, use YYYY-01-01.
-    For ongoing education, use an empty string for end_date.
-    """
-
-def generate_experience_prompt(text):
-    """Generate a prompt for extracting work experience"""
-    return f"""
-    Extract work experience information from the following text:
-    
-    {text}
-    
-    Return ONLY valid JSON with the following structure:
-    [
-      {{
-        "company": "Company Name",
-        "position": "Position Title",
-        "exp_description": "Job Description",
-        "start_date": "YYYY-MM-DD",
-        "end_date": "YYYY-MM-DD"
-      }},
-      ...
-    ]
-    
-    Format dates as YYYY-MM-DD. If only year is available, use YYYY-01-01.
-    For current positions, use an empty string for end_date.
-    """
-
-def process_ai_response(response_text, result_key):
-    """Process AI response to extract JSON data with enhanced error handling"""
-    try:
-        import json
-        import re
-        
-        # Log the raw response for inspection
-        print(f"Raw response to parse: {response_text[:100]}...")
-        
-        # Clean up the response first - remove any markdown code blocks or explanations
-        cleaned_response = re.sub(r'```json|```|\n\s*```|\n\s*```json|\n\s*```|\n\s*```', '', response_text)
-        cleaned_response = re.sub(r'^.*?\[', '[', cleaned_response, flags=re.DOTALL)
-        cleaned_response = re.sub(r'\].*?$', ']', cleaned_response, flags=re.DOTALL)
-        
-        # Remove any non-JSON text before or after the JSON content
-        cleaned_response = cleaned_response.strip()
-        
-        # First attempt: direct JSON parsing
-        try:
-            print("Attempting direct JSON parsing")
-            if cleaned_response.startswith('[') and cleaned_response.endswith(']'):
-                return json.loads(cleaned_response)
-            elif cleaned_response.startswith('{') and cleaned_response.endswith('}'):
-                data = json.loads(cleaned_response)
-                if result_key in data:
-                    return data[result_key]
-                else:
-                    # For Gemini responses that contain JSON without the expected key
-                    # Try to intelligently extract the relevant array
-                    for key, value in data.items():
-                        if isinstance(value, list) and len(value) > 0:
-                            return value
-                    return data  # Return the whole object if no lists found
-        except json.JSONDecodeError as e:
-            print(f"Direct JSON parsing failed: {e}")
-            # Continue to regex approaches
-        
-        # Second attempt: find JSON array pattern using regex
-        print("Attempting regex extraction of JSON array")
-        array_pattern = r'\[\s*{.*?}\s*(,\s*{.*?}\s*)*\]'
-        array_match = re.search(array_pattern, cleaned_response, re.DOTALL)
-        if array_match:
-            try:
-                return json.loads(array_match.group(0))
-            except json.JSONDecodeError:
-                print("Array regex extraction failed")
-                # Continue to next approach
-        
-        # Third attempt: extract individual objects and build an array
-        print("Attempting to extract individual objects")
-        objects = re.findall(r'{.*?}', cleaned_response, re.DOTALL)
-        if objects:
-            try:
-                result_array = []
-                for obj_str in objects:
-                    obj = json.loads(obj_str)
-                    result_array.append(obj)
-                return result_array
-            except json.JSONDecodeError:
-                print("Individual object extraction failed")
-                # Continue to next approach
-        
-        print("All parsing attempts failed")
-        return None
-            
-    except Exception as e:
-        print(f"Error processing AI response: {str(e)}")
-        return None
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out', 'info')
+    return redirect(url_for('app.index'))

@@ -12,18 +12,27 @@ def create_connection(path):
 
     return connection
 
-def execute_query(connection, query, params=None):
+def execute_query(connection, query, params=None, fetch=None):
+    """Execute a query and optionally return results"""
     cursor = connection.cursor()
     try:
         if params:
             cursor.execute(query, params)
         else:
             cursor.execute(query)
-        connection.commit()
-        return cursor.lastrowid
+        
+        if fetch == "one":
+            return cursor.fetchone()
+        elif fetch == "all":
+            return cursor.fetchall()
+        else:
+            connection.commit()
+            return cursor.lastrowid
     except Error as e:
-        print(f"The error '{e}' occurred")
+        print(f"Database error: {e}")
         return None
+    finally:
+        cursor.close()
 
 def create_tables(connection):
     # Users table

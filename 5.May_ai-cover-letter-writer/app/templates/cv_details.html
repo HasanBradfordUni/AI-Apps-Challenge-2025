@@ -423,11 +423,15 @@
                 
                 showStatus(statusDiv, 'Processing with AI...', 'info');
                 
+                // Get CSRF token from the meta tag
+                const csrfToken = "{{ csrf_token() }}";  // This should be added by Flask-WTF
+                
                 // Call the API to process the text
                 fetch('{{ url_for("app.process_text_section") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken  // Add the token here
                     },
                     body: JSON.stringify({
                         text: text,

@@ -1,69 +1,90 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, FieldList, FormField, SelectField, DateField, SubmitField
-from wtforms.validators import DataRequired, Email
-
-class UploadForm(FlaskForm):
-    project_name = StringField('Project Name', validators=[DataRequired()])
-    project_description = TextAreaField('Project Description')
-    expected_results = FileField('Upload Expected Results (PDF)', validators=[DataRequired()])
-    actual_results = FileField('Upload Actual Results (Screenshot)', validators=[DataRequired()])
-    test_query = StringField('Test Query', validators=[DataRequired()])
-    context = TextAreaField('Additional Context')
-    submit = SubmitField('Submit')
+from wtforms import StringField, TextAreaField, SelectField, IntegerField, BooleanField, SubmitField, HiddenField
+from wtforms import FieldList, FormField
+from wtforms.validators import DataRequired, Email, Optional, NumberRange, Length
 
 class UserForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
+    company_name = StringField('Company Name', validators=[DataRequired()])
     submit = SubmitField('Save Profile')
 
-class SkillForm(FlaskForm):
-    skill_name = StringField('Skill', validators=[DataRequired()])
-    proficiency = SelectField('Proficiency', choices=[
-        ('beginner', 'Beginner'),
-        ('intermediate', 'Intermediate'),
-        ('advanced', 'Advanced'),
-        ('expert', 'Expert')
-    ])
-
-class EducationForm(FlaskForm):
-    institution = StringField('Institution', validators=[DataRequired()])
-    degree = StringField('Degree', validators=[DataRequired()])
-    field = StringField('Field of Study')
-    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
-    end_date = DateField('End Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
-
-class ExperienceForm(FlaskForm):
-    company = StringField('Company', validators=[DataRequired()])
-    position = StringField('Position', validators=[DataRequired()])
-    exp_description = TextAreaField('Description')
-    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
-    end_date = DateField('End Date', format='%Y-%m-%d', validators=[], render_kw={"type": "date"})
-
-class CVForm(FlaskForm):
-    cv_file = FileField('Upload your CV (PDF)', validators=[
-        FileAllowed(['pdf'], 'PDF files only!')
-    ])
-    skills = FieldList(FormField(SkillForm), min_entries=1)
-    education = FieldList(FormField(EducationForm), min_entries=1)
-    experience = FieldList(FormField(ExperienceForm), min_entries=1)
-    submit = SubmitField('Save CV Details')
-
-class JobForm(FlaskForm):
-    job_title = StringField('Job Title', validators=[DataRequired()])
-    company_name = StringField('Company Name', validators=[DataRequired()])
-    job_description_file = FileField('Upload Job Description (PDF)', validators=[
-        FileAllowed(['pdf'], 'PDF files only!')
-    ])
-    job_description_text = TextAreaField('Or paste job description here')
+class RoleTypeForm(FlaskForm):
+    role_title = StringField('Job Title', validators=[DataRequired()])
+    role_type = SelectField('Employment Type', choices=[
+        ('full-time', 'Full-time'),
+        ('part-time', 'Part-time'),
+        ('contract', 'Contract'),
+        ('temporary', 'Temporary'),
+        ('internship', 'Internship')
+    ], validators=[DataRequired()])
+    department = StringField('Department', validators=[DataRequired()])
+    location = StringField('Location', validators=[DataRequired()])
+    remote_option = SelectField('Remote Work Option', choices=[
+        ('office', 'Office-based'),
+        ('hybrid', 'Hybrid'),
+        ('remote', 'Fully Remote')
+    ], validators=[DataRequired()])
+    salary_range = StringField('Salary Range', validators=[Optional()])
+    template_name = StringField('Template Name (if saving as template)', validators=[Optional()])
+    template_id = HiddenField('Template ID')
+    load_template = BooleanField('Load Template')
     submit = SubmitField('Continue')
 
-class CoverLetterForm(FlaskForm):
-    cover_letter = TextAreaField('Cover Letter', validators=[DataRequired()])
-    tone = SelectField('Letter Tone', choices=[
+class CertificationForm(FlaskForm):
+    name = StringField('Certification Name')
+    required = BooleanField('Required')
+
+class QualificationsForm(FlaskForm):
+    education_required = SelectField('Minimum Education Required', choices=[
+        ('none', 'No formal education required'),
+        ('high-school', 'High School Diploma'),
+        ('associates', 'Associate\'s Degree'),
+        ('bachelors', 'Bachelor\'s Degree'),
+        ('masters', 'Master\'s Degree'),
+        ('phd', 'Doctorate/PhD')
+    ], validators=[DataRequired()])
+    certifications = FieldList(FormField(CertificationForm), min_entries=1)
+    submit = SubmitField('Continue')
+
+class ResponsibilityForm(FlaskForm):
+    description = TextAreaField('Responsibility')
+
+class ExperienceForm(FlaskForm):
+    years_experience = IntegerField('Years of Experience Required', validators=[NumberRange(min=0, max=30)])
+    specific_experience = TextAreaField('Specific Experience Required', validators=[Optional()])
+    responsibilities = FieldList(FormField(ResponsibilityForm), min_entries=3)
+    submit = SubmitField('Continue')
+
+class SkillForm(FlaskForm):
+    name = StringField('Skill')
+
+class SkillsForm(FlaskForm):
+    required_skills = FieldList(FormField(SkillForm), min_entries=1)
+    preferred_skills = FieldList(FormField(SkillForm), min_entries=1)
+    personality_traits = TextAreaField('Desired Personality Traits', validators=[Optional()])
+    about_company = TextAreaField('About Your Company', validators=[Optional()])
+    diversity_statement = TextAreaField('Diversity & Inclusion Statement', validators=[Optional()])
+    application_process = TextAreaField('Application Process Details', validators=[Optional()])
+    submit = SubmitField('Generate Job Ad')
+
+class OutputForm(FlaskForm):
+    job_ad = TextAreaField('Generated Job Ad', validators=[DataRequired()])
+    tone = SelectField('Ad Tone', choices=[
         ('professional', 'Professional'),
         ('enthusiastic', 'Enthusiastic'),
-        ('confident', 'Confident'),
-        ('creative', 'Creative')
+        ('casual', 'Casual'),
+        ('innovative', 'Innovative')
     ])
-    submit = SubmitField('Save Cover Letter')
+    save_as_template = BooleanField('Save as Template')
+    submit = SubmitField('Save Job Ad')
+
+class JobAdForm(FlaskForm):
+    """Main form that combines all sub-forms"""
+    role_type = FormField(RoleTypeForm)
+    qualifications = FormField(QualificationsForm)
+    experience = FormField(ExperienceForm)
+    skills = FormField(SkillsForm)
+    output = FormField(OutputForm)
+    submit = SubmitField('Submit')

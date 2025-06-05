@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 import os
 from .forms import UploadForm, UserForm, CVForm, JobForm, CoverLetterForm
 from .models import create_connection, create_tables, add_user, add_skill, add_education, add_experience
-from .models import save_cover_letter, get_cover_letter, get_user_cover_letters, find_user_by_email
+from .models import save_cover_letter, get_cover_letter, get_user_cover_letters, find_user_by_email, execute_query
 from .utils import extract_text_from_pdf, generate_cover_letter, refine_cover_letter, extract_cv_structure, model
 
 app = Blueprint('app', __name__)
@@ -16,11 +16,16 @@ create_tables(connection)
 def index():
     return render_template('index.html')
 
-cv_text = ""
+def get_session_cv_text():
+    """Get CV text from session or return empty string"""
+    return session.get('cv_text', '')
+
+def set_session_cv_text(text):
+    """Store CV text in session"""
+    session['cv_text'] = text
 
 @app.route('/upload_cv', methods=['GET', 'POST'])
 def upload_cv():
-    global cv_text
     form = UploadForm()
     if form.validate_on_submit():
         # Process uploaded files
@@ -30,10 +35,12 @@ def upload_cv():
             return redirect(url_for('app.upload_cv'))
         
         # Extract text from each file
+        cv_text = ""
         for file in files:
             if file:
                 cv_text += extract_text_from_pdf(file)
         
+        set_session_cv_text(cv_text)
         flash('CV processed successfully!', 'success')
         return redirect(url_for('app.profile'))
     
@@ -62,7 +69,6 @@ def profile():
 
 @app.route('/cv', methods=['GET', 'POST'])
 def cv_details():
-    global cv_text
     if 'user_id' not in session:
         flash('Please create a profile first', 'warning')
         return redirect(url_for('app.profile'))
@@ -71,6 +77,7 @@ def cv_details():
         # Process CV file if uploaded
         if 'cv_file' in request.files and request.files['cv_file'].filename:
             cv_text = extract_text_from_pdf(request.files['cv_file'])
+            set_session_cv_text(cv_text)
         
         # Process skills from dynamically added fields
         skills = []
@@ -190,8 +197,35 @@ def generate_letter():
     
     job_description = session.get('job_description', '')
     
+    # Get CV information from the database
+    user_id = session['user_id']
+    
+    # Get user skills
+    skills_query = """
+    SELECT skill_name, proficiency FROM skills WHERE user_id = ?
+    """
+    skills_data = execute_query(connection, skills_query, (user_id,), fetch="all")
+    
+    # Get user education
+    education_query = """
+    SELECT institution, degree, field, start_date, end_date FROM education WHERE user_id = ?
+    """
+    education_data = execute_query(connection, education_query, (user_id,), fetch="all")
+    
+    # Get user experience
+    experience_query = """
+    SELECT company, position, description, start_date, end_date FROM experience WHERE user_id = ?
+    """
+    experience_data = execute_query(connection, experience_query, (user_id,), fetch="all")
+    
+    # Format the CV text from the database data
+    formatted_cv = format_cv_text(skills_data, education_data, experience_data)
+    
+    # Use the formatted CV or the uploaded CV text, whichever is available
+    cv_text_to_use = formatted_cv if formatted_cv else get_session_cv_text()
+    
     # Generate cover letter
-    cover_letter = generate_cover_letter(cv_text, job_description)
+    cover_letter = generate_cover_letter(cv_text_to_use, job_description)
     
     form = CoverLetterForm(cover_letter=cover_letter)
     if form.validate_on_submit():
@@ -238,8 +272,6 @@ def refine_letter_api():
 
 @app.route('/process_cv', methods=['POST', 'GET'])
 def process_cv():
-    global cv_text
-    
     if 'cv_file' not in request.files:
         return jsonify({'success': False, 'message': 'No file uploaded'})
     
@@ -250,7 +282,7 @@ def process_cv():
     try:
         # Extract text from CV
         cv_text = extract_text_from_pdf(file)
-        session['cv_text'] = cv_text  # Store in session for later use
+        set_session_cv_text(cv_text)  # Store in session
         
         print(f"Extracted text (first 100 chars): {cv_text[:100]}...")
         
@@ -336,7 +368,7 @@ def debug_cv_extraction():
     </form>
     """
 
-@app.route('/process_text_section', methods=['POST'])
+@app.route('/process_text_section', methods=['POST', 'GET'])
 def process_text_section():
     """Process text input for CV sections using AI"""
     try:
@@ -553,3 +585,38 @@ def process_ai_response(response_text, result_key):
     except Exception as e:
         print(f"Error processing AI response: {str(e)}")
         return None
+
+def format_cv_text(skills_data, education_data, experience_data):
+    """Format the CV text from database data"""
+    
+    # Format skills section
+    skills_text = "SKILLS:\n"
+    for skill in skills_data:
+        skills_text += f"- {skill[0]} ({skill[1]})\n"
+    
+    # Format education section
+    education_text = "\nEDUCATION:\n"
+    for edu in education_data:
+        institution, degree, field, start_date, end_date = edu
+        education_text += f"- {degree} in {field} from {institution}"
+        if start_date or end_date:
+            date_range = f" ({start_date or 'N/A'} to {end_date or 'Present'})"
+            education_text += date_range
+        education_text += "\n"
+    
+    # Format experience section
+    experience_text = "\nEXPERIENCE:\n"
+    for exp in experience_data:
+        company, position, description, start_date, end_date = exp
+        experience_text += f"- {position} at {company}"
+        if start_date or end_date:
+            date_range = f" ({start_date or 'N/A'} to {end_date or 'Present'})"
+            experience_text += date_range
+        experience_text += "\n"
+        if description:
+            experience_text += f"  {description}\n"
+    
+    # Combine all sections
+    formatted_cv = skills_text + education_text + experience_text
+    
+    return formatted_cv
