@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Has AI - AI Job Ad Generator | Job Role</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
+    <style>      
+      /* Role type page specific styles */
+      .template-select {
+        margin-bottom: 20px;
+        padding: 15px;
+        background-color: #333;
+        border-radius: 8px;
+        border: 1px solid #444;
+      }
+      
+      .template-select select {
+        width: 100%;
+        padding: 8px;
+        background-color: #222;
+        color: #ddd;
+        border: 1px solid #555;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+      
+      .checkbox-wrapper {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+      }
+      
+      .checkbox-wrapper label {
+        margin-left: 10px;
+        color: #ddd;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+        Has AI
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+      </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="{{ url_for('app.index') }}" class="nav">Home</a></li>
+          <li><a href="{{ url_for('app.profile') }}" class="nav" id="currentPage">Create Job Ad</a></li>
+          {% if session.get('user_id') %}
+          <li><a href="{{ url_for('app.ad_history') }}" class="nav">My Job Ads</a></li>
+          <li><a href="{{ url_for('app.logout') }}" class="nav">Logout</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
+
+    <section class="mainBody">
+      <h1 class="mainHeading">Define Job Role Details</h1>
+      <br />
+      <h2 class="subHeading">
+        Step 1: Enter basic information about the job role
+      </h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <main>
+        <section>
+          <div class="form-container">
+            {% if templates and templates|length > 0 %}
+            <div class="template-select">
+              <h3 class="largeText">Load from Template</h3>
+              <form method="POST" id="template-form">
+                {{ form.hidden_tag() }}
+                <select name="template_id">
+                  <option value="">Select a template</option>
+                  {% for template in templates %}
+                  <option value="{{ template[0] }}">{{ template[1] }} ({{ template[2] }})</option>
+                  {% endfor %}
+                </select>
+                <div class="checkbox-wrapper">
+                  <input type="checkbox" name="load_template" id="load_template" checked>
+                  <label for="load_template">Load Selected Template</label>
+                </div>
+                <button type="submit" class="submit-button">Load Template</button>
+              </form>
+            </div>
+            {% endif %}
+            
+            <h2 class="largeText">Job Role Information</h2>
+            <p>Enter the basic details about the position you're hiring for.</p>
+            
+            <form method="POST" action="{{ url_for('app.role_type') }}">
+              {{ form.hidden_tag() }}
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.role_title.label }}</label>
+                {{ form.role_title(class="form-control") }}
+                {% if form.role_title.errors %}
+                  {% for error in form.role_title.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.role_type.label }}</label>
+                {{ form.role_type(class="form-control") }}
+                {% if form.role_type.errors %}
+                  {% for error in form.role_type.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.department.label }}</label>
+                {{ form.department(class="form-control") }}
+                {% if form.department.errors %}
+                  {% for error in form.department.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.location.label }}</label>
+                {{ form.location(class="form-control") }}
+                {% if form.location.errors %}
+                  {% for error in form.location.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.remote_option.label }}</label>
+                {{ form.remote_option(class="form-control") }}
+                {% if form.remote_option.errors %}
+                  {% for error in form.remote_option.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.salary_range.label }}</label>
+                {{ form.salary_range(class="form-control") }}
+                {% if form.salary_range.errors %}
+                  {% for error in form.salary_range.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.template_name.label }}</label>
+                {{ form.template_name(class="form-control") }}
+                {% if form.template_name.errors %}
+                  {% for error in form.template_name.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="submit-group">
+                {{ form.submit(class="submit-button") }}
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <hr />
+      <br />
+    </section>
+    <!-- Same footer as profile.html -->
+    <footer>
+      <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div></div>
+              <div>Has AI</div>
+              <div>AI Job Ad Generator</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI Projects for all</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Useful Links</h3>
+              <div class="footer-link-row">
+                <a href="{{ url_for('app.index') }}" class="footer-link">Home</a>
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Create Job Ad</a>
+              </div>
+              <div class="footer-link-row">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('app.ad_history') }}" class="footer-link">My Job Ads</a>
+                <a href="{{ url_for('app.logout') }}" class="footer-link">Logout</a>
+                {% else %}
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Sign Up</a>
+                {% endif %}
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+  </body>
+</html>

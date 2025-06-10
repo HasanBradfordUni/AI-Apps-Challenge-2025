@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Has AI - AI Job Ad Generator | Experience</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
+    <style>
+      /* Experience page specific styles */
+      .add-responsibility-btn {
+        background-color: #2c8845;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      
+      .responsibility-item {
+        background-color: #333;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        position: relative;
+      }
+      
+      .remove-responsibility {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background-color: #a13131;
+        color: white;
+        border: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      
+      textarea.form-control {
+        min-height: 80px;
+        resize: vertical;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+        Has AI
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+      </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="{{ url_for('app.index') }}" class="nav">Home</a></li>
+          <li><a href="{{ url_for('app.profile') }}" class="nav" id="currentPage">Create Job Ad</a></li>
+          {% if session.get('user_id') %}
+          <li><a href="{{ url_for('app.ad_history') }}" class="nav">My Job Ads</a></li>
+          <li><a href="{{ url_for('app.logout') }}" class="nav">Logout</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
+
+    <section class="mainBody">
+      <h1 class="mainHeading">Define Experience Requirements</h1>
+      <br />
+      <h2 class="subHeading">
+        Step 3: Specify experience needed and key responsibilities
+      </h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <main>
+        <section>
+          <div class="form-container">
+            <h2 class="largeText">Experience Requirements</h2>
+            <p>Specify the relevant experience requirements for this role.</p>
+            
+            <form method="POST" action="{{ url_for('app.experience') }}">
+              {{ form.hidden_tag() }}
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.years_experience.label }}</label>
+                {{ form.years_experience(class="form-control") }}
+                {% if form.years_experience.errors %}
+                  {% for error in form.years_experience.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.specific_experience.label }}</label>
+                {{ form.specific_experience(class="form-control") }}
+                {% if form.specific_experience.errors %}
+                  {% for error in form.specific_experience.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <h3 class="largeText">Key Job Responsibilities</h3>
+              
+              <div id="responsibilities-container">
+                <!-- Initial responsibility fields -->
+                {% for i in range(3) %}
+                <div class="responsibility-item">
+                  <div class="form-group">
+                    <label class="form-label">Responsibility Description</label>
+                    <textarea name="responsibilities-{{i}}-description" class="form-control"></textarea>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+              
+              <button type="button" class="add-responsibility-btn" id="add-responsibility">
+                Add Another Responsibility
+              </button>
+              
+              <div class="submit-group">
+                {{ form.submit(class="submit-button") }}
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <script>
+        // Script to handle adding and removing responsibility fields
+        document.addEventListener('DOMContentLoaded', function() {
+          let respCount = 3;
+          
+          document.getElementById('add-responsibility').addEventListener('click', function() {
+            const container = document.getElementById('responsibilities-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'responsibility-item';
+            newItem.innerHTML = `
+              <button type="button" class="remove-responsibility" onclick="this.parentElement.remove()">×</button>
+              <div class="form-group">
+                <label class="form-label">Responsibility Description</label>
+                <textarea name="responsibilities-${respCount}-description" class="form-control"></textarea>
+              </div>
+            `;
+            container.appendChild(newItem);
+            respCount++;
+          });
+        });
+      </script>
+
+      <hr />
+      <br />
+    </section>
+    <!-- Same footer as profile.html -->
+  </body>
+</html>

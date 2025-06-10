@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Has AI - AI Job Ad Generator</title>
+    <title>Has AI - AI Job Ad Generator | Profile</title>
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -239,6 +239,32 @@
         color: white;
         border: 1px solid blue;
       }
+      
+      /* Form input styles */
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #444;
+        background-color: #333;
+        color: #ddd;
+        border-radius: 5px;
+      }
+      
+      .form-label {
+        display: block;
+        margin-bottom: 5px;
+        color: goldenrod;
+        font-weight: bold;
+      }
+      
+      .form-control:focus {
+        outline: none;
+        border-color: crimson;
+      }
     </style>
   </head>
 
@@ -264,8 +290,8 @@
       <hr />
       <div>
         <ul class="nav">
-          <li><a href="{{ url_for('app.index') }}" class="nav" id="currentPage">Home</a></li>
-          <li><a href="{{ url_for('app.profile') }}" class="nav">Create Job Ad</a></li>
+          <li><a href="{{ url_for('app.index') }}" class="nav">Home</a></li>
+          <li><a href="{{ url_for('app.profile') }}" class="nav" id="currentPage">Create Job Ad</a></li>
           {% if session.get('user_id') %}
           <li><a href="{{ url_for('app.ad_history') }}" class="nav">My Job Ads</a></li>
           <li><a href="{{ url_for('app.logout') }}" class="nav">Logout</a></li>
@@ -275,10 +301,10 @@
     </header>
 
     <section class="mainBody">
-      <h1 class="mainHeading">AI Apps Challenge - AI Job Ad Generator</h1>
+      <h1 class="mainHeading">Create Your Profile</h1>
       <br />
       <h2 class="subHeading">
-        Create professional, engaging job descriptions in minutes using AI
+        Let's get started with some basic information about you
       </h2>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
@@ -294,37 +320,46 @@
       <main>
         <section>
           <div class="form-container">
-            <h2 class="largeText">Generate Professional Job Ads</h2>
-            <p>
-              Create well-structured and optimized job descriptions by entering key hiring criteria. 
-              Our AI will generate a professional job ad tailored to your specifications.
-            </p>
-
-            <div class="feature-card">
-              <h4>✏️ Easy to Use</h4>
-              <p>Just enter your hiring requirements and let our AI do the hard work of writing the perfect job ad.</p>
-            </div>
-
-            <div class="feature-card">
-              <h4>⭐ Professional Quality</h4>
-              <p>Generate job descriptions that are attractive, inclusive, and aligned with industry standards.</p>
-            </div>
-
-            <div class="feature-card">
-              <h4>📝 Fully Customizable</h4>
-              <p>Edit and refine the AI-generated content to perfectly match your company's voice and requirements.</p>
-            </div>
-
-            <div class="feature-card">
-              <h4>⏱️ Save Time</h4>
-              <p>Reduce the time spent drafting job descriptions from hours to minutes.</p>
-            </div>
-
-            <div class="submit-group">
-              <a href="{{ url_for('app.profile') }}">
-                <button class="submit-button">Get Started</button>
-              </a>
-            </div>
+            <h2 class="largeText">Your Profile Information</h2>
+            <p>This information helps us personalize your job ads and save your drafts.</p>
+            
+            <form method="POST" action="{{ url_for('app.profile') }}">
+              {{ form.hidden_tag() }}
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.name.label }}</label>
+                {{ form.name(class="form-control") }}
+                {% if form.name.errors %}
+                  {% for error in form.name.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.email.label }}</label>
+                {{ form.email(class="form-control") }}
+                {% if form.email.errors %}
+                  {% for error in form.email.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">{{ form.company_name.label }}</label>
+                {{ form.company_name(class="form-control") }}
+                {% if form.company_name.errors %}
+                  {% for error in form.company_name.errors %}
+                    <span class="error">{{ error }}</span>
+                  {% endfor %}
+                {% endif %}
+              </div>
+              
+              <div class="submit-group">
+                {{ form.submit(class="submit-button") }}
+              </div>
+            </form>
           </div>
         </section>
       </main>

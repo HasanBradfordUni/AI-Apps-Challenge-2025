@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Has AI - AI Job Ad Generator | Skills</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
+    <style>      
+      /* Skills page specific styles */
+      .add-skill-btn {
+        background-color: #2c8845;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 8px 16px;
+        margin-top: 10px;
+        cursor: pointer;
+      }
+      
+      .skill-item {
+        background-color: #333;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        position: relative;
+      }
+      
+      .remove-skill {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        background-color: #a13131;
+        color: white;
+        border: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+      
+      .skill-section {
+        margin-bottom: 30px;
+        border-bottom: 1px solid #444;
+        padding-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+        Has AI
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+      </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="{{ url_for('app.index') }}" class="nav">Home</a></li>
+          <li><a href="{{ url_for('app.profile') }}" class="nav" id="currentPage">Create Job Ad</a></li>
+          {% if session.get('user_id') %}
+          <li><a href="{{ url_for('app.ad_history') }}" class="nav">My Job Ads</a></li>
+          <li><a href="{{ url_for('app.logout') }}" class="nav">Logout</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
+
+    <section class="mainBody">
+      <h1 class="mainHeading">Define Required Skills</h1>
+      <br />
+      <h2 class="subHeading">
+        Step 4: Specify required and preferred skills
+      </h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <main>
+        <section>
+          <div class="form-container">
+            <h2 class="largeText">Skills & Additional Information</h2>
+            <p>Specify the skills required for the role and additional information for your job ad.</p>
+            
+            <form method="POST" action="{{ url_for('app.skills') }}">
+              {{ form.hidden_tag() }}
+              
+              <div class="skill-section">
+                <h3 class="largeText">Required Skills</h3>
+                <p>Skills that are essential for the role</p>
+                
+                <div id="required-skills-container">
+                  <!-- Initial required skill field -->
+                  <div class="skill-item">
+                    <div class="form-group">
+                      <label class="form-label">Skill Name</label>
+                      <input type="text" name="required_skills-0-name" class="form-control">
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="button" class="add-skill-btn" id="add-required-skill">
+                  Add Required Skill
+                </button>
+              </div>
+              
+              <div class="skill-section">
+                <h3 class="largeText">Preferred Skills</h3>
+                <p>Skills that are desirable but not mandatory</p>
+                
+                <div id="preferred-skills-container">
+                  <!-- Initial preferred skill field -->
+                  <div class="skill-item">
+                    <div class="form-group">
+                      <label class="form-label">Skill Name</label>
+                      <input type="text" name="preferred_skills-0-name" class="form-control">
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="button" class="add-skill-btn" id="add-preferred-skill">
+                  Add Preferred Skill
+                </button>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Desired Personality Traits</label>
+                <textarea name="personality_traits" class="form-control"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">About Your Company</label>
+                <textarea name="about_company" class="form-control"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Diversity & Inclusion Statement</label>
+                <textarea name="diversity_statement" class="form-control"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Application Process Details</label>
+                <textarea name="application_process" class="form-control"></textarea>
+              </div>
+              
+              <div class="submit-group">
+                {{ form.submit(class="submit-button") }}
+              </div>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <script>
+        // Script to handle adding and removing skill fields
+        document.addEventListener('DOMContentLoaded', function() {
+          let reqSkillCount = 1;
+          let prefSkillCount = 1;
+          
+          document.getElementById('add-required-skill').addEventListener('click', function() {
+            const container = document.getElementById('required-skills-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'skill-item';
+            newItem.innerHTML = `
+              <button type="button" class="remove-skill" onclick="this.parentElement.remove()">×</button>
+              <div class="form-group">
+                <label class="form-label">Skill Name</label>
+                <input type="text" name="required_skills-${reqSkillCount}-name" class="form-control">
+              </div>
+            `;
+            container.appendChild(newItem);
+            reqSkillCount++;
+          });
+          
+          document.getElementById('add-preferred-skill').addEventListener('click', function() {
+            const container = document.getElementById('preferred-skills-container');
+            const newItem = document.createElement('div');
+            newItem.className = 'skill-item';
+            newItem.innerHTML = `
+              <button type="button" class="remove-skill" onclick="this.parentElement.remove()">×</button>
+              <div class="form-group">
+                <label class="form-label">Skill Name</label>
+                <input type="text" name="preferred_skills-${prefSkillCount}-name" class="form-control">
+              </div>
+            `;
+            container.appendChild(newItem);
+            prefSkillCount++;
+          });
+        });
+      </script>
+
+      <hr />
+      <br />
+    </section>
+    <footer>
+    <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div></div>
+              <div>Has AI</div>
+              <div>AI Job Ad Generator</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI Projects for all</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Useful Links</h3>
+              <div class="footer-link-row">
+                <a href="{{ url_for('app.index') }}" class="footer-link">Home</a>
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Create Job Ad</a>
+              </div>
+              <div class="footer-link-row">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('app.ad_history') }}" class="footer-link">My Job Ads</a>
+                <a href="{{ url_for('app.logout') }}" class="footer-link">Logout</a>
+                {% else %}
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Sign Up</a>
+                {% endif %}
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+  </body>
+</html>

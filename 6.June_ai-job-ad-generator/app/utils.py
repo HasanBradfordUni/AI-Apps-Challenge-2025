@@ -1,5 +1,4 @@
 import os
-import google.generativeai as genai
 import PyPDF2
 from io import BytesIO
 import tempfile
@@ -11,31 +10,46 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
-# Configure Google Gemini API
-GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', 'your-api-key')
-genai.configure(api_key=GOOGLE_API_KEY)
+# Import Vertex AI libraries
+import vertexai
+from vertexai.generative_models import GenerativeModel
+import google.auth
 
-# Set up the model
-model = genai.GenerativeModel('gemini-pro')
+# Initialize Google Vertex AI
+credentials, project_id = google.auth.default()
+vertexai.init(project="generalpurposeai", location="us-central1")
+model = GenerativeModel(model_name="gemini-2.0-flash")
 
 def extract_text_from_pdf(pdf_file):
     """Extract text content from an uploaded PDF file"""
     try:
-        # Create a PDF reader object
-        pdf_reader = PyPDF2.PdfReader(BytesIO(pdf_file.read()))
+        # Create a temporary directory for uploads if it doesn't exist
+        os.makedirs(os.path.dirname(__file__) + "\\uploads", exist_ok=True)
         
-        # Extract text from all pages
+        # Save the uploaded file temporarily
+        file_path = f"{os.path.dirname(__file__)}\\uploads\\{pdf_file.filename}"
+        with open(file_path, 'wb') as f:
+            pdf_file.save(f)
+        
+        # Extract text from PDF
         text = ""
-        for page in pdf_reader.pages:
-            text += page.extract_text() + "\n"
+        with open(file_path, 'rb') as pdf_file:
+            reader = PyPDF2.PdfReader(pdf_file)
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:  # Check if page has text
+                    text += page_text + "\n\n"
         
+        if not text.strip():
+            print("Warning: No text extracted from PDF")
+            
         return text
     except Exception as e:
         print(f"Error extracting text from PDF: {str(e)}")
         return ""
 
 def generate_job_ad(job_details):
-    """Generate a job ad from the provided details"""
+    """Generate a job ad from the provided details using Vertex AI"""
     # Construct a prompt for the AI model
     prompt = f"""
     Generate a professional job advertisement based on the following details:
@@ -99,7 +113,7 @@ def generate_job_ad(job_details):
         return "Error generating job advertisement. Please try again."
 
 def refine_job_ad(original_ad, feedback):
-    """Refine a job ad based on user feedback"""
+    """Refine a job ad based on user feedback using Vertex AI"""
     prompt = f"""
     Please refine the following job advertisement based on this feedback:
     
@@ -119,6 +133,56 @@ def refine_job_ad(original_ad, feedback):
         print(f"Error refining job ad: {str(e)}")
         return original_ad
 
+def analyze_job_description(job_description_text):
+    """Extract structured information from an existing job description"""
+    prompt = f"""
+    You are a job description parser. Extract structured information from the following job description and return ONLY valid JSON without any additional text, explanations, or markdown formatting:
+    
+    {job_description_text}
+    
+    Return the information as JSON with the following structure:
+    {{
+      "role_title": "Job Title",
+      "role_type": "Employment Type",
+      "department": "Department Name",
+      "location": "Location",
+      "remote_option": "Remote/Hybrid/Office",
+      "education_required": "Minimum Education Level",
+      "years_experience": "Years of Experience Required",
+      "required_skills": ["Skill 1", "Skill 2"],
+      "preferred_skills": ["Preferred Skill 1", "Preferred Skill 2"],
+      "responsibilities": ["Responsibility 1", "Responsibility 2"]
+    }}
+    """
+    
+    try:
+        response = model.generate_content(prompt)
+        response_text = response.text.strip()
+        
+        # Try to find JSON in the response
+        import json
+        import re
+        
+        # First, try direct JSON parsing
+        try:
+            return json.loads(response_text)
+        except json.JSONDecodeError:
+            # If that fails, try to extract JSON using regex
+            json_match = re.search(r'({[\s\S]*})', response_text)
+            if json_match:
+                try:
+                    return json.loads(json_match.group(1))
+                except json.JSONDecodeError:
+                    # If regex extraction failed, try cleaning the response
+                    cleaned_text = re.sub(r'```json|```', '', response_text)
+                    return json.loads(cleaned_text)
+            else:
+                print("No JSON found in response")
+                return None
+    except Exception as e:
+        print(f"Error analyzing job description: {str(e)}")
+        return None
+
 def format_for_pdf(job_ad_data):
     """Format job ad data into a well-designed PDF file"""
     # Extract relevant data
@@ -134,8 +198,8 @@ def format_for_pdf(job_ad_data):
     
     # Create PDF
     doc = SimpleDocTemplate(filename, pagesize=letter,
-                            rightMargin=72, leftMargin=72,
-                            topMargin=72, bottomMargin=18)
+                           rightMargin=72, leftMargin=72,
+                           topMargin=72, bottomMargin=18)
     
     # Define styles
     styles = getSampleStyleSheet()

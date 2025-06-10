@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Has AI - AI Job Ad Generator | View Ad</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
+    <style>      
+      /* View ad page specific styles */
+      .job-ad-view {
+        background-color: #222;
+        padding: 30px;
+        border-radius: 10px;
+        margin: 20px auto;
+        max-width: 800px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        text-align: left;
+        color: #ddd;
+        white-space: pre-line;
+        line-height: 1.6;
+      }
+      
+      .job-ad-header {
+        margin-bottom: 20px;
+        text-align: center;
+        border-bottom: 1px solid #444;
+        padding-bottom: 10px;
+      }
+      
+      .job-ad-actions {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+
+  <body>
+   <header>
+      <h1>
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+        Has AI
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+      </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="{{ url_for('app.index') }}" class="nav">Home</a></li>
+          <li><a href="{{ url_for('app.profile') }}" class="nav" id="currentPage">Create Job Ad</a></li>
+          {% if session.get('user_id') %}
+          <li><a href="{{ url_for('app.ad_history') }}" class="nav">My Job Ads</a></li>
+          <li><a href="{{ url_for('app.logout') }}" class="nav">Logout</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
+
+    <section class="mainBody">
+      <h1 class="mainHeading">Your Job Advertisement</h1>
+      <br />
+      <h2 class="subHeading">
+        Job ad saved successfully
+      </h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <main>
+        <section>
+          <div class="job-ad-view">
+            <div class="job-ad-header">
+              <h1>{{ job_ad[2] }}</h1>
+              <h3>{{ job_ad[3] }} Department</h3>
+              <p>Created: {{ job_ad[7] }}</p>
+            </div>
+            
+            <div class="job-ad-content">
+              {{ job_ad[4]|safe }}
+            </div>
+            
+            <div class="job-ad-actions">
+              <button class="submit-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+              <a href="{{ url_for('app.download_ad', ad_id=job_ad[0]) }}" class="submit-button">Download PDF</a>
+              <a href="{{ url_for('app.ad_history') }}" class="submit-button">View All Ads</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <script>
+        function copyToClipboard() {
+          const jobAdText = document.querySelector('.job-ad-content').innerText;
+          
+          navigator.clipboard.writeText(jobAdText).then(function() {
+            alert('Job ad copied to clipboard!');
+          }, function() {
+            alert('Error copying to clipboard. Please try again.');
+          });
+        }
+      </script>
+
+      <hr />
+      <br />
+    </section>
+    <footer>
+        <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div></div>
+              <div>Has AI</div>
+              <div>AI Job Ad Generator</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI Projects for all</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Useful Links</h3>
+              <div class="footer-link-row">
+                <a href="{{ url_for('app.index') }}" class="footer-link">Home</a>
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Create Job Ad</a>
+              </div>
+              <div class="footer-link-row">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('app.ad_history') }}" class="footer-link">My Job Ads</a>
+                <a href="{{ url_for('app.logout') }}" class="footer-link">Logout</a>
+                {% else %}
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Sign Up</a>
+                {% endif %}
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+  </body>
+</html>
