@@ -189,49 +189,48 @@ def skills():
     
     return render_template('skills.html', form=form, job_details=job_details)
 
-@app.route('/generate', methods=['GET', 'POST'])
+@app.route('/generate_ad', methods=['GET', 'POST'])
 def generate_ad():
-    if 'user_id' not in session or 'required_skills' not in job_details:
-        flash('Please complete all previous steps first', 'warning')
-        return redirect(url_for('app.skills'))
+    """Generate and save job ad page"""
+    if 'user_id' not in session:
+        flash('Please create a profile first', 'warning')
+        return redirect(url_for('app.profile'))
     
-    # Generate job ad
-    job_ad = generate_job_ad(job_details)
+    form = OutputForm()
     
-    form = OutputForm(job_ad=job_ad)
     if form.validate_on_submit():
-        # Save the final job ad
-        save_as_template = form.save_as_template.data
+        # Debug form data
+        print("Form submitted and validated")
+        print(f"Job ad text length: {len(form.job_ad.data)}")
+        print(f"Save as template: {form.save_as_template.data}")
         
-        # Prepare the job ad for saving
-        formatted_job_ad = form.job_ad.data
-        job_details['generated_ad'] = formatted_job_ad
+        # Save the job ad
+        user_id = session['user_id']
+        role_title = job_details.get('role_title', 'Untitled Position')
+        department = job_details.get('department', 'General')
+        job_ad_text = form.job_ad.data
+        is_template = form.save_as_template.data
+        template_name = job_details.get('template_name', role_title)
         
-        # Convert job_details to JSON for storage
-        import json
-        job_details_json = json.dumps(job_details)
-        
-        job_ad_id = save_job_ad(
-            connection,
-            session['user_id'],
-            job_details['role_title'],
-            job_details['department'],
-            formatted_job_ad,
-            job_details_json,
-            is_template=save_as_template
-        )
-        
-        if save_as_template and job_details['template_name']:
-            # Save as a reusable template
-            add_template(
-                connection,
-                session['user_id'],
-                job_details['template_name'],
-                job_ad_id
-            )
-            flash('Job ad saved as template!', 'success')
-        
-        return redirect(url_for('app.view_ad', ad_id=job_ad_id))
+        # Save to database with additional error handling
+        try:
+            ad_id = save_job_ad(connection, user_id, role_title, department, 
+                              job_ad_text, is_template, template_name)
+            print(f"Job ad saved with ID: {ad_id}")
+            if ad_id:
+                flash('Job ad saved successfully!', 'success')
+                return redirect(url_for('app.view_ad', ad_id=ad_id))
+            else:
+                flash('Error saving job ad - database operation failed', 'error')
+        except Exception as e:
+            print(f"Exception saving job ad: {str(e)}")
+            flash(f'Error saving job ad: {str(e)}', 'error')
+    
+    # First load or validation error
+    if request.method == 'GET':
+        # Generate the job ad if one doesn't exist
+        initial_job_ad = generate_job_ad(job_details)
+        form.job_ad.data = initial_job_ad
     
     return render_template('generate_ad.html', form=form, job_details=job_details)
 
@@ -244,23 +243,37 @@ def view_ad(ad_id):
     
     return render_template('view_ad.html', job_ad=job_ad_data)
 
-@app.route('/history')
+@app.route('/ad_history')
 def ad_history():
+    """Show user's saved job ads"""
     if 'user_id' not in session:
-        flash('Please sign in first', 'warning')
+        flash('Please create a profile first', 'warning')
         return redirect(url_for('app.profile'))
     
+    # Debug logging
+    print(f"Getting job ads for user {session['user_id']}")
+    
+    # Get user's job ads from the database
     ads = get_user_job_ads(connection, session['user_id'])
+    print(f"Found {len(ads) if ads else 0} ads")
+    
     return render_template('ad_history.html', ads=ads)
 
-@app.route('/api/refine_ad', methods=['POST'])
+@app.route('/refine_ad_api', methods=['POST'])
 def refine_ad_api():
-    data = request.json
-    original_ad = data.get('original_ad', '')
-    feedback = data.get('feedback', '')
-    
-    refined_ad = refine_job_ad(original_ad, feedback)
-    return jsonify({'refined_ad': refined_ad})
+    """API endpoint for refining job ad text"""
+    try:
+        data = request.get_json()
+        original_ad = data.get('original_ad', '')
+        feedback = data.get('feedback', '')
+        
+        # Call the refine_job_ad function from utils.py
+        refined_ad = refine_job_ad(original_ad, feedback)
+        
+        return jsonify({'refined_ad': refined_ad})
+    except Exception as e:
+        print(f"Error refining job ad: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/download/<int:ad_id>')
 def download_ad(ad_id):

@@ -161,19 +161,26 @@
                 feedback: feedback
               })
             })
-            .then(response => response.json())
+            .then(response => {
+              if (!response.ok) {
+                return response.json().then(err => {
+                  throw new Error(JSON.stringify(err));
+                });
+              }
+              return response.json();
+            })
             .then(data => {
               loadingSpinner.style.display = 'none';
               if (data.refined_ad) {
                 jobAdTextarea.value = data.refined_ad;
               } else {
-                alert('Error refining job ad. Please try again.');
+                alert('Error refining job ad: ' + (data.error || 'Unknown error'));
               }
             })
             .catch(error => {
               loadingSpinner.style.display = 'none';
-              console.error('Error:', error);
-              alert('Error refining job ad. Please try again.');
+              console.error('Refinement error:', error);
+              alert('Error refining job ad: ' + error);
             });
           });
         });

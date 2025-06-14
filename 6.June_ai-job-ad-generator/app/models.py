@@ -26,48 +26,41 @@ def execute_query(connection, query, params=None):
         print(f"The error '{e}' occurred")
         return None
 
-def create_tables(connection):
-    # Users table
-    create_users_table = """
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        email TEXT UNIQUE,
-        company_name TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    """
-    execute_query(connection, create_users_table)
-
-    # Job ads table
-    create_ads_table = """
-    CREATE TABLE IF NOT EXISTS job_ads (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        role_title TEXT,
-        department TEXT,
-        job_ad_text TEXT,
-        details_json TEXT,
-        is_template BOOLEAN DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    );
-    """
-    execute_query(connection, create_ads_table)
-
-    # Templates table
-    create_templates_table = """
-    CREATE TABLE IF NOT EXISTS templates (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        template_name TEXT,
-        job_ad_id INTEGER,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id),
-        FOREIGN KEY (job_ad_id) REFERENCES job_ads (id)
-    );
-    """
-    execute_query(connection, create_templates_table)
+def create_tables(conn):
+    """Create necessary database tables if they don't exist"""
+    try:
+        cursor = conn.cursor()
+        
+        # Create users table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            company_name TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        ''')
+        
+        # Create job_ads table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS job_ads (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            role_title TEXT NOT NULL,
+            department TEXT,
+            job_ad_text TEXT NOT NULL,
+            template_name TEXT,
+            is_template INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+        ''')
+        
+        conn.commit()
+    except Exception as e:
+        print(f"Error creating tables: {str(e)}")
+        conn.rollback()
 
 # User data functions
 def add_user(connection, name, email, company_name):
@@ -87,12 +80,26 @@ def find_user_by_email(connection, email):
     return cursor.fetchone()
 
 # Job ad functions
-def save_job_ad(connection, user_id, role_title, department, job_ad_text, details_json, is_template=False):
-    query = """
-    INSERT INTO job_ads (user_id, role_title, department, job_ad_text, details_json, is_template)
-    VALUES (?, ?, ?, ?, ?, ?)
-    """
-    return execute_query(connection, query, (user_id, role_title, department, job_ad_text, details_json, is_template))
+def save_job_ad(connection, user_id, role_title, department, job_ad_text, is_template=False, template_name=None):
+    """Save a job ad to the database"""
+    try:
+        cursor = connection.cursor()
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        query = '''
+        INSERT INTO job_ads (user_id, role_title, department, job_ad_text, is_template, template_name, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        '''
+        cursor.execute(query, (user_id, role_title, department, job_ad_text, 
+                              1 if is_template else 0, template_name, timestamp))
+        connection.commit()
+        
+        # Return the ID of the inserted row
+        return cursor.lastrowid
+    except Exception as e:
+        print(f"Error saving job ad: {str(e)}")
+        connection.rollback()
+        return None
 
 def get_job_ad(connection, ad_id):
     cursor = connection.cursor()
@@ -101,13 +108,19 @@ def get_job_ad(connection, ad_id):
     return cursor.fetchone()
 
 def get_user_job_ads(connection, user_id):
-    cursor = connection.cursor()
-    query = """
-    SELECT * FROM job_ads WHERE user_id = ? 
-    ORDER BY created_at DESC
-    """
-    cursor.execute(query, (user_id,))
-    return cursor.fetchall()
+    """Get all job ads for a specific user"""
+    try:
+        cursor = connection.cursor()
+        query = '''
+        SELECT * FROM job_ads 
+        WHERE user_id = ? 
+        ORDER BY created_at DESC
+        '''
+        cursor.execute(query, (user_id,))
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error retrieving user job ads: {str(e)}")
+        return []
 
 # Template functions
 def add_template(connection, user_id, template_name, job_ad_id):

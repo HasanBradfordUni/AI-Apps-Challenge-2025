@@ -115,7 +115,7 @@ def generate_job_ad(job_details):
 def refine_job_ad(original_ad, feedback):
     """Refine a job ad based on user feedback using Vertex AI"""
     prompt = f"""
-    Please refine the following job advertisement based on this feedback:
+    Please refine this job advertisement based on the following feedback:
     
     ORIGINAL JOB AD:
     {original_ad}
@@ -131,7 +131,7 @@ def refine_job_ad(original_ad, feedback):
         return response.text
     except Exception as e:
         print(f"Error refining job ad: {str(e)}")
-        return original_ad
+        raise Exception(f"Error refining job ad: {str(e)}")
 
 def analyze_job_description(job_description_text):
     """Extract structured information from an existing job description"""
