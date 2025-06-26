@@ -1,9 +1,13 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, send_file
 import os
 from .forms import UploadForm, UserForm, CVForm, JobForm, CoverLetterForm
 from .models import create_connection, create_tables, add_user, add_skill, add_education, add_experience
 from .models import save_cover_letter, get_cover_letter, get_user_cover_letters, find_user_by_email, execute_query
 from .utils import extract_text_from_pdf, generate_cover_letter, refine_cover_letter, extract_cv_structure, model
+import io
+from docx import Document
+import pdfkit
+from datetime import datetime
 
 app = Blueprint('app', __name__)
 
@@ -197,35 +201,27 @@ def generate_letter():
     
     job_description = session.get('job_description', '')
     
-    # Get CV information from the database
-    user_id = session['user_id']
+    # Get customization options from form or use defaults
+    tone = request.form.get('tone', 'professional')
+    length = request.form.get('length', 'standard')
+    focus_areas = request.form.getlist('focus_areas')
     
-    # Get user skills
-    skills_query = """
-    SELECT skill_name, proficiency FROM skills WHERE user_id = ?
-    """
-    skills_data = execute_query(connection, skills_query, (user_id,), fetch="all")
+    # PROBLEM: cv_text might not be defined here
+    # FIX: Get CV text from session
+    cv_text = get_session_cv_text()
     
-    # Get user education
-    education_query = """
-    SELECT institution, degree, field, start_date, end_date FROM education WHERE user_id = ?
-    """
-    education_data = execute_query(connection, education_query, (user_id,), fetch="all")
+    # Generate cover letter with customization
+    cover_letter = generate_cover_letter(
+        cv_text, 
+        job_description, 
+        tone=tone, 
+        length=length, 
+        focus_areas=focus_areas
+    )
     
-    # Get user experience
-    experience_query = """
-    SELECT company, position, description, start_date, end_date FROM experience WHERE user_id = ?
-    """
-    experience_data = execute_query(connection, experience_query, (user_id,), fetch="all")
-    
-    # Format the CV text from the database data
-    formatted_cv = format_cv_text(skills_data, education_data, experience_data)
-    
-    # Use the formatted CV or the uploaded CV text, whichever is available
-    cv_text_to_use = formatted_cv if formatted_cv else get_session_cv_text()
-    
-    # Generate cover letter
-    cover_letter = generate_cover_letter(cv_text_to_use, job_description)
+    # If it's a regeneration request, return JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'cover_letter': cover_letter})
     
     form = CoverLetterForm(cover_letter=cover_letter)
     if form.validate_on_submit():
@@ -241,7 +237,13 @@ def generate_letter():
         
         return redirect(url_for('app.view_letter', letter_id=letter_id))
     
-    return render_template('generate_letter.html', form=form)
+    return render_template(
+        'generate_letter.html', 
+        form=form, 
+        tone=tone, 
+        length=length,
+        focus_areas=focus_areas
+    )
 
 @app.route('/view/<int:letter_id>')
 def view_letter(letter_id):
@@ -261,7 +263,7 @@ def letter_history():
     letters = get_user_cover_letters(connection, session['user_id'])
     return render_template('letter_history.html', letters=letters)
 
-@app.route('/api/refine_letter', methods=['POST'])
+@app.route('/api/refine_letter', methods=['POST', 'GET'])
 def refine_letter_api():
     data = request.json
     original_letter = data.get('original_letter', '')
@@ -279,45 +281,70 @@ def process_cv():
     if file.filename == '':
         return jsonify({'success': False, 'message': 'No file selected'})
     
+    # Validate file type
+    if not file.filename.lower().endswith(('.pdf', '.docx', '.doc')):
+        return jsonify({
+            'success': False, 
+            'message': 'Unsupported file format. Please upload a PDF or Word document.'
+        })
+    
     try:
-        # Extract text from CV
-        cv_text = extract_text_from_pdf(file)
-        set_session_cv_text(cv_text)  # Store in session
+        # Extract text using appropriate method based on file type
+        if file.filename.lower().endswith('.pdf'):
+            cv_text = extract_text_from_pdf(file)
+        elif file.filename.lower().endswith(('.docx', '.doc')):
+            cv_text = extract_text_from_word(file)
         
-        print(f"Extracted text (first 100 chars): {cv_text[:100]}...")
+        # Store in session
+        set_session_cv_text(cv_text)
         
-        # Extract structured data using Gemini
-        cv_data = extract_cv_structure(cv_text)
+        # Log extraction success with length check
+        if len(cv_text) < 50:  # Simple validation
+            print(f"Warning: Extracted text is very short: {cv_text}")
+            return jsonify({
+                'success': False,
+                'message': 'The uploaded file appears to be empty or unreadable. Please try a different file.'
+            })
         
-        if cv_data:
-            # Validate the structure of cv_data
-            if (isinstance(cv_data, dict) and 
-                'skills' in cv_data and 
-                'education' in cv_data and 
-                'experience' in cv_data):
+        # Extract structured data using AI
+        try:
+            cv_data = extract_cv_structure(cv_text)
+            
+            if cv_data and isinstance(cv_data, dict):
+                # Make sure the required keys exist
+                required_keys = ['skills', 'education', 'experience']
+                for key in required_keys:
+                    if key not in cv_data:
+                        cv_data[key] = []
                 
                 return jsonify({
                     'success': True,
                     'data': cv_data
                 })
             else:
-                print(f"Invalid CV data structure: {cv_data}")
+                # Provide a fallback structure with helpful message
+                fallback_data = {
+                    'skills': [{'skill_name': '', 'proficiency': 'beginner'}],
+                    'education': [{'institution': '', 'degree': '', 'field': '', 'start_date': '', 'end_date': ''}],
+                    'experience': [{'company': '', 'position': '', 'exp_description': '', 'start_date': '', 'end_date': ''}]
+                }
+                
                 return jsonify({
-                    'success': False,
-                    'message': 'Invalid data structure from CV parsing'
+                    'success': True,
+                    'data': fallback_data,
+                    'message': 'We couldn\'t automatically extract details from your CV. Please fill in the information manually.'
                 })
-        else:
-            # Provide a fallback structure
-            fallback_data = {
-                'skills': [{'skill_name': '', 'proficiency': 'beginner'}],
-                'education': [{'institution': '', 'degree': '', 'field': '', 'start_date': None, 'end_date': None}],
-                'experience': [{'company': '', 'position': '', 'exp_description': '', 'start_date': None, 'end_date': None}]
-            }
-            
+        except Exception as e:
+            print(f"Error extracting CV structure: {str(e)}")
+            # Return success but with empty structure
             return jsonify({
                 'success': True,
-                'data': fallback_data,
-                'message': 'Could not extract data from CV, please fill in manually'
+                'data': {
+                    'skills': [],
+                    'education': [],
+                    'experience': []
+                },
+                'message': 'CV text extracted but structure analysis failed. Please add details manually.'
             })
     except Exception as e:
         print(f"Exception in process_cv: {str(e)}")
@@ -325,7 +352,7 @@ def process_cv():
         traceback.print_exc()
         return jsonify({
             'success': False,
-            'message': f'Error processing CV: {str(e)}'
+            'message': f'Error processing CV: {str(e)}. Please try again with a different file.'
         })
 
 @app.route('/debug_cv_extraction', methods=['GET', 'POST'])
@@ -620,3 +647,119 @@ def format_cv_text(skills_data, education_data, experience_data):
     formatted_cv = skills_text + education_text + experience_text
     
     return formatted_cv
+
+@app.route('/export/<int:letter_id>/<format>')
+def export_letter(letter_id, format):
+    if format not in ['docx', 'pdf', 'txt']:
+        flash('Unsupported export format', 'error')
+        return redirect(url_for('app.view_letter', letter_id=letter_id))
+    
+    letter_data = get_cover_letter(connection, letter_id)
+    if not letter_data:
+        flash('Cover letter not found', 'error')
+        return redirect(url_for('app.letter_history'))
+    
+    cover_letter = letter_data['content']
+    filename = f"Cover_Letter_{letter_data['job_title'].replace(' ', '_')}"
+    
+    if format == 'docx':
+        # Create Word document
+        doc = Document()
+        doc.add_heading(f"Cover Letter: {letter_data['job_title']}", 0)
+        doc.add_paragraph(letter_data['company_name'])
+        doc.add_paragraph('')
+        doc.add_paragraph(cover_letter)
+        
+        # Save to memory
+        file_stream = io.BytesIO()
+        doc.save(file_stream)
+        file_stream.seek(0)
+        
+        return send_file(
+            file_stream, 
+            as_attachment=True,
+            download_name=f"{filename}.docx",
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+    
+    elif format == 'pdf':
+        html = f"""
+        <h1>Cover Letter: {letter_data['job_title']}</h1>
+        <h2>{letter_data['company_name']}</h2>
+        <br>
+        {cover_letter.replace('\n', '<br>')}
+        """
+        
+        pdf = pdfkit.from_string(html, False)
+        
+        return send_file(
+            io.BytesIO(pdf),
+            as_attachment=True,
+            download_name=f"{filename}.pdf",
+            mimetype='application/pdf'
+        )
+    
+    else:  # txt format
+        txt_content = f"Cover Letter: {letter_data['job_title']}\n"
+        txt_content += f"{letter_data['company_name']}\n\n"
+        txt_content += cover_letter
+        
+        return send_file(
+            io.BytesIO(txt_content.encode()),
+            as_attachment=True,
+            download_name=f"{filename}.txt",
+            mimetype='text/plain'
+        )
+
+@app.route('/api/letter_feedback', methods=['POST', 'GET'])
+def letter_feedback():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please sign in first'})
+    
+    data = request.json
+    letter_id = data.get('letter_id')
+    rating = data.get('rating')
+    feedback = data.get('feedback', '')
+    
+    if not letter_id or not rating or not isinstance(rating, int) or rating < 1 or rating > 5:
+        return jsonify({'success': False, 'message': 'Invalid feedback data'})
+    
+    try:
+        # Store feedback in database
+        with connection:
+            cursor = connection.cursor()
+            cursor.execute(
+                'INSERT INTO letter_feedback (letter_id, user_id, rating, feedback, created_at) VALUES (?, ?, ?, ?, ?)',
+                (letter_id, session['user_id'], rating, feedback, datetime.now())
+            )
+            connection.commit()
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error saving feedback: {str(e)}")
+        return jsonify({'success': False, 'message': 'Error saving feedback'})
+
+def extract_text_from_word(file):
+    """Extract text from a Word document."""
+    try:
+        import docx
+        
+        # Save file to temp location
+        temp_path = os.path.join(os.path.dirname(__file__), 'temp', file.filename)
+        os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+        file.save(temp_path)
+        
+        # Extract text
+        doc = docx.Document(temp_path)
+        text = ""
+        
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + "\n"
+        
+        # Clean up temp file
+        os.remove(temp_path)
+        
+        return text
+    except Exception as e:
+        print(f"Error extracting text from Word document: {str(e)}")
+        raise ValueError(f"Could not process Word document: {str(e)}")

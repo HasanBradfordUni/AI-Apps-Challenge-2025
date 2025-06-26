@@ -655,6 +655,145 @@
                 document.getElementById('experience-container').appendChild(expDiv);
             }
         });
+
+
+        // CV Upload handling
+        $(document).ready(function() {
+            // Form submission for CV upload
+            $('#cv-upload-form').on('submit', function(event) {
+                event.preventDefault();
+                
+                const fileInput = $(this).find('input[type="file"]');
+                
+                if (fileInput.length === 0 || !fileInput[0].files.length) {
+                    showAlert('Please select a file to upload', 'danger');
+                    return;
+                }
+                
+                const file = fileInput[0].files[0];
+                const formData = new FormData();
+                formData.append('cv_file', file);
+                
+                // Show loading overlay
+                showLoader('Processing your CV...');
+                
+                $.ajax({
+                    url: '/process_cv',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        hideLoader();
+                        
+                        if (response.success) {
+                            if (response.message) {
+                                showAlert(response.message, 'info');
+                            }
+                            
+                            // Populate form with extracted data
+                            populateCVForm(response.data);
+                        } else {
+                            showAlert(response.message || 'Failed to process CV file', 'danger');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        hideLoader();
+                        
+                        console.error('Error details:', {
+                            status: xhr.status,
+                            statusText: xhr.statusText,
+                            responseText: xhr.responseText
+                        });
+                        
+                        let errorMessage = 'An error occurred while processing your CV file';
+                        
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            // If JSON parsing fails, use a generic message
+                            errorMessage = `Error: ${xhr.status} ${xhr.statusText}`;
+                        }
+                        
+                        showAlert(errorMessage, 'danger');
+                    }
+                });
+            });
+            
+            // Helper function to show alerts
+            function showAlert(message, type) {
+                const alertDiv = $('<div>').addClass(`alert alert-${type} alert-dismissible fade show`)
+                    .append(message)
+                    .append($('<button>').addClass('btn-close').attr({
+                        'type': 'button',
+                        'data-bs-dismiss': 'alert'
+                    }));
+                
+                $('#alerts-container').html(alertDiv);
+                
+                // Auto-dismiss after 5 seconds
+                setTimeout(function() {
+                    alertDiv.alert('close');
+                }, 5000);
+            }
+            
+            // Helper functions for loader
+            function showLoader(message) {
+                $('body').append(`
+                    <div id="loading-overlay" class="loading-overlay">
+                        <div class="loading-content">
+                            <div class="spinner"></div>
+                            <p class="mt-3">${message || 'Loading...'}</p>
+                        </div>
+                    </div>
+                `);
+            }
+            
+            function hideLoader() {
+                $('#loading-overlay').remove();
+            }
+            
+            // Function to populate CV form with extracted data
+            function populateCVForm(data) {
+                // Clear existing sections first
+                $('#skills-container').html('');
+                $('#education-container').html('');
+                $('#experience-container').html('');
+                
+                // Add skills
+                if (data.skills && data.skills.length) {
+                    data.skills.forEach(function(skill, index) {
+                        addSkillField(skill);
+                    });
+                } else {
+                    // Add one empty skill field
+                    addSkillField();
+                }
+                
+                // Add education
+                if (data.education && data.education.length) {
+                    data.education.forEach(function(edu, index) {
+                        addEducationField(edu);
+                    });
+                } else {
+                    // Add one empty education field
+                    addEducationField();
+                }
+                
+                // Add experience
+                if (data.experience && data.experience.length) {
+                    data.experience.forEach(function(exp, index) {
+                        addExperienceField(exp);
+                    });
+                } else {
+                    // Add one empty experience field
+                    addExperienceField();
+                }
+            }
+        });
         </script>
 
     <footer>

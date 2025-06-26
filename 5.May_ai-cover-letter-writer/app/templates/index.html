@@ -189,6 +189,56 @@
         .cta-button:hover {
             background-color: darkred;
         }
+
+        .progress-container {
+            margin: 20px 0;
+            padding: 0 10%;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .step {
+            flex: 1;
+            position: relative;
+            text-align: center;
+        }
+
+        .step-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .step-label {
+            font-size: 14px;
+        }
+
+        .connector {
+            height: 2px;
+            background-color: gray;
+            position: absolute;
+            top: 10px;
+            width: calc(100% - 40px);
+            left: 20px;
+            z-index: 1;
+        }
+
+        .active .connector {
+            background-color: goldenrod;
+        }
+
+        .completed .connector {
+            background-color: green;
+        }
     </style>
 </head>
 <body>
@@ -236,6 +286,35 @@
             <button class="cta-button">View My Letters</button>
         </a>
         {% endif %}
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-steps">
+                    {% set steps = [
+                        {'url': url_for('app.profile'), 'name': 'Profile', 'icon': 'user'},
+                        {'url': url_for('app.cv_details'), 'name': 'CV', 'icon': 'file-text'},
+                        {'url': url_for('app.job_details'), 'name': 'Job', 'icon': 'briefcase'},
+                        {'url': url_for('app.generate_letter'), 'name': 'Generate', 'icon': 'magic'}
+                    ] %}
+                    
+                    {% for step in steps %}
+                        {% set is_active = request.path == step.url %}
+                        {% set is_completed = loop.index0 < steps|selectattr('url', 'equalto', request.path)|list|length %}
+                        
+                        <div class="step {{ 'active' if is_active else '' }} {{ 'completed' if is_completed and not is_active else '' }}">
+                            <div class="step-icon">
+                                <i class="fas fa-{{ step.icon }}"></i>
+                            </div>
+                            <div class="step-label">{{ step.name }}</div>
+                        </div>
+                        
+                        {% if not loop.last %}
+                            <div class="connector {{ 'active' if is_completed else '' }}"></div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
     </section>
 
     <footer>

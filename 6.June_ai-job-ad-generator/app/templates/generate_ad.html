@@ -150,6 +150,12 @@
             const originalAd = jobAdTextarea.value;
             loadingSpinner.style.display = 'block';
             
+            // Log data being sent
+            console.log('Sending refinement request with:', {
+              original_ad: originalAd.substring(0, 50) + '...',  // Log first 50 chars
+              feedback: feedback
+            });
+            
             // Send the refinement request to the server
             fetch('{{ url_for("app.refine_ad_api") }}', {
               method: 'POST',
@@ -162,25 +168,38 @@
               })
             })
             .then(response => {
+              // First check if the response is OK
               if (!response.ok) {
-                return response.json().then(err => {
-                  throw new Error(JSON.stringify(err));
+                console.error('Server response not OK:', response.status, response.statusText);
+                return response.text().then(text => {
+                  console.error('Error response body:', text);
+                  throw new Error(`Server error: ${response.status} ${response.statusText}`);
                 });
               }
-              return response.json();
+              // Try to parse as JSON
+              return response.json().catch(err => {
+                console.error('Error parsing JSON response:', err);
+                return response.text().then(text => {
+                  console.error('Raw response:', text);
+                  throw new Error('Invalid JSON response from server');
+                });
+              });
             })
             .then(data => {
               loadingSpinner.style.display = 'none';
+              console.log('Received response:', data);
+              
               if (data.refined_ad) {
                 jobAdTextarea.value = data.refined_ad;
+                feedbackText.value = '';  // Clear feedback field
               } else {
-                alert('Error refining job ad: ' + (data.error || 'Unknown error'));
+                alert('Error: ' + (data.error || 'No refined ad returned'));
               }
             })
             .catch(error => {
               loadingSpinner.style.display = 'none';
-              console.error('Refinement error:', error);
-              alert('Error refining job ad: ' + error);
+              console.error('Fetch error:', error);
+              alert('Error refining job ad: ' + error.message);
             });
           });
         });

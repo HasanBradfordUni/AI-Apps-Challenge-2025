@@ -114,6 +114,9 @@ def generate_job_ad(job_details):
 
 def refine_job_ad(original_ad, feedback):
     """Refine a job ad based on user feedback using Vertex AI"""
+    if not original_ad or not feedback:
+        return "Error: Missing original ad text or feedback"
+    
     prompt = f"""
     Please refine this job advertisement based on the following feedback:
     
@@ -128,10 +131,13 @@ def refine_job_ad(original_ad, feedback):
     
     try:
         response = model.generate_content(prompt)
-        return response.text
+        # Make sure we return a string, not an object
+        refined_text = response.text if hasattr(response, 'text') else str(response)
+        return refined_text
     except Exception as e:
         print(f"Error refining job ad: {str(e)}")
-        raise Exception(f"Error refining job ad: {str(e)}")
+        # Return a message instead of raising an exception
+        return f"Error refining job ad: {str(e)}"
 
 def analyze_job_description(job_description_text):
     """Extract structured information from an existing job description"""

@@ -259,20 +259,28 @@ def ad_history():
     
     return render_template('ad_history.html', ads=ads)
 
-@app.route('/refine_ad_api', methods=['POST'])
+@app.route('/refine_ad_api', methods=['POST', 'GET'])
 def refine_ad_api():
     """API endpoint for refining job ad text"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No JSON data received'}), 400
+            
         original_ad = data.get('original_ad', '')
         feedback = data.get('feedback', '')
         
+        if not original_ad or not feedback:
+            return jsonify({'error': 'Missing required parameters'}), 400
+            
         # Call the refine_job_ad function from utils.py
         refined_ad = refine_job_ad(original_ad, feedback)
         
+        # Ensure we're returning a valid JSON response
         return jsonify({'refined_ad': refined_ad})
     except Exception as e:
         print(f"Error refining job ad: {str(e)}")
+        # Return a proper JSON error response
         return jsonify({'error': str(e)}), 500
 
 @app.route('/download/<int:ad_id>')
@@ -365,3 +373,8 @@ def logout():
     session.clear()
     flash('You have been logged out', 'info')
     return redirect(url_for('app.index'))
+
+@app.route('/test_json')
+def test_json():
+    """Test JSON response functionality"""
+    return jsonify({'status': 'ok', 'message': 'JSON is working'})
