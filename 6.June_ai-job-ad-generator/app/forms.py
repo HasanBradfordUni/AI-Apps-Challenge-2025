@@ -71,12 +71,6 @@ class SkillsForm(FlaskForm):
 
 class OutputForm(FlaskForm):
     job_ad = TextAreaField('Generated Job Ad', validators=[DataRequired()])
-    tone = SelectField('Ad Tone', choices=[
-        ('professional', 'Professional'),
-        ('enthusiastic', 'Enthusiastic'),
-        ('casual', 'Casual'),
-        ('innovative', 'Innovative')
-    ])
     save_as_template = BooleanField('Save as Template')
     submit = SubmitField('Save Job Ad')
 

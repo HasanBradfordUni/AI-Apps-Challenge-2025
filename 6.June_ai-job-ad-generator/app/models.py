@@ -56,6 +56,19 @@ def create_tables(conn):
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
         ''')
+
+        # Create templates table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS templates (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            template_name TEXT NOT NULL,
+            job_ad_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (job_ad_id) REFERENCES job_ads (id)
+        )
+        ''')
         
         conn.commit()
     except Exception as e:

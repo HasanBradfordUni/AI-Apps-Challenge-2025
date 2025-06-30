@@ -198,6 +198,12 @@ def generate_ad():
     
     form = OutputForm()
     
+    # Debug form submission and validation
+    if request.method == 'POST':
+        print("Form submitted via POST")
+        print(f"Form errors: {form.errors}")
+        print(f"Form data: {request.form}")
+        
     if form.validate_on_submit():
         # Debug form data
         print("Form submitted and validated")
@@ -225,6 +231,12 @@ def generate_ad():
         except Exception as e:
             print(f"Exception saving job ad: {str(e)}")
             flash(f'Error saving job ad: {str(e)}', 'error')
+    elif request.method == 'POST':
+        # Form validation failed
+        print("Form validation failed")
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'{field}: {error}', 'error')
     
     # First load or validation error
     if request.method == 'GET':
