@@ -222,7 +222,7 @@
           height="50"
           class="logo"
         />
-        Has AI - Speech-to-Text App
+        Has AI
         <img
           src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
           alt="The Has AI logo"
@@ -231,16 +231,27 @@
           class="logo"
         />
       </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="#recording-section" class="nav" id="currentPage">Recording Section</a></li>
+          <li><a href="#file-upload-section" class="nav">File Upload Section</a></li>
+          <li><a href="#ai-summary-section" class="nav">AI Summary Section</a></li>
+          <li><a href="#voice-commands-section" class="nav">Voice Command Section</a></li>
+          <li><a href="#voice-training-section" class="nav">Voice Training Section</a></li>
+          <li><a href="#export-section" class="nav">Export Section</a></li>
+        </ul>
+      </div>
     </header>
 
     <section class="mainBody">
       <h1 class="mainHeading">AI Speech-to-Text Application</h1>
       <h2 class="subHeading">
-        Transform your speech into text with AI-powered transcription, smart summarization, and voice commands.
+        Transform your speech into text with AI-powered transcription, smart summarization, and voice commands. The perfect tool for meetings, lectures, and personal notes.
       </h2>
 
       <!-- Real-time Recording Section -->
-      <div class="section">
+      <div class="section" id="recording-section">
         <h3>🎤 Real-time Recording & Transcription</h3>
         <div>
           <span class="status-indicator" id="recording-status"></span>
@@ -258,7 +269,7 @@
       </div>
 
       <!-- File Upload Section -->
-      <div class="section">
+      <div class="section" id="file-upload-section">
         <h3>📁 Upload Audio File</h3>
         <form method="POST" enctype="multipart/form-data" id="upload-form">
           {{ form.hidden_tag() }}
@@ -278,7 +289,7 @@
 
       <!-- AI Summary Section -->
       {% if ai_summary %}
-      <div class="section">
+      <div class="section" id="ai-summary-section">
         <h3>🤖 AI Summary</h3>
         <div class="ai-summary">
           {{ ai_summary|safe }}
@@ -287,7 +298,7 @@
       {% endif %}
 
       <!-- Voice Commands Section -->
-      <div class="section">
+      <div class="section" id="voice-commands-section">
         <h3>🗣️ Voice Commands</h3>
         <p>Try saying: "Start recording", "Stop recording", "Summarize transcript", "Clear transcript"</p>
         <div class="form-group">
@@ -300,7 +311,7 @@
       </div>
 
       <!-- Voice Training Section -->
-      <div class="section voice-training">
+      <div class="section voice-training" id="voice-training-section">
         <h3>🎯 Voice Training</h3>
         <p>Train the app to better recognize your voice for improved accuracy</p>
         <div class="form-group">
@@ -320,7 +331,7 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
       </div>
 
       <!-- Export & Session Management -->
-      <div class="section">
+      <div class="section" id="export-section">
         <h3>💾 Export & Session Management</h3>
         <div style="margin: 15px 0;">
           <button class="button" onclick="exportCurrentTranscript('txt')">Export as TXT</button>
@@ -335,8 +346,92 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
     </section>
 
     <footer>
-      <h3>&copy; Akhtar Hasan (aka Python Programmer) 2025</h3>
-      <p>AI Speech-to-Text Application - Part of the AI Apps Challenge 2025</p>
+      <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div></div>
+              <div>Has AI</div>
+              <div>AI Speech-to-text App</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI Projects for all</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Useful Links</h3>
+              <div class="footer-link-row">
+                <li><a href="#recording-section" class="nav" id="currentPage">Recording Section</a></li>
+                <li><a href="#file-upload-section" class="nav">File Upload Section</a></li>
+              </div>
+              <div class="footer-link-row">
+                <li><a href="#ai-summary-section" class="nav">AI Summary Section</a></li>
+                <li><a href="#voice-commands-section" class="nav">Voice Command Section</a></li>
+              </div>
+              <div class="footer-link-row">
+                <li><a href="#voice-training-section" class="nav">Voice Training Section</a></li>
+                <li><a href="#export-section" class="nav">Export Section</a></li>
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
     </footer>
 
     <script>
