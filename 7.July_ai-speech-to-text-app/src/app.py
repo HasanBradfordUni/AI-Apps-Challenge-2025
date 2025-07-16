@@ -10,8 +10,9 @@ from ai.geminiPrompt import generate_transcript_summary, generate_voice_command_
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['VOICE_PROFILES_FOLDER'] = 'voice_profiles'
+folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+app.config['UPLOAD_FOLDER'] = os.path.join(folder_path, 'uploads')
+app.config['VOICE_PROFILES_FOLDER'] = os.path.join(folder_path, 'voice_profiles')
 
 # Ensure upload directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -226,6 +227,63 @@ def delete_session(session_id):
     
     del transcript_sessions[session_id]
     return jsonify({'success': True, 'message': 'Session deleted'})
+
+@app.route('/api/upload-audio', methods=['POST'])
+def upload_audio():
+    """Handle audio file upload and return preview"""
+    try:
+        if 'audio_file' not in request.files:
+            return jsonify({'error': 'No audio file provided'}), 400
+        
+        file = request.files['audio_file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Save file
+        filename = secure_filename(file.filename)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{timestamp}_{filename}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        # Transcribe audio
+        transcript = voice_methods.transcribe_audio_file(filepath)
+        
+        # Generate summary
+        summary_type = request.form.get('summary_type', 'meeting')
+        summary = generate_transcript_summary(transcript, summary_type)
+        
+        # Save session
+        session_id = f"upload_{timestamp}"
+        transcript_sessions[session_id] = {
+            'transcript': transcript,
+            'summary': summary,
+            'timestamp': datetime.now().isoformat(),
+            'filename': filename,
+            'type': 'upload'
+        }
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'transcript': transcript,
+            'summary': summary,
+            'filename': filename
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/get-session/<session_id>', methods=['GET'])
+def get_session(session_id):
+    """Get specific session data"""
+    if session_id not in transcript_sessions:
+        return jsonify({'error': 'Session not found'}), 404
+    
+    return jsonify({
+        'success': True,
+        'session': transcript_sessions[session_id]
+    })
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6922, debug=True)

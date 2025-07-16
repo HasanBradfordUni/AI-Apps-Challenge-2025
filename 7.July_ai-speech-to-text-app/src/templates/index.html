@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>Has AI - AI Speech-to-Text App</title>
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='hasAi.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       body {
@@ -234,7 +234,7 @@
       <hr />
       <div>
         <ul class="nav">
-          <li><a href="#recording-section" class="nav" id="currentPage">Recording Section</a></li>
+          <li><a href="#recording-section" class="nav">Recording Section</a></li>
           <li><a href="#file-upload-section" class="nav">File Upload Section</a></li>
           <li><a href="#ai-summary-section" class="nav">AI Summary Section</a></li>
           <li><a href="#voice-commands-section" class="nav">Voice Command Section</a></li>
@@ -245,19 +245,19 @@
     </header>
 
     <section class="mainBody">
-      <h1 class="mainHeading">AI Speech-to-Text Application</h1>
+      <h1 class="mainHeading" id="recording-section">AI Speech-to-Text Application</h1>
       <h2 class="subHeading">
         Transform your speech into text with AI-powered transcription, smart summarization, and voice commands. The perfect tool for meetings, lectures, and personal notes.
       </h2>
 
       <!-- Real-time Recording Section -->
-      <div class="section" id="recording-section">
+      <div class="section">
         <h3>🎤 Real-time Recording & Transcription</h3>
         <div>
           <span class="status-indicator" id="recording-status"></span>
           <span id="recording-status-text">Ready to record</span>
         </div>
-        <div style="margin: 20px 0;">
+        <div style="margin: 20px 0;" id="file-upload-section">
           <button class="button recording-button" id="record-button" onclick="toggleRecording()">
             Start Recording
           </button>
@@ -269,7 +269,7 @@
       </div>
 
       <!-- File Upload Section -->
-      <div class="section" id="file-upload-section">
+      <div class="section">
         <h3>📁 Upload Audio File</h3>
         <form method="POST" enctype="multipart/form-data" id="upload-form">
           {{ form.hidden_tag() }}
@@ -285,23 +285,39 @@
             {{ form.submit_file(class="button") }}
           </div>
         </form>
+        
+        <!-- Transcript Preview Section -->
+        <div id="upload-preview" style="display: none;">
+          <h4>📝 Transcript Preview</h4>
+          <div class="transcript-display" id="upload-transcript-preview">
+            Processing uploaded file...
+          </div>
+          <div id="upload-full-transcript" style="display: none;">
+            <button class="button" onclick="showFullTranscript()">Show Full Transcript</button>
+          </div>
+        </div>
       </div>
 
       <!-- AI Summary Section -->
-      {% if ai_summary %}
-      <div class="section" id="ai-summary-section">
-        <h3>🤖 AI Summary</h3>
+      <div class="section">
+        <h3 id="voice-commands-section">🤖 AI Summary</h3>
+        {% if ai_summary %}
         <div class="ai-summary">
           {{ ai_summary|safe }}
         </div>
+        {% else %}
+        <div class="ai-summary">
+          No AI summary available. Upload an audio file or start recording to generate a summary.
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
+      
 
       <!-- Voice Commands Section -->
-      <div class="section" id="voice-commands-section">
+      <div class="section">
         <h3>🗣️ Voice Commands</h3>
         <p>Try saying: "Start recording", "Stop recording", "Summarize transcript", "Clear transcript"</p>
-        <div class="form-group">
+        <div class="form-group" id="voice-training-section">
           <input type="text" id="voice-command-input" placeholder="Or type your command here..." />
           <button class="button" onclick="processVoiceCommand()">Process Command</button>
         </div>
@@ -311,7 +327,7 @@
       </div>
 
       <!-- Voice Training Section -->
-      <div class="section voice-training" id="voice-training-section">
+      <div class="section voice-training">
         <h3>🎯 Voice Training</h3>
         <p>Train the app to better recognize your voice for improved accuracy</p>
         <div class="form-group">
@@ -320,23 +336,27 @@
         </div>
         <div class="form-group">
           <label>Training Text (read this aloud):</label>
-          <textarea id="training-text" rows="3" readonly>
-The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training. Please read this clearly and at a normal pace.
-          </textarea>
+          <textarea id="training-text" rows="4" onchange="updateTrainingDuration()">The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training. Please read this clearly and at a normal pace.</textarea>
         </div>
-        <button class="button" onclick="startVoiceTraining()">Start Voice Training</button>
+        <div style="text-align: center; margin: 20px 0;">
+          <p id="training-duration-info">Estimated training time: <span id="training-duration">15</span> seconds</p>
+          <button class="button" onclick="startVoiceTraining()">Start Voice Training</button>
+        </div>
         <div class="progress-bar" id="training-progress" style="display: none;">
           <div class="progress-fill" id="training-progress-fill"></div>
+          <div style="text-align: center; margin-top: 5px;">
+            <span id="training-status">Preparing training...</span>
+          </div>
         </div>
       </div>
 
       <!-- Export & Session Management -->
-      <div class="section" id="export-section">
+      <div class="section">
         <h3>💾 Export & Session Management</h3>
         <div style="margin: 15px 0;">
-          <button class="button" onclick="exportCurrentTranscript('txt')">Export as TXT</button>
-          <button class="button" onclick="exportCurrentTranscript('json')">Export as JSON</button>
-          <button class="button" onclick="generateSummary()">Generate Summary</button>
+          <button class="button" onclick="exportCurrentTranscript('txt')" id="export-current-txt">Export Current as TXT</button>
+          <button class="button" onclick="exportCurrentTranscript('json')" id="export-current-json">Export Current as JSON</button>
+          <button class="button" onclick="generateSummary()" id="generate-summary-btn">Generate Summary</button>
         </div>
         <div class="sessions-list" id="sessions-list">
           <div>No sessions yet. Start recording or upload a file to create your first session.</div>
@@ -363,16 +383,16 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
             <div class="w-col w-col-4">
               <h3>Useful Links</h3>
               <div class="footer-link-row">
-                <li><a href="#recording-section" class="nav" id="currentPage">Recording Section</a></li>
-                <li><a href="#file-upload-section" class="nav">File Upload Section</a></li>
+                <li><a href="#recording-section" target="_blank" class="footer-link">Recording Section</a></li>
+                <li><a href="#file-upload-section" target="_blank" class="footer-link">File Upload Section</a></li>
               </div>
               <div class="footer-link-row">
-                <li><a href="#ai-summary-section" class="nav">AI Summary Section</a></li>
-                <li><a href="#voice-commands-section" class="nav">Voice Command Section</a></li>
+                <li><a href="#ai-summary-section" target="_blank" class="footer-link">AI Summary Section</a></li>
+                <li><a href="#voice-commands-section" target="_blank" class="footer-link">Voice Command Section</a></li>
               </div>
               <div class="footer-link-row">
-                <li><a href="#voice-training-section" class="nav">Voice Training Section</a></li>
-                <li><a href="#export-section" class="nav">Export Section</a></li>
+                <li><a href="#voice-training-section" target="_blank" class="footer-link">Voice Training Section</a></li>
+                <li><a href="#export-section" target="_blank" class="footer-link">Export Section</a></li>
               </div>
             </div>
             <div class="f-col">
@@ -586,33 +606,54 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
 
         const progressBar = document.getElementById('training-progress');
         const progressFill = document.getElementById('training-progress-fill');
+        const statusText = document.getElementById('training-status');
+        
+        // Calculate dynamic duration
+        const wordCount = trainingText.trim().split(/\s+/).length;
+        const totalDuration = Math.max(10, Math.ceil(wordCount / 2)) * 100; // Convert to milliseconds for progress
         
         progressBar.style.display = 'block';
         progressFill.style.width = '0%';
+        statusText.textContent = 'Starting voice training...';
 
         fetch('/api/train-voice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             user_name: userName, 
-            training_text: trainingText 
+            training_text: trainingText,
+            duration: totalDuration / 100 // Send duration in seconds
           })
         })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            // Simulate progress
             let progress = 0;
+            const incrementTime = totalDuration / 100; // Time per 1% progress
+            
             const interval = setInterval(() => {
-              progress += 10;
+              progress += 1;
               progressFill.style.width = progress + '%';
+              
+              if (progress <= 25) {
+                statusText.textContent = 'Recording voice samples...';
+              } else if (progress <= 50) {
+                statusText.textContent = 'Analyzing voice patterns...';
+              } else if (progress <= 75) {
+                statusText.textContent = 'Training voice model...';
+              } else if (progress < 100) {
+                statusText.textContent = 'Finalizing voice profile...';
+              }
               
               if (progress >= 100) {
                 clearInterval(interval);
-                alert(data.message);
-                progressBar.style.display = 'none';
+                statusText.textContent = 'Training completed successfully!';
+                setTimeout(() => {
+                  alert(data.message);
+                  progressBar.style.display = 'none';
+                }, 1000);
               }
-            }, 200);
+            }, incrementTime);
           } else {
             alert('Error training voice: ' + data.error);
             progressBar.style.display = 'none';
@@ -625,59 +666,12 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
         });
       }
 
-      // Export functions
-      function exportCurrentTranscript(format) {
-        if (!currentSessionId) {
-          alert('No session to export. Please record or upload audio first.');
-          return;
-        }
-
-        fetch('/api/export-transcript', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            session_id: currentSessionId, 
-            format: format 
-          })
-        })
-        .then(response => response.blob())
-        .then(blob => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `transcript_${currentSessionId}.${format}`;
-          a.click();
-          window.URL.revokeObjectURL(url);
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Error exporting transcript');
-        });
-      }
-
-      function generateSummary() {
-        if (!currentTranscript) {
-          alert('No transcript to summarize. Please record or upload audio first.');
-          return;
-        }
-
-        fetch('/api/summarize-text', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: currentTranscript })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            showAISummary(data.summary);
-          } else {
-            alert('Error generating summary: ' + data.error);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Error generating summary');
-        });
+      // Add this function to calculate training duration
+      function updateTrainingDuration() {
+        const trainingText = document.getElementById('training-text').value;
+        const wordCount = trainingText.trim().split(/\s+/).length;
+        const estimatedDuration = Math.max(10, Math.ceil(wordCount / 2)); // 1 second per 2 words, minimum 10 seconds
+        document.getElementById('training-duration').textContent = estimatedDuration;
       }
 
       // Utility functions
@@ -717,8 +711,12 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
                   <div>
                     <strong>${session.id}</strong><br>
                     <small>${session.type} - ${new Date(session.timestamp).toLocaleString()}</small>
+                    ${session.filename ? `<br><small>File: ${session.filename}</small>` : ''}
                   </div>
                   <div>
+                    <button class="button" onclick="viewSession('${session.id}')">View</button>
+                    <button class="button" onclick="exportSession('${session.id}', 'txt')">Export TXT</button>
+                    <button class="button" onclick="exportSession('${session.id}', 'json')">Export JSON</button>
                     <button class="button" onclick="deleteSession('${session.id}')">Delete</button>
                   </div>
                 </div>
@@ -730,28 +728,55 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
           .catch(error => console.error('Error:', error));
       }
 
-      function deleteSession(sessionId) {
-        if (confirm('Are you sure you want to delete this session?')) {
-          fetch(`/api/delete-session/${sessionId}`, {
-            method: 'DELETE'
-          })
+      function viewSession(sessionId) {
+        fetch(`/api/get-session/${sessionId}`)
           .then(response => response.json())
           .then(data => {
             if (data.success) {
-              loadSessions();
+              const session = data.session;
+              alert(`Session: ${sessionId}\n\nTranscript (${session.transcript.length} characters):\n${session.transcript.substring(0, 300)}${session.transcript.length > 300 ? '...' : ''}\n\n${session.summary ? 'Summary available: Yes' : 'Summary: No'}`);
             } else {
-              alert('Error deleting session: ' + data.error);
+              alert('Error loading session: ' + data.error);
             }
           })
           .catch(error => {
             console.error('Error:', error);
-            alert('Error deleting session');
+            alert('Error loading session');
           });
-        }
       }
 
+      function exportSession(sessionId, format) {
+        fetch('/api/export-transcript', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            session_id: sessionId, 
+            format: format 
+          })
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            throw new Error('Export failed');
+          }
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `transcript_${sessionId}.${format}`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error exporting transcript');
+        });
+      }
       // Initialize on page load
       document.addEventListener('DOMContentLoaded', function() {
+        updateTrainingDuration();
         loadSessions();
         updateRecordingUI();
       });
@@ -761,21 +786,68 @@ The quick brown fox jumps over the lazy dog. This sentence contains every letter
         e.preventDefault();
         
         const formData = new FormData(this);
+        const previewSection = document.getElementById('upload-preview');
+        const previewDiv = document.getElementById('upload-transcript-preview');
         
-        fetch('/', {
+        // Show preview section
+        previewSection.style.display = 'block';
+        previewDiv.textContent = 'Processing uploaded file...';
+        
+        fetch('/api/upload-audio', {
           method: 'POST',
           body: formData
         })
-        .then(response => response.text())
-        .then(html => {
-          // Reload the page to show results
-          window.location.reload();
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Show transcript preview (first 200 characters)
+            const fullTranscript = data.transcript;
+            const preview = fullTranscript.length > 200 ? 
+              fullTranscript.substring(0, 200) + '...' : fullTranscript;
+            
+            previewDiv.innerHTML = `
+              <strong>Preview:</strong><br>
+              ${preview}<br><br>
+              <small>File: ${data.filename} | Full transcript: ${fullTranscript.length} characters</small>
+            `;
+            
+            // Store full transcript for later use
+            window.currentUploadTranscript = fullTranscript;
+            window.currentUploadSummary = data.summary;
+            currentSessionId = data.session_id;
+            
+            if (fullTranscript.length > 200) {
+              document.getElementById('upload-full-transcript').style.display = 'block';
+            }
+            
+            // Show AI summary if available
+            if (data.summary) {
+              showAISummary(data.summary);
+            }
+            
+            // Refresh sessions list
+            loadSessions();
+          } else {
+            previewDiv.textContent = 'Error: ' + data.error;
+          }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert('Error uploading file');
+          previewDiv.textContent = 'Error uploading file';
         });
       });
+
+      function showFullTranscript() {
+        if (window.currentUploadTranscript) {
+          const previewDiv = document.getElementById('upload-transcript-preview');
+          previewDiv.innerHTML = `
+            <strong>Full Transcript:</strong><br>
+            ${window.currentUploadTranscript}<br><br>
+            <small>${window.currentUploadTranscript.length} characters total</small>
+          `;
+          document.getElementById('upload-full-transcript').style.display = 'none';
+        }
+      }
     </script>
   </body>
 </html>

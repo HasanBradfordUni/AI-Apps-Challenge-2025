@@ -119,6 +119,7 @@ width: 33.3333%;
 .footer-link-row {
 display: flex;
 justify-content: space-evenly;
+list-style-type: none;
 }
 
 .footer-link {
@@ -130,6 +131,7 @@ font-size: 14px;
 font-weight: 300;
 text-decoration: none;
 display: block;
+list-style-type: none;
 }
 
 .footer-link:hover {

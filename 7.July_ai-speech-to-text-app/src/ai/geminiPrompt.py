@@ -1,12 +1,12 @@
-import vertexai
-from vertexai.generative_models import GenerativeModel
+from google import genai
+from google.genai.types import GenerateContentConfig
+from google.genai import Client
 import google.auth
 
 credentials, project_id = google.auth.default()
 
-vertexai.init(project="generalpurposeai", location="us-central1")
-
-model = GenerativeModel(model_name="gemini-2.0-flash")
+# Initialize the new client
+client = genai.Client(vertexai=True, project="generalpurposeai", location="us-central1")
 
 def generate_transcript_summary(transcript, summary_type):
     """Generate an AI summary of the transcript based on type"""
@@ -94,7 +94,10 @@ def generate_transcript_summary(transcript, summary_type):
         """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
         return response.text
     except Exception as e:
         return f"Error generating summary: {str(e)}"
@@ -123,7 +126,10 @@ def generate_voice_command_response(command):
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
         return response.text
     except Exception as e:
         return f"I'm sorry, I couldn't process that command. Please try again. Error: {str(e)}"
@@ -144,7 +150,10 @@ def generate_transcription_tips(transcript_quality):
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
         return response.text
     except Exception as e:
         return "Unable to generate tips at this time."
@@ -167,7 +176,10 @@ def analyze_transcript_sentiment(transcript):
     """
     
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
         return response.text
     except Exception as e:
         return "Unable to analyze sentiment at this time."
