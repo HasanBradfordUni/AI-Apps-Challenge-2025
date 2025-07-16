@@ -137,7 +137,7 @@
         background-color: #3a1a1a;
         padding: 20px;
         border-radius: 5px;
-        margin: 15px 0;
+        margin: 15px auto;
         border: 1px solid #7c4a59;
       }
 
@@ -281,7 +281,7 @@
             {{ form.summary_type.label }}
             {{ form.summary_type(class="form-control") }}
           </div>
-          <div class="form-group">
+          <div class="form-group" id="ai-summary-section">
             {{ form.submit_file(class="button") }}
           </div>
         </form>
@@ -338,7 +338,7 @@
           <label>Training Text (read this aloud):</label>
           <textarea id="training-text" rows="4" onchange="updateTrainingDuration()">The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training. Please read this clearly and at a normal pace.</textarea>
         </div>
-        <div style="text-align: center; margin: 20px 0;">
+        <div style="text-align: center; margin: 20px 0;" id="export-section">
           <p id="training-duration-info">Estimated training time: <span id="training-duration">15</span> seconds</p>
           <button class="button" onclick="startVoiceTraining()">Start Voice Training</button>
         </div>
