@@ -232,25 +232,51 @@ def delete_session(session_id):
 def upload_audio():
     """Handle audio file upload and return preview"""
     try:
+        print("=== Upload Audio Debug ===")
+        print(f"Request files: {list(request.files.keys())}")
+        print(f"Request form: {dict(request.form)}")
+        
         if 'audio_file' not in request.files:
-            return jsonify({'error': 'No audio file provided'}), 400
+            print("Error: 'audio_file' not in request.files")
+            available_files = list(request.files.keys())
+            return jsonify({
+                'error': f'No audio file provided. Available files: {available_files}'
+            }), 400
         
         file = request.files['audio_file']
+        print(f"File: {file}")
+        print(f"Filename: {file.filename}")
+        
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
+        
+        # Validate file type
+        if not voice_methods.validate_audio_file(file):
+            return jsonify({'error': 'Invalid audio file format. Supported: MP3, WAV, M4A, MP4, OGG, FLAC'}), 400
         
         # Save file
         filename = secure_filename(file.filename)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f"{timestamp}_{filename}"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        print(f"Saving to: {filepath}")
         file.save(filepath)
         
+        # Check if file was saved
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'Failed to save uploaded file'}), 500
+        
+        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
+        
         # Transcribe audio
+        print("Starting transcription...")
         transcript = voice_methods.transcribe_audio_file(filepath)
+        print(f"Transcription result: {transcript[:100]}...")
         
         # Generate summary
         summary_type = request.form.get('summary_type', 'meeting')
+        print(f"Generating summary of type: {summary_type}")
         summary = generate_transcript_summary(transcript, summary_type)
         
         # Save session
@@ -263,6 +289,7 @@ def upload_audio():
             'type': 'upload'
         }
         
+        print("Upload completed successfully!")
         return jsonify({
             'success': True,
             'session_id': session_id,
@@ -272,7 +299,10 @@ def upload_audio():
         })
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Error in upload_audio: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 @app.route('/api/get-session/<session_id>', methods=['GET'])
 def get_session(session_id):

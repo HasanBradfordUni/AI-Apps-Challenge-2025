@@ -203,7 +203,6 @@ def generate_letter():
     
     # Get customization options from form or use defaults
     tone = request.form.get('tone', 'professional')
-    length = request.form.get('length', 'standard')
     focus_areas = request.form.getlist('focus_areas')
     
     # PROBLEM: cv_text might not be defined here
@@ -215,7 +214,6 @@ def generate_letter():
         cv_text, 
         job_description, 
         tone=tone, 
-        length=length, 
         focus_areas=focus_areas
     )
     

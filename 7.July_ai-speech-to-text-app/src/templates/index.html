@@ -274,12 +274,12 @@
         <form method="POST" enctype="multipart/form-data" id="upload-form">
           {{ form.hidden_tag() }}
           <div class="form-group">
-            {{ form.audio_file.label }}
-            {{ form.audio_file(class="form-control") }}
+            <label for="audio_file">{{ form.audio_file.label }}</label>
+            {{ form.audio_file(class="form-control", id="audio_file") }}
           </div>
           <div class="form-group">
-            {{ form.summary_type.label }}
-            {{ form.summary_type(class="form-control") }}
+            <label for="summary_type">{{ form.summary_type.label }}</label>
+            {{ form.summary_type(class="form-control", id="summary_type") }}
           </div>
           <div class="form-group" id="ai-summary-section">
             {{ form.submit_file(class="button") }}
@@ -781,24 +781,46 @@
         updateRecordingUI();
       });
 
-      // Handle form submission for file upload
+      // Handle form submission for file upload with preview
       document.getElementById('upload-form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const formData = new FormData(this);
+        const formData = new FormData(this); // Use 'this' to get all form data including CSRF token
         const previewSection = document.getElementById('upload-preview');
         const previewDiv = document.getElementById('upload-transcript-preview');
+        
+        console.log('Form submission started');
         
         // Show preview section
         previewSection.style.display = 'block';
         previewDiv.textContent = 'Processing uploaded file...';
         
+        console.log('Sending request to /api/upload-audio');
+        
         fetch('/api/upload-audio', {
           method: 'POST',
           body: formData
         })
-        .then(response => response.json())
+        .then(response => {
+          console.log('Response status:', response.status);
+          console.log('Response headers:', response.headers);
+          
+          // Check if response is ok before parsing JSON
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          // Check content type
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Response is not JSON');
+          }
+          
+          return response.json();
+        })
         .then(data => {
+          console.log('Response data:', data);
+          
           if (data.success) {
             // Show transcript preview (first 200 characters)
             const fullTranscript = data.transcript;
@@ -807,14 +829,16 @@
             
             previewDiv.innerHTML = `
               <strong>Preview:</strong><br>
-              ${preview}<br><br>
-              <small>File: ${data.filename} | Full transcript: ${fullTranscript.length} characters</small>
+              <div style="background-color: #2a2a3a; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                ${preview}
+              </div>
+              <small><strong>File:</strong> ${data.filename} | <strong>Length:</strong> ${fullTranscript.length} characters</small>
             `;
             
             // Store full transcript for later use
             window.currentUploadTranscript = fullTranscript;
             window.currentUploadSummary = data.summary;
-            currentSessionId = data.session_id;
+            window.currentSessionId = data.session_id;
             
             if (fullTranscript.length > 200) {
               document.getElementById('upload-full-transcript').style.display = 'block';
@@ -827,13 +851,21 @@
             
             // Refresh sessions list
             loadSessions();
+            
+            // Show success message
+            alert('File uploaded and transcribed successfully!');
+            
           } else {
-            previewDiv.textContent = 'Error: ' + data.error;
+            previewDiv.innerHTML = `<strong>Error:</strong> ${data.error}`;
+            console.error('Upload failed:', data.error);
           }
         })
         .catch(error => {
-          console.error('Error:', error);
-          previewDiv.textContent = 'Error uploading file';
+          console.error('Fetch error details:', error);
+          previewDiv.innerHTML = `
+            <strong>Network Error:</strong> ${error.message}<br>
+            <small>Check the browser console for more details.</small>
+          `;
         });
       });
 
@@ -842,10 +874,32 @@
           const previewDiv = document.getElementById('upload-transcript-preview');
           previewDiv.innerHTML = `
             <strong>Full Transcript:</strong><br>
-            ${window.currentUploadTranscript}<br><br>
-            <small>${window.currentUploadTranscript.length} characters total</small>
+            <div style="background-color: #2a2a3a; padding: 10px; border-radius: 5px; margin: 10px 0; max-height: 300px; overflow-y: auto;">
+              ${window.currentUploadTranscript}
+            </div>
+            <small><strong>Total Length:</strong> ${window.currentUploadTranscript.length} characters</small>
+            <br><button class="button" onclick="showPreviewTranscript()">Show Preview Only</button>
           `;
-          document.getElementById('upload-full-transcript').style.display = 'none';
+        }
+      }
+
+      function showPreviewTranscript() {
+        if (window.currentUploadTranscript) {
+          const preview = window.currentUploadTranscript.length > 200 ? 
+            window.currentUploadTranscript.substring(0, 200) + '...' : window.currentUploadTranscript;
+          
+          const previewDiv = document.getElementById('upload-transcript-preview');
+          previewDiv.innerHTML = `
+            <strong>Preview:</strong><br>
+            <div style="background-color: #2a2a3a; padding: 10px; border-radius: 5px; margin: 10px 0;">
+              ${preview}
+            </div>
+            <small><strong>Length:</strong> ${window.currentUploadTranscript.length} characters</small>
+          `;
+          
+          if (window.currentUploadTranscript.length > 200) {
+            document.getElementById('upload-full-transcript').style.display = 'block';
+          }
         }
       }
     </script>

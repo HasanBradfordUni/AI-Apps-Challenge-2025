@@ -45,11 +45,32 @@ def generate_conversion_insights(file_content, config_options):
     
     # Parse and return the response
     return {
-        "field_mappings": response.text.find("field_mappings", "No suggestions provided."),
-        "table_handling": response.text.find("table_handling", "No recommendations provided."),
-        "placeholder_text": response.text.find("placeholder_text", "No suggestions provided."),
-        "additional_insights": response.text.find("additional_insights", "No additional insights provided.")
+        "field_mappings": get_mappings(response.text),
+        "table_handling": get_table_handling(response.text),
+        "placeholder_text": get_placeholder_text(response.text),
+        "additional_insights": get_additional_insights(response.text)
     }
+
+def get_mappings(text):
+    if "field_mappings" in text:
+        return text.split("field_mappings:")[1].strip().split("\n")
+    return "No field mappings provided."
+
+def get_table_handling(text):
+    if "table_handling" in text:
+        return text.split("table_handling:")[1].strip()
+    return "No recommendations provided for table handling."
+
+def get_placeholder_text(text):
+    if "placeholder_text" in text:
+        return text.split("placeholder_text:")[1].strip()
+    return "No placeholder text suggestions provided."
+
+def get_additional_insights(text):
+    if "additional_insights" in text:
+        return text.split("additional_insights:")[1].strip()
+    return "No additional insights provided."
+    
 
 def main():
     # Main function to demonstrate the AI summary generation process
