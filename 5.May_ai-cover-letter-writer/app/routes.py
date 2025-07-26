@@ -239,7 +239,6 @@ def generate_letter():
         'generate_letter.html', 
         form=form, 
         tone=tone, 
-        length=length,
         focus_areas=focus_areas
     )
 
