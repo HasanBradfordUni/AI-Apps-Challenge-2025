@@ -5,6 +5,8 @@ import threading
 import time
 from datetime import datetime
 import tempfile
+import subprocess
+import wave
 
 class VoiceMethods:
     def __init__(self):
@@ -15,38 +17,236 @@ class VoiceMethods:
         self.voice_profiles = {}
         self.load_voice_profiles()
         
+        # Enhanced recognizer settings for better accuracy
+        self.recognizer.energy_threshold = 300
+        self.recognizer.dynamic_energy_threshold = True
+        self.recognizer.pause_threshold = 0.8
+        self.recognizer.operation_timeout = None
+        self.recognizer.phrase_threshold = 0.3
+        self.recognizer.non_speaking_duration = 0.8
+        
         # Initialize microphone with error handling
         try:
             self.microphone = sr.Microphone()
             # Adjust for ambient noise
             with self.microphone as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=1)
+                print("Adjusting for ambient noise...")
+                self.recognizer.adjust_for_ambient_noise(source, duration=2)
+                print(f"Energy threshold set to: {self.recognizer.energy_threshold}")
         except Exception as e:
             print(f"Warning: Could not initialize microphone: {e}")
             self.microphone = None
     
-    def transcribe_audio_file(self, file_path):
-        """Transcribe audio from uploaded file using SpeechRecognition"""
+    def preprocess_audio(self, file_path):
+        """Preprocess audio file for better transcription quality"""
         try:
+            # Create a temporary processed file
+            temp_dir = tempfile.gettempdir()
+            processed_file = os.path.join(temp_dir, f"processed_{os.path.basename(file_path)}")
+            
+            # Try to use ffmpeg for audio preprocessing (if available)
+            try:
+                # Normalize audio, reduce noise, convert to optimal format
+                subprocess.run([
+                    'ffmpeg', '-i', file_path,
+                    '-ar', '16000',  # Sample rate 16kHz (optimal for speech)
+                    '-ac', '1',      # Mono
+                    '-c:a', 'pcm_s16le',  # PCM format
+                    '-af', 'highpass=f=80,lowpass=f=8000,volume=1.5',  # Filter and amplify
+                    '-y', processed_file
+                ], check=True, capture_output=True)
+                
+                print(f"Audio preprocessed with ffmpeg: {processed_file}")
+                return processed_file
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                print("ffmpeg not available, using original file")
+                return file_path
+                
+        except Exception as e:
+            print(f"Error preprocessing audio: {e}")
+            return file_path
+    
+    def transcribe_audio_file(self, file_path):
+        """Enhanced audio transcription with multiple methods"""
+        try:
+            print(f"Transcribing audio file: {file_path}")
+            
             # Check if file exists
             if not os.path.exists(file_path):
                 return "Error: Audio file not found"
             
-            # Use SpeechRecognition for file transcription
-            with sr.AudioFile(file_path) as source:
-                audio = self.recognizer.record(source)
+            # Preprocess audio for better quality
+            processed_file = self.preprocess_audio(file_path)
             
-            # Try Google Speech Recognition (free but requires internet)
+            # Try multiple transcription methods
+            transcription_results = []
+            
+            # Method 1: Google Speech Recognition (Free)
             try:
-                text = self.recognizer.recognize_google(audio)
-                return text
+                with sr.AudioFile(processed_file) as source:
+                    # Adjust for ambient noise
+                    self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                    audio = self.recognizer.record(source)
+                
+                text = self.recognizer.recognize_google(audio, language='en-US')
+                transcription_results.append(("Google", text))
+                print(f"Google transcription: {text[:100]}...")
             except sr.UnknownValueError:
-                return "Could not understand audio - please try speaking more clearly"
+                print("Google Speech Recognition could not understand audio")
             except sr.RequestError as e:
-                return f"Could not request results from speech recognition service: {e}"
+                print(f"Google Speech Recognition error: {e}")
+            
+            # Method 2: Google Speech Recognition with enhanced settings
+            try:
+                with sr.AudioFile(processed_file) as source:
+                    audio = self.recognizer.record(source)
+                
+                # Try with show_all=True to get confidence scores
+                text = self.recognizer.recognize_google(
+                    audio, 
+                    language='en-US',
+                    show_all=False
+                )
+                transcription_results.append(("Google Enhanced", text))
+                print(f"Google Enhanced transcription: {text[:100]}...")
+            except Exception as e:
+                print(f"Google Enhanced transcription failed: {e}")
+            
+            # Method 3: Whisper API (if available)
+            try:
+                whisper_result = self.transcribe_with_whisper(processed_file)
+                if whisper_result:
+                    transcription_results.append(("Whisper", whisper_result))
+                    print(f"Whisper transcription: {whisper_result[:100]}...")
+            except Exception as e:
+                print(f"Whisper transcription failed: {e}")
+            
+            # Clean up processed file if it's different from original
+            if processed_file != file_path:
+                try:
+                    os.remove(processed_file)
+                except:
+                    pass
+            
+            # Return the best transcription
+            if transcription_results:
+                # For now, prefer Whisper if available, otherwise use the longest result
+                whisper_results = [r for r in transcription_results if r[0] == "Whisper"]
+                if whisper_results:
+                    return whisper_results[0][1]
+                
+                # Otherwise, return the longest transcription (usually more complete)
+                best_result = max(transcription_results, key=lambda x: len(x[1]))
+                return best_result[1]
+            else:
+                return "Could not transcribe audio - please try a different file or check audio quality"
                 
         except Exception as e:
+            print(f"Error transcribing audio file: {str(e)}")
             return f"Error transcribing audio file: {str(e)}"
+    
+    def transcribe_with_whisper(self, file_path):
+        """Try to use OpenAI Whisper for transcription"""
+        try:
+            import whisper
+            
+            # Load the base model (good balance of speed and accuracy)
+            model = whisper.load_model("base")
+            
+            # Transcribe the audio
+            result = model.transcribe(file_path, language='en')
+            
+            return result["text"].strip()
+            
+        except ImportError:
+            print("Whisper not available - install with: pip install openai-whisper")
+            return None
+        except Exception as e:
+            print(f"Whisper transcription error: {e}")
+            return None
+    
+    def transcribe_audio_chunks(self, file_path, chunk_duration=30):
+        """Split audio into chunks for better transcription of long files"""
+        try:
+            import pydub
+            
+            # Load audio file
+            audio = pydub.AudioSegment.from_file(file_path)
+            
+            # Split into chunks
+            chunk_length_ms = chunk_duration * 1000
+            chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
+            
+            transcriptions = []
+            temp_dir = tempfile.gettempdir()
+            
+            for i, chunk in enumerate(chunks):
+                chunk_file = os.path.join(temp_dir, f"chunk_{i}.wav")
+                chunk.export(chunk_file, format="wav")
+                
+                # Transcribe chunk
+                chunk_transcript = self.transcribe_audio_file(chunk_file)
+                if not chunk_transcript.startswith("Error"):
+                    transcriptions.append(chunk_transcript)
+                
+                # Clean up
+                try:
+                    os.remove(chunk_file)
+                except:
+                    pass
+            
+            return " ".join(transcriptions)
+            
+        except ImportError:
+            print("pydub not available - install with: pip install pydub")
+            return self.transcribe_audio_file(file_path)
+        except Exception as e:
+            print(f"Chunk transcription error: {e}")
+            return self.transcribe_audio_file(file_path)
+    
+    def improve_transcription_quality(self, transcript):
+        """Post-process transcription to improve quality"""
+        if not transcript or transcript.startswith("Error"):
+            return transcript
+        
+        # Basic text cleaning and formatting
+        cleaned = transcript.strip()
+        
+        # Fix common transcription errors
+        replacements = {
+            " i ": " I ",
+            " im ": " I'm ",
+            " dont ": " don't ",
+            " cant ": " can't ",
+            " wont ": " won't ",
+            " youre ": " you're ",
+            " theyre ": " they're ",
+            " theres ": " there's ",
+            " whats ": " what's ",
+            " thats ": " that's ",
+            " its ": " it's ",
+            " hes ": " he's ",
+            " shes ": " she's ",
+            " well ": " we'll ",
+            " ill ": " I'll ",
+            " youll ": " you'll ",
+            " were ": " we're ",
+            " oclock ": " o'clock ",
+        }
+        
+        for old, new in replacements.items():
+            cleaned = cleaned.replace(old, new)
+        
+        # Capitalize first letter of sentences
+        sentences = cleaned.split('. ')
+        sentences = [s.capitalize() if s else s for s in sentences]
+        cleaned = '. '.join(sentences)
+        
+        # Ensure first letter is capitalized
+        if cleaned:
+            cleaned = cleaned[0].upper() + cleaned[1:]
+        
+        return cleaned
     
     def start_real_time_recording(self):
         """Start real-time audio recording"""

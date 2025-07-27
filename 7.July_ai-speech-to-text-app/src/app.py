@@ -269,13 +269,27 @@ def upload_audio():
         
         print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
         
-        # Transcribe audio
-        print("Starting transcription...")
-        transcript = voice_methods.transcribe_audio_file(filepath)
-        print(f"Transcription result: {transcript[:100]}...")
+        # Enhanced transcription
+        print("Starting enhanced transcription...")
+        
+        # Check file size - use chunked transcription for large files
+        file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
+        if file_size_mb > 10:  # Files larger than 10MB
+            print("Large file detected, using chunked transcription...")
+            transcript = voice_methods.transcribe_audio_chunks(filepath)
+        else:
+            transcript = voice_methods.transcribe_audio_file(filepath)
+        
+        # Improve transcription quality
+        transcript = voice_methods.improve_transcription_quality(transcript)
+        
+        print(f"Enhanced transcription result: {transcript[:200]}...")
+        
+        if not transcript or transcript.startswith("Error"):
+            return jsonify({'error': f'Transcription failed: {transcript}'}), 500
         
         # Generate summary
-        summary_type = request.form.get('summary_type', 'meeting')
+        summary_type = request.form.get('summary_type', 'conversation')
         print(f"Generating summary of type: {summary_type}")
         summary = generate_transcript_summary(transcript, summary_type)
         
@@ -286,16 +300,20 @@ def upload_audio():
             'summary': summary,
             'timestamp': datetime.now().isoformat(),
             'filename': filename,
-            'type': 'upload'
+            'type': 'upload',
+            'file_size_mb': round(file_size_mb, 2),
+            'transcription_method': 'enhanced'
         }
         
-        print("Upload completed successfully!")
+        print("Enhanced upload completed successfully!")
         return jsonify({
             'success': True,
             'session_id': session_id,
             'transcript': transcript,
             'summary': summary,
-            'filename': filename
+            'filename': filename,
+            'file_size_mb': round(file_size_mb, 2),
+            'transcription_quality': 'enhanced'
         })
     
     except Exception as e:

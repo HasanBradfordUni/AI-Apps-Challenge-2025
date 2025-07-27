@@ -276,12 +276,21 @@
           <div class="form-group">
             <label for="audio_file">{{ form.audio_file.label }}</label>
             {{ form.audio_file(class="form-control", id="audio_file") }}
+            <small>Supported formats: MP3, WAV, M4A, MP4, OGG, FLAC. For best results, use clear audio with minimal background noise.</small>
           </div>
           <div class="form-group">
             <label for="summary_type">{{ form.summary_type.label }}</label>
             {{ form.summary_type(class="form-control", id="summary_type") }}
           </div>
           <div class="form-group" id="ai-summary-section">
+            <label for="transcription_quality">Transcription Quality:</label>
+            <select id="transcription_quality" class="form-control">
+              <option value="standard">Standard (Fast)</option>
+              <option value="enhanced" selected>Enhanced (Better Quality)</option>
+              <option value="chunked">Chunked (For Long Files)</option>
+            </select>
+          </div>
+          <div class="form-group">
             {{ form.submit_file(class="button") }}
           </div>
         </form>
@@ -683,21 +692,30 @@
       }
 
       function showAISummary(summary) {
-        // Create summary section if it doesn't exist
-        let summarySection = document.getElementById('ai-summary-section');
-        if (!summarySection) {
-          summarySection = document.createElement('div');
-          summarySection.id = 'ai-summary-section';
+        // Find the existing AI summary section
+        let summaryContent = document.querySelector('.ai-summary');
+        
+        if (!summaryContent) {
+          // If no summary section exists, create one
+          const summarySection = document.createElement('div');
           summarySection.className = 'section';
           summarySection.innerHTML = `
             <h3>🤖 AI Summary</h3>
             <div class="ai-summary" id="ai-summary-content"></div>
           `;
-          document.querySelector('.mainBody').appendChild(summarySection);
+          
+          // Insert after the file upload section
+          const uploadSection = document.querySelector('#file-upload-section').parentElement;
+          uploadSection.insertAdjacentElement('afterend', summarySection);
+          
+          summaryContent = summarySection.querySelector('.ai-summary');
         }
         
-        document.getElementById('ai-summary-content').innerHTML = summary.replace(/\n/g, '<br>');
-        summarySection.scrollIntoView({ behavior: 'smooth' });
+        // Update the summary content
+        summaryContent.innerHTML = summary.replace(/\n/g, '<br>');
+        
+        // Scroll to the summary section
+        summaryContent.scrollIntoView({ behavior: 'smooth' });
       }
 
       function loadSessions() {
@@ -773,6 +791,66 @@
           console.error('Error:', error);
           alert('Error exporting transcript');
         });
+      }
+
+      function exportCurrentTranscript(format) {
+        if (!window.currentSessionId && !currentTranscript) {
+          alert('No transcript available to export. Please record audio or upload a file first.');
+          return;
+        }
+        
+        const sessionId = window.currentSessionId || 'current';
+        exportSession(sessionId, format);
+      }
+
+      function generateSummary() {
+        if (!currentTranscript && !window.currentUploadTranscript) {
+          alert('No transcript available to summarize. Please record audio or upload a file first.');
+          return;
+        }
+        
+        const transcript = currentTranscript || window.currentUploadTranscript;
+        
+        fetch('/api/voice-command', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ command: 'summarize transcript' })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.summary) {
+            showAISummary(data.summary);
+          } else if (data.response) {
+            showAISummary(data.response);
+          } else {
+            alert('Error generating summary: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error generating summary');
+        });
+      }
+
+      function deleteSession(sessionId) {
+        if (confirm(`Are you sure you want to delete session ${sessionId}?`)) {
+          fetch(`/api/delete-session/${sessionId}`, {
+            method: 'DELETE'
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Session deleted successfully');
+              loadSessions();
+            } else {
+              alert('Error deleting session: ' + data.error);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting session');
+          });
+        }
       }
       // Initialize on page load
       document.addEventListener('DOMContentLoaded', function() {
