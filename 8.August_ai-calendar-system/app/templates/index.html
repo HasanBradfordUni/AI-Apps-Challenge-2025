@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Has AI - AI Job Ad Generator</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+      body {
+        background-color: black;
+        text-align: center;
+        color: white;
+      }
+
+      header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background-color: goldenrod;
+      }
+
+      img.logo {
+        border-style: solid;
+        border-color: white;
+        vertical-align: middle;
+        margin-left: 2cm;
+        margin-right: 2cm;
+      }
+
+      ul.nav {
+        list-style-type: none;
+        max-width: 100%;
+        width: 100%;
+        padding: 0;
+        overflow: hidden;
+        background-color: red;
+        display: flex;
+        justify-content: center;
+      }
+
+      li a.nav {
+        display: block;
+        color: black;
+        text-align: center;
+        padding: 16px;
+        text-decoration: none;
+      }
+
+      li a.nav:hover {
+        background-color: gray;
+      }
+
+      div.menuBar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #currentPage {
+        background-color: gold;
+      }
+
+      .mainBody {
+        margin-top: 3cm;
+        padding: 20px;
+      }
+
+      .mainHeading {
+        color: crimson;
+        font-size: xx-large;
+      }
+
+      .subHeading {
+        color: rebeccapurple;
+        font-size: larger;
+      }
+
+      .largeText {
+        color: darkkhaki;
+        font-size: large;
+      }
+
+      footer {
+        height: 350px;
+        background-color: goldenrod;
+      }
+
+      .footer {
+        padding-top: 35px;
+        padding-bottom: 35px;
+        background-color: goldenrod;
+        box-sizing: border-box;
+        height: 250px;
+      }
+
+      .w-container {
+        max-width: 940px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .w-container .w-row {
+        margin-left: -10px;
+        margin-right: -10px;
+      }
+
+      .w-col {
+        float: left;
+        min-height: 1px;
+        padding-left: 10px;
+        padding-right: 10px;
+        position: relative;
+      }
+
+      .f-col {
+        float: right;
+        min-height: 1px;
+        padding-left: 10px;
+        padding-right: 10px;
+        width: 30%;
+        position: relative;
+        margin-top: -200px;
+      }
+
+      .w-col-4 {
+        width: 33.3333%;
+      }
+
+      .footer-link-row {
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .footer-link {
+        color: crimson;
+        border-bottom: 1px solid red;
+        margin-bottom: 6px;
+        padding-bottom: 10px;
+        font-size: 14px;
+        font-weight: 300;
+        text-decoration: none;
+        display: block;
+      }
+
+      .footer-link:hover {
+        color: rgb(122, 106, 17);
+        text-decoration: underline;
+      }
+
+      .info-icon {
+        float: left;
+        vertical-align: middle;
+        max-width: 100%;
+      }
+
+      .footer-link.with-icon {
+        margin-left: 30px;
+      }
+      
+      /* Job Ad Generator specific styles */
+      .feature-card {
+        background-color: #333;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 800px;
+        text-align: left;
+      }
+
+      .feature-card h4 {
+        color: goldenrod;
+      }
+
+      .feature-card p {
+        color: #ddd;
+      }
+
+      .form-container {
+        background-color: #222;
+        border-radius: 10px;
+        padding: 30px;
+        margin: 20px auto;
+        max-width: 800px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        text-align: left;
+        color: #ddd;
+      }
+
+      .submit-button {
+        background-color: crimson;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin: 20px 10px;
+        transition: background-color 0.3s;
+      }
+
+      .submit-button:hover {
+        background-color: darkred;
+      }
+      
+      .submit-group {
+        text-align: center;
+        margin-top: 30px;
+      }
+      
+      .flash-message {
+        padding: 10px 15px;
+        margin: 15px auto;
+        max-width: 800px;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      .flash-success {
+        background-color: darkgreen;
+        color: white;
+        border: 1px solid green;
+      }
+
+      .flash-error {
+        background-color: darkred;
+        color: white;
+        border: 1px solid red;
+      }
+
+      .flash-warning {
+        background-color: darkgoldenrod;
+        color: white;
+        border: 1px solid goldenrod;
+      }
+
+      .flash-info {
+        background-color: darkblue;
+        color: white;
+        border: 1px solid blue;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+        Has AI
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+      </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="{{ url_for('app.index') }}" class="nav" id="currentPage">Home</a></li>
+          <li><a href="{{ url_for('app.profile') }}" class="nav">Create Job Ad</a></li>
+          {% if session.get('user_id') %}
+          <li><a href="{{ url_for('app.ad_history') }}" class="nav">My Job Ads</a></li>
+          <li><a href="{{ url_for('app.logout') }}" class="nav">Logout</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </header>
+
+    <section class="mainBody">
+      <h1 class="mainHeading">AI Apps Challenge - AI Job Ad Generator</h1>
+      <br />
+      <h2 class="subHeading">
+        Create professional, engaging job descriptions in minutes using AI
+      </h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <main>
+        <section>
+          <div class="form-container">
+            <h2 class="largeText">Generate Professional Job Ads</h2>
+            <p>
+              Create well-structured and optimized job descriptions by entering key hiring criteria. 
+              Our AI will generate a professional job ad tailored to your specifications.
+            </p>
+
+            <div class="feature-card">
+              <h4>✏️ Easy to Use</h4>
+              <p>Just enter your hiring requirements and let our AI do the hard work of writing the perfect job ad.</p>
+            </div>
+
+            <div class="feature-card">
+              <h4>⭐ Professional Quality</h4>
+              <p>Generate job descriptions that are attractive, inclusive, and aligned with industry standards.</p>
+            </div>
+
+            <div class="feature-card">
+              <h4>📝 Fully Customizable</h4>
+              <p>Edit and refine the AI-generated content to perfectly match your company's voice and requirements.</p>
+            </div>
+
+            <div class="feature-card">
+              <h4>⏱️ Save Time</h4>
+              <p>Reduce the time spent drafting job descriptions from hours to minutes.</p>
+            </div>
+
+            <div class="submit-group">
+              <a href="{{ url_for('app.profile') }}">
+                <button class="submit-button">Get Started</button>
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <hr />
+      <br />
+    </section>
+    <footer>
+      <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div></div>
+              <div>Has AI</div>
+              <div>AI Job Ad Generator</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI Projects for all</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Useful Links</h3>
+              <div class="footer-link-row">
+                <a href="{{ url_for('app.index') }}" class="footer-link">Home</a>
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Create Job Ad</a>
+              </div>
+              <div class="footer-link-row">
+                {% if session.get('user_id') %}
+                <a href="{{ url_for('app.ad_history') }}" class="footer-link">My Job Ads</a>
+                <a href="{{ url_for('app.logout') }}" class="footer-link">Logout</a>
+                {% else %}
+                <a href="{{ url_for('app.profile') }}" class="footer-link">Sign Up</a>
+                {% endif %}
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+  </body>
+</html>

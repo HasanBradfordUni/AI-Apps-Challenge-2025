@@ -8,9 +8,9 @@ Welcome to the AI Apps Challenge 2025! This repository chronicles my ambitious p
 **February:** AI Testing Agent ✅
 **March:** AI Version of Work Hours Calculator ✅ 
 **April:** AI Document Extractor & Converter ✅ 
-**May:** AI Cover Letter Writer ✅⁉️ 
-**June:** AI Job Ad Generator  
-**July:** AI Speech-to-Text App (Including Voice Commands)  
+**May:** AI Cover Letter Writer ✅ 
+**June:** AI Job Ad Generator ✅
+**July:** AI Speech-to-Text App (Including Voice Commands) ✅ 
 **August:** AI Calendar & Scheduling System  
 **September:** General Document Summarization AI  
 **October:** Docs Directory AI Summarizer  
