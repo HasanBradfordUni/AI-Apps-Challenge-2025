@@ -162,18 +162,24 @@ def process_voice_command():
 
 @app.route('/api/train-voice', methods=['POST'])
 def train_voice():
-    """Train voice recognition for better accuracy"""
+    """Train voice recognition with proper timing"""
     try:
         data = request.get_json()
         user_name = data.get('user_name', 'default')
         training_text = data.get('training_text', '')
+        duration = data.get('duration', 15)  # Get duration from frontend
+        
+        # Simulate proper training duration
+        import time
+        time.sleep(duration)  # Actually wait for the specified duration
         
         result = voice_methods.train_voice_profile(user_name, training_text)
         
         return jsonify({
             'success': True,
-            'message': f'Voice training completed for {user_name}',
-            'accuracy_improvement': result
+            'message': f'Voice training completed for {user_name} in {duration} seconds',
+            'accuracy_improvement': result,
+            'training_duration': duration
         })
     
     except Exception as e:
@@ -183,14 +189,26 @@ def train_voice():
 def export_transcript():
     """Export transcript to file"""
     try:
-        data = request.get_json()
+        # Handle both JSON and form data
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form.to_dict()
+        
         session_id = data.get('session_id')
         export_format = data.get('format', 'txt')
+        
+        print(f"Export request - Session ID: {session_id}, Format: {export_format}")
+        
+        if not session_id:
+            return jsonify({'error': 'Session ID is required'}), 400
         
         if session_id not in transcript_sessions:
             return jsonify({'error': 'Session not found'}), 404
         
         session_data = transcript_sessions[session_id]
+        print(f"Session data found: {session_data.keys()}")
+        
         file_path = voice_methods.export_transcript(
             session_data['transcript'],
             session_data.get('summary', ''),
@@ -198,9 +216,61 @@ def export_transcript():
             session_id
         )
         
-        return send_file(file_path, as_attachment=True)
+        print(f"Export file path: {file_path}")
+        
+        # Check if file exists before sending
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Export file was not created successfully'}), 500
+        
+        # Get the filename for download
+        filename = os.path.basename(file_path)
+        
+        return send_file(
+            file_path, 
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/octet-stream'
+        )
     
     except Exception as e:
+        print(f"Export error details: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+# Add a new route for direct exports with URL parameters
+@app.route('/api/export-transcript/<session_id>/<export_format>')
+def export_transcript_direct(session_id, export_format):
+    """Direct export with URL parameters"""
+    try:
+        print(f"Direct export - Session ID: {session_id}, Format: {export_format}")
+        
+        if session_id not in transcript_sessions:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        session_data = transcript_sessions[session_id]
+        
+        file_path = voice_methods.export_transcript(
+            session_data['transcript'],
+            session_data.get('summary', ''),
+            export_format,
+            session_id
+        )
+        
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Export file was not created successfully'}), 500
+        
+        filename = os.path.basename(file_path)
+        
+        return send_file(
+            file_path, 
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/octet-stream'
+        )
+    
+    except Exception as e:
+        print(f"Direct export error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/get-sessions', methods=['GET'])
@@ -230,29 +300,21 @@ def delete_session(session_id):
 
 @app.route('/api/upload-audio', methods=['POST'])
 def upload_audio():
-    """Handle audio file upload and return preview"""
+    """Handle audio file upload with optimized processing"""
     try:
-        print("=== Upload Audio Debug ===")
+        print("=== Enhanced Upload Audio Debug ===")
         print(f"Request files: {list(request.files.keys())}")
-        print(f"Request form: {dict(request.form)}")
         
         if 'audio_file' not in request.files:
-            print("Error: 'audio_file' not in request.files")
-            available_files = list(request.files.keys())
-            return jsonify({
-                'error': f'No audio file provided. Available files: {available_files}'
-            }), 400
+            return jsonify({'error': 'No audio file provided'}), 400
         
         file = request.files['audio_file']
-        print(f"File: {file}")
-        print(f"Filename: {file.filename}")
-        
         if file.filename == '':
             return jsonify({'error': 'No file selected'}), 400
         
         # Validate file type
         if not voice_methods.validate_audio_file(file):
-            return jsonify({'error': 'Invalid audio file format. Supported: MP3, WAV, M4A, MP4, OGG, FLAC'}), 400
+            return jsonify({'error': 'Invalid audio file format'}), 400
         
         # Save file
         filename = secure_filename(file.filename)
@@ -260,37 +322,35 @@ def upload_audio():
         filename = f"{timestamp}_{filename}"
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         
-        print(f"Saving to: {filepath}")
         file.save(filepath)
-        
-        # Check if file was saved
-        if not os.path.exists(filepath):
-            return jsonify({'error': 'Failed to save uploaded file'}), 500
-        
-        print(f"File saved successfully. Size: {os.path.getsize(filepath)} bytes")
-        
-        # Enhanced transcription
-        print("Starting enhanced transcription...")
-        
-        # Check file size - use chunked transcription for large files
         file_size_mb = os.path.getsize(filepath) / (1024 * 1024)
-        if file_size_mb > 10:  # Files larger than 10MB
-            print("Large file detected, using chunked transcription...")
-            transcript = voice_methods.transcribe_audio_chunks(filepath)
-        else:
+        print(f"File saved: {filepath}, Size: {file_size_mb:.2f} MB")
+        
+        # Optimized transcription strategy
+        transcript = ""
+        transcription_method = "standard"
+        
+        if file_size_mb > 25:  # Very large files
+            print("Very large file detected, using chunked transcription...")
+            transcript = voice_methods.transcribe_audio_chunks(filepath, chunk_duration=15)
+            transcription_method = "chunked_optimized"
+        elif file_size_mb > 5:  # Medium files
+            print("Medium file detected, using chunked transcription...")
+            transcript = voice_methods.transcribe_audio_chunks(filepath, chunk_duration=20)
+            transcription_method = "chunked_standard"
+        else:  # Small files
+            print("Small file detected, using standard transcription...")
             transcript = voice_methods.transcribe_audio_file(filepath)
+            transcription_method = "standard"
         
         # Improve transcription quality
         transcript = voice_methods.improve_transcription_quality(transcript)
         
-        print(f"Enhanced transcription result: {transcript[:200]}...")
-        
         if not transcript or transcript.startswith("Error"):
             return jsonify({'error': f'Transcription failed: {transcript}'}), 500
         
-        # Generate summary
+        # Generate summary efficiently
         summary_type = request.form.get('summary_type', 'conversation')
-        print(f"Generating summary of type: {summary_type}")
         summary = generate_transcript_summary(transcript, summary_type)
         
         # Save session
@@ -302,10 +362,11 @@ def upload_audio():
             'filename': filename,
             'type': 'upload',
             'file_size_mb': round(file_size_mb, 2),
-            'transcription_method': 'enhanced'
+            'transcription_method': transcription_method,
+            'word_count': len(transcript.split()) if transcript else 0,
+            'processing_time': 'optimized'
         }
         
-        print("Enhanced upload completed successfully!")
         return jsonify({
             'success': True,
             'session_id': session_id,
@@ -313,7 +374,8 @@ def upload_audio():
             'summary': summary,
             'filename': filename,
             'file_size_mb': round(file_size_mb, 2),
-            'transcription_quality': 'enhanced'
+            'transcription_method': transcription_method,
+            'word_count': len(transcript.split()) if transcript else 0
         })
     
     except Exception as e:

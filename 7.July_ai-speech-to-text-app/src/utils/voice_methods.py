@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 import tempfile
 import subprocess
-import wave
+import queue
 
 class VoiceMethods:
     def __init__(self):
@@ -15,15 +15,17 @@ class VoiceMethods:
         self.is_recording = False
         self.current_transcript = ""
         self.voice_profiles = {}
+        self.transcript_queue = queue.Queue()
+        self.recording_thread = None
         self.load_voice_profiles()
         
         # Enhanced recognizer settings for better accuracy
-        self.recognizer.energy_threshold = 300
+        self.recognizer.energy_threshold = 4000
         self.recognizer.dynamic_energy_threshold = True
         self.recognizer.pause_threshold = 0.8
         self.recognizer.operation_timeout = None
         self.recognizer.phrase_threshold = 0.3
-        self.recognizer.non_speaking_duration = 0.8
+        self.recognizer.non_speaking_duration = 0.5
         
         # Initialize microphone with error handling
         try:
@@ -36,7 +38,95 @@ class VoiceMethods:
         except Exception as e:
             print(f"Warning: Could not initialize microphone: {e}")
             self.microphone = None
-    
+
+    def load_voice_profiles(self):
+        """Load voice profiles from file"""
+        try:
+            voice_profiles_dir = "voice_profiles"
+            os.makedirs(voice_profiles_dir, exist_ok=True)
+            
+            profiles_file = os.path.join(voice_profiles_dir, "profiles.json")
+            if os.path.exists(profiles_file):
+                with open(profiles_file, 'r', encoding='utf-8') as f:
+                    self.voice_profiles = json.load(f)
+                print(f"Loaded {len(self.voice_profiles)} voice profiles")
+            else:
+                self.voice_profiles = {}
+                print("No existing voice profiles found")
+        except Exception as e:
+            print(f"Error loading voice profiles: {e}")
+            self.voice_profiles = {}
+
+    def save_voice_profiles(self):
+        """Save voice profiles to file"""
+        try:
+            voice_profiles_dir = "voice_profiles"
+            os.makedirs(voice_profiles_dir, exist_ok=True)
+            
+            profiles_file = os.path.join(voice_profiles_dir, "profiles.json")
+            with open(profiles_file, 'w', encoding='utf-8') as f:
+                json.dump(self.voice_profiles, f, indent=2, ensure_ascii=False)
+            print(f"Saved {len(self.voice_profiles)} voice profiles")
+        except Exception as e:
+            print(f"Error saving voice profiles: {e}")
+
+    def train_voice_profile(self, user_name, training_text):
+        """Train a voice profile for a user"""
+        try:
+            # Simulate voice training (in a real implementation, this would use actual ML)
+            profile_data = {
+                'user_name': user_name,
+                'training_text': training_text,
+                'created_at': datetime.now().isoformat(),
+                'accuracy_improvement': 15,  # Simulated improvement percentage
+                'training_sessions': self.voice_profiles.get(user_name, {}).get('training_sessions', 0) + 1
+            }
+            
+            self.voice_profiles[user_name] = profile_data
+            self.save_voice_profiles()
+            
+            return profile_data['accuracy_improvement']
+        except Exception as e:
+            print(f"Error training voice profile: {e}")
+            return 0
+
+    def get_current_transcript(self):
+        """Get the current transcript during live recording"""
+        return self.current_transcript
+
+    def improve_transcription_quality(self, transcript):
+        """Improve transcription quality with post-processing"""
+        if not transcript or transcript.startswith("Error"):
+            return transcript
+        
+        try:
+            # Basic text cleaning and formatting
+            improved = transcript.strip()
+            
+            # Remove duplicate words
+            words = improved.split()
+            cleaned_words = []
+            for i, word in enumerate(words):
+                if i == 0 or word.lower() != words[i-1].lower():
+                    cleaned_words.append(word)
+            
+            improved = ' '.join(cleaned_words)
+            
+            # Basic punctuation improvements
+            improved = improved.replace(' , ', ', ')
+            improved = improved.replace(' . ', '. ')
+            improved = improved.replace(' ? ', '? ')
+            improved = improved.replace(' ! ', '! ')
+            
+            # Capitalize first letter
+            if improved:
+                improved = improved[0].upper() + improved[1:]
+            
+            return improved
+        except Exception as e:
+            print(f"Error improving transcription: {e}")
+            return transcript
+
     def preprocess_audio(self, file_path):
         """Preprocess audio file for better transcription quality"""
         try:
@@ -49,10 +139,10 @@ class VoiceMethods:
                 # Normalize audio, reduce noise, convert to optimal format
                 subprocess.run([
                     'ffmpeg', '-i', file_path,
-                    '-ar', '16000',  # Sample rate 16kHz (optimal for speech)
+                    '-ar', '16000',  # Sample rate
                     '-ac', '1',      # Mono
-                    '-c:a', 'pcm_s16le',  # PCM format
-                    '-af', 'highpass=f=80,lowpass=f=8000,volume=1.5',  # Filter and amplify
+                    '-c:a', 'pcm_s16le',  # PCM codec
+                    '-af', 'highpass=f=80,lowpass=f=8000,volume=1.5',  # Audio filters
                     '-y', processed_file
                 ], check=True, capture_output=True)
                 
@@ -84,13 +174,12 @@ class VoiceMethods:
             # Method 1: Google Speech Recognition (Free)
             try:
                 with sr.AudioFile(processed_file) as source:
-                    # Adjust for ambient noise
-                    self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
                     audio = self.recognizer.record(source)
-                
-                text = self.recognizer.recognize_google(audio, language='en-US')
-                transcription_results.append(("Google", text))
-                print(f"Google transcription: {text[:100]}...")
+                    text = self.recognizer.recognize_google(audio, language='en-US')
+                    if text.strip():
+                        transcription_results.append(text.strip())
+                        print(f"Google recognition successful: {text[:50]}...")
+
             except sr.UnknownValueError:
                 print("Google Speech Recognition could not understand audio")
             except sr.RequestError as e:
@@ -99,27 +188,28 @@ class VoiceMethods:
             # Method 2: Google Speech Recognition with enhanced settings
             try:
                 with sr.AudioFile(processed_file) as source:
+                    # Adjust for ambient noise
+                    self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
                     audio = self.recognizer.record(source)
-                
-                # Try with show_all=True to get confidence scores
-                text = self.recognizer.recognize_google(
-                    audio, 
-                    language='en-US',
-                    show_all=False
-                )
-                transcription_results.append(("Google Enhanced", text))
-                print(f"Google Enhanced transcription: {text[:100]}...")
+                    text = self.recognizer.recognize_google(
+                        audio, 
+                        language='en-US',
+                        show_all=False
+                    )
+                    if text.strip() and text not in transcription_results:
+                        transcription_results.append(text.strip())
+                        print(f"Enhanced Google recognition: {text[:50]}...")
             except Exception as e:
-                print(f"Google Enhanced transcription failed: {e}")
+                print(f"Enhanced recognition error: {e}")
             
             # Method 3: Whisper API (if available)
             try:
                 whisper_result = self.transcribe_with_whisper(processed_file)
-                if whisper_result:
-                    transcription_results.append(("Whisper", whisper_result))
-                    print(f"Whisper transcription: {whisper_result[:100]}...")
+                if whisper_result and whisper_result not in transcription_results:
+                    transcription_results.append(whisper_result)
+                    print(f"Whisper recognition: {whisper_result[:50]}...")
             except Exception as e:
-                print(f"Whisper transcription failed: {e}")
+                print(f"Whisper error: {e}")
             
             # Clean up processed file if it's different from original
             if processed_file != file_path:
@@ -130,16 +220,11 @@ class VoiceMethods:
             
             # Return the best transcription
             if transcription_results:
-                # For now, prefer Whisper if available, otherwise use the longest result
-                whisper_results = [r for r in transcription_results if r[0] == "Whisper"]
-                if whisper_results:
-                    return whisper_results[0][1]
-                
-                # Otherwise, return the longest transcription (usually more complete)
-                best_result = max(transcription_results, key=lambda x: len(x[1]))
-                return best_result[1]
+                # Return the longest transcription as it's likely the most complete
+                best_result = max(transcription_results, key=len)
+                return self.improve_transcription_quality(best_result)
             else:
-                return "Could not transcribe audio - please try a different file or check audio quality"
+                return "Error: Could not transcribe audio. Please check audio quality and try again."
                 
         except Exception as e:
             print(f"Error transcribing audio file: {str(e)}")
@@ -165,37 +250,174 @@ class VoiceMethods:
             print(f"Whisper transcription error: {e}")
             return None
     
-    def transcribe_audio_chunks(self, file_path, chunk_duration=30):
-        """Split audio into chunks for better transcription of long files"""
+    def start_real_time_recording(self):
+        """Start real-time audio recording with improved stability"""
+        if not self.microphone:
+            raise Exception("Microphone not available")
+            
+        self.is_recording = True
+        self.current_transcript = ""
+        
+        # Clear any existing queue items
+        while not self.transcript_queue.empty():
+            try:
+                self.transcript_queue.get_nowait()
+            except queue.Empty:
+                break
+        
+        # Start recording thread
+        self.recording_thread = threading.Thread(target=self._record_audio_continuously, daemon=True)
+        self.recording_thread.start()
+        
+        # Start transcription thread
+        threading.Thread(target=self._process_audio_continuously, daemon=True).start()
+    
+    def _record_audio_continuously(self):
+        """Record audio continuously and add to queue"""
+        print("Starting continuous audio recording...")
+        
+        while self.is_recording:
+            try:
+                with self.microphone as source:
+                    # Adjust for ambient noise periodically
+                    if len(self.current_transcript) % 100 == 0:
+                        self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
+                    
+                    # Listen for audio with shorter timeout for better responsiveness
+                    audio = self.recognizer.listen(source, timeout=0.5, phrase_time_limit=5)
+                    
+                    # Add audio to queue for processing
+                    if not self.transcript_queue.full():
+                        self.transcript_queue.put(audio)
+                
+            except sr.WaitTimeoutError:
+                # No speech detected within timeout - this is normal
+                continue
+            except Exception as e:
+                print(f"Error in audio recording: {e}")
+                time.sleep(0.1)
+    
+    def _process_audio_continuously(self):
+        """Process audio from queue and transcribe"""
+        print("Starting continuous transcription...")
+        
+        while self.is_recording or not self.transcript_queue.empty():
+            try:
+                # Get audio from queue with timeout
+                audio = self.transcript_queue.get(timeout=1)
+                
+                # Try to recognize speech
+                try:
+                    text = self.recognizer.recognize_google(audio, language='en-US')
+                    if text.strip():
+                        # Add space before new text if needed
+                        if self.current_transcript and not self.current_transcript.endswith(' '):
+                            self.current_transcript += " "
+                        self.current_transcript += text.strip()
+                        print(f"Transcribed: {text}")
+                except sr.UnknownValueError:
+                    # Speech was unintelligible - continue
+                    continue
+                except sr.RequestError as e:
+                    print(f"Recognition service error: {e}")
+                    continue
+                    
+            except queue.Empty:
+                # No audio in queue - continue
+                continue
+            except Exception as e:
+                print(f"Error in transcription processing: {e}")
+                time.sleep(0.1)
+    
+    def stop_recording(self):
+        """Stop recording and return final transcript"""
+        self.is_recording = False
+        
+        # Wait for processing to complete
+        time.sleep(1)
+        
+        # Process any remaining audio in queue
+        while not self.transcript_queue.empty():
+            try:
+                audio = self.transcript_queue.get_nowait()
+                try:
+                    text = self.recognizer.recognize_google(audio, language='en-US')
+                    if text.strip():
+                        if self.current_transcript and not self.current_transcript.endswith(' '):
+                            self.current_transcript += " "
+                        self.current_transcript += text.strip()
+                except:
+                    continue
+            except queue.Empty:
+                break
+        
+        return self.current_transcript.strip()
+    
+    def transcribe_audio_chunks(self, file_path, chunk_duration=20):
+        """Split audio into smaller chunks for better transcription coverage"""
         try:
             import pydub
             
+            print(f"Starting chunked transcription for file: {file_path}")
+            
             # Load audio file
             audio = pydub.AudioSegment.from_file(file_path)
+            total_duration = len(audio) / 1000  # Duration in seconds
+            print(f"Total audio duration: {total_duration:.2f} seconds")
             
-            # Split into chunks
+            # Use smaller chunks for better coverage
             chunk_length_ms = chunk_duration * 1000
-            chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
+            overlap_ms = 2000  # 2 second overlap to avoid missing words at boundaries
             
             transcriptions = []
             temp_dir = tempfile.gettempdir()
             
-            for i, chunk in enumerate(chunks):
-                chunk_file = os.path.join(temp_dir, f"chunk_{i}.wav")
-                chunk.export(chunk_file, format="wav")
+            # Create overlapping chunks
+            start = 0
+            chunk_num = 0
+            
+            while start < len(audio):
+                end = min(start + chunk_length_ms, len(audio))
+                chunk = audio[start:end]
                 
-                # Transcribe chunk
-                chunk_transcript = self.transcribe_audio_file(chunk_file)
-                if not chunk_transcript.startswith("Error"):
-                    transcriptions.append(chunk_transcript)
+                chunk_file = os.path.join(temp_dir, f"chunk_{chunk_num}_{os.getpid()}.wav")
+                chunk.export(chunk_file, format="wav", parameters=["-ar", "16000", "-ac", "1"])
                 
-                # Clean up
+                print(f"Processing chunk {chunk_num + 1}, duration: {len(chunk)/1000:.2f}s")
+                
+                # Transcribe chunk with multiple attempts
+                chunk_transcript = None
+                for attempt in range(2):
+                    chunk_transcript = self.transcribe_audio_file(chunk_file)
+                    if chunk_transcript and not chunk_transcript.startswith("Error"):
+                        break
+                    time.sleep(0.5)  # Brief pause between attempts
+                
+                if chunk_transcript and not chunk_transcript.startswith("Error"):
+                    transcriptions.append(chunk_transcript.strip())
+                    print(f"Chunk {chunk_num + 1} transcribed: {chunk_transcript[:50]}...")
+                else:
+                    print(f"Failed to transcribe chunk {chunk_num + 1}")
+                
+                # Clean up chunk file
                 try:
                     os.remove(chunk_file)
                 except:
                     pass
+                
+                # Move to next chunk with overlap
+                if end >= len(audio):
+                    break
+                start = end - overlap_ms
+                chunk_num += 1
             
-            return " ".join(transcriptions)
+            # Combine transcriptions and remove duplicates from overlaps
+            if transcriptions:
+                combined = self._combine_overlapping_transcripts(transcriptions)
+                print(f"Final combined transcript length: {len(combined)} characters")
+                return combined
+            else:
+                return "No audio could be transcribed from any chunks"
             
         except ImportError:
             print("pydub not available - install with: pip install pydub")
@@ -204,171 +426,51 @@ class VoiceMethods:
             print(f"Chunk transcription error: {e}")
             return self.transcribe_audio_file(file_path)
     
-    def improve_transcription_quality(self, transcript):
-        """Post-process transcription to improve quality"""
-        if not transcript or transcript.startswith("Error"):
-            return transcript
+    def _combine_overlapping_transcripts(self, transcriptions):
+        """Combine overlapping transcripts and remove duplicates"""
+        if not transcriptions:
+            return ""
         
-        # Basic text cleaning and formatting
-        cleaned = transcript.strip()
+        if len(transcriptions) == 1:
+            return transcriptions[0]
         
-        # Fix common transcription errors
-        replacements = {
-            " i ": " I ",
-            " im ": " I'm ",
-            " dont ": " don't ",
-            " cant ": " can't ",
-            " wont ": " won't ",
-            " youre ": " you're ",
-            " theyre ": " they're ",
-            " theres ": " there's ",
-            " whats ": " what's ",
-            " thats ": " that's ",
-            " its ": " it's ",
-            " hes ": " he's ",
-            " shes ": " she's ",
-            " well ": " we'll ",
-            " ill ": " I'll ",
-            " youll ": " you'll ",
-            " were ": " we're ",
-            " oclock ": " o'clock ",
-        }
+        combined = transcriptions[0]
         
-        for old, new in replacements.items():
-            cleaned = cleaned.replace(old, new)
-        
-        # Capitalize first letter of sentences
-        sentences = cleaned.split('. ')
-        sentences = [s.capitalize() if s else s for s in sentences]
-        cleaned = '. '.join(sentences)
-        
-        # Ensure first letter is capitalized
-        if cleaned:
-            cleaned = cleaned[0].upper() + cleaned[1:]
-        
-        return cleaned
-    
-    def start_real_time_recording(self):
-        """Start real-time audio recording"""
-        if not self.microphone:
-            raise Exception("Microphone not available")
+        for i in range(1, len(transcriptions)):
+            current = transcriptions[i]
             
-        self.is_recording = True
-        self.current_transcript = ""
-        
-        # Start transcription in a separate thread
-        threading.Thread(target=self._transcribe_continuously, daemon=True).start()
-    
-    def _transcribe_continuously(self):
-        """Continuously transcribe audio"""
-        print("Starting continuous transcription...")
-        
-        while self.is_recording:
-            try:
-                if not self.microphone:
-                    break
-                    
-                with self.microphone as source:
-                    # Listen for audio with timeout
-                    audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=3)
+            # Find potential overlap by checking if the end of combined matches the start of current
+            overlap_found = False
+            for overlap_len in range(min(50, len(combined), len(current)), 5, -1):
+                combined_end = combined[-overlap_len:].strip().lower()
+                current_start = current[:overlap_len].strip().lower()
                 
-                # Try to recognize speech
-                try:
-                    text = self.recognizer.recognize_google(audio)
-                    if text.strip():
-                        self.current_transcript += text + " "
-                        print(f"Transcribed: {text}")
-                except sr.UnknownValueError:
-                    # Speech was unintelligible
-                    continue
-                except sr.RequestError:
-                    # API was unreachable or unresponsive
-                    continue
-                    
-            except sr.WaitTimeoutError:
-                # No speech detected within timeout
-                continue
-            except Exception as e:
-                print(f"Error in continuous transcription: {e}")
-                time.sleep(1)
-    
-    def stop_recording(self):
-        """Stop recording and return final transcript"""
-        self.is_recording = False
-        time.sleep(0.5)  # Give time for last transcription
-        return self.current_transcript.strip()
-    
-    def get_current_transcript(self):
-        """Get current transcript during recording"""
-        return self.current_transcript.strip()
-    
-    def process_voice_command(self, command):
-        """Process voice commands using basic text matching"""
-        command = command.lower().strip()
+                if combined_end == current_start:
+                    # Remove the overlapping part from current and append
+                    combined += " " + current[overlap_len:].strip()
+                    overlap_found = True
+                    break
+            
+            if not overlap_found:
+                # No overlap found, just append with space
+                combined += " " + current.strip()
         
-        # Basic command recognition
-        if any(word in command for word in ['start', 'begin', 'record', 'recording']):
-            return "start_recording"
-        elif any(word in command for word in ['stop', 'end', 'finish', 'pause']):
-            return "stop_recording"
-        elif any(word in command for word in ['summary', 'summarize', 'sum up']):
-            return "summarize"
-        elif any(word in command for word in ['clear', 'reset', 'delete', 'remove']):
-            return "clear_transcript"
-        elif any(word in command for word in ['export', 'save', 'download']):
-            return "export_transcript"
-        else:
-            return "unknown_command"
-    
-    def train_voice_profile(self, user_name, training_text):
-        """Train voice profile for better recognition"""
-        try:
-            if not self.microphone:
-                return "Microphone not available for voice training"
-            
-            # Simulate voice training with basic profile storage
-            self.voice_profiles[user_name] = {
-                'created_at': datetime.now().isoformat(),
-                'training_text': training_text,
-                'samples_count': 3  # Simulate 3 training samples
-            }
-            
-            self.save_voice_profiles()
-            return f"Voice profile created for {user_name}"
-            
-        except Exception as e:
-            return f"Error training voice profile: {str(e)}"
-    
-    def load_voice_profiles(self):
-        """Load existing voice profiles"""
-        try:
-            profiles_path = 'voice_profiles/profiles.json'
-            if os.path.exists(profiles_path):
-                with open(profiles_path, 'r') as f:
-                    self.voice_profiles = json.load(f)
-            else:
-                self.voice_profiles = {}
-        except Exception as e:
-            print(f"Error loading voice profiles: {e}")
-            self.voice_profiles = {}
-    
-    def save_voice_profiles(self):
-        """Save voice profiles to file"""
-        try:
-            os.makedirs('voice_profiles', exist_ok=True)
-            with open('voice_profiles/profiles.json', 'w') as f:
-                json.dump(self.voice_profiles, f, indent=2)
-        except Exception as e:
-            print(f"Error saving voice profiles: {e}")
+        return combined.strip()
     
     def export_transcript(self, transcript, summary, format_type, session_id):
-        """Export transcript to file"""
+        """Export transcript to file with improved error handling"""
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             
+            # Ensure uploads directory exists
+            uploads_dir = "uploads"
+            if not os.path.exists(uploads_dir):
+                os.makedirs(uploads_dir, exist_ok=True)
+            
+            # Generate filename
             if format_type == 'txt':
                 filename = f"transcript_{session_id}_{timestamp}.txt"
-                filepath = os.path.join("uploads", filename)
+                filepath = os.path.join(uploads_dir, filename)
                 
                 with open(filepath, 'w', encoding='utf-8') as f:
                     f.write(f"Transcript - {session_id}\n")
@@ -383,23 +485,35 @@ class VoiceMethods:
             
             elif format_type == 'json':
                 filename = f"transcript_{session_id}_{timestamp}.json"
-                filepath = os.path.join("uploads", filename)
+                filepath = os.path.join(uploads_dir, filename)
                 
                 data = {
                     'session_id': session_id,
                     'timestamp': datetime.now().isoformat(),
                     'transcript': transcript if transcript else "",
-                    'summary': summary if summary else ""
+                    'summary': summary if summary else "",
+                    'export_format': format_type,
+                    'word_count': len(transcript.split()) if transcript else 0,
+                    'character_count': len(transcript) if transcript else 0
                 }
                 
                 with open(filepath, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=2, ensure_ascii=False)
             
-            return filepath
+            else:
+                raise Exception(f"Unsupported export format: {format_type}")
+            
+            # Verify file was created and has content
+            if os.path.exists(filepath) and os.path.getsize(filepath) > 0:
+                print(f"Export successful: {filepath}")
+                return filepath
+            else:
+                raise Exception("File was not created successfully or is empty")
             
         except Exception as e:
+            print(f"Export error details: {str(e)}")
             raise Exception(f"Error exporting transcript: {str(e)}")
-    
+
     def validate_audio_file(self, file):
         """Validate uploaded audio file"""
         if not file:

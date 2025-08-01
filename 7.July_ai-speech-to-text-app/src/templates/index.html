@@ -617,52 +617,33 @@
         const progressFill = document.getElementById('training-progress-fill');
         const statusText = document.getElementById('training-status');
         
-        // Calculate dynamic duration
+        // Calculate actual duration based on text length
         const wordCount = trainingText.trim().split(/\s+/).length;
-        const totalDuration = Math.max(10, Math.ceil(wordCount / 2)) * 100; // Convert to milliseconds for progress
+        const actualDuration = Math.max(10, Math.ceil(wordCount / 2)); // seconds
+        const progressInterval = 100; // Update every 100ms
+        const totalSteps = (actualDuration * 1000) / progressInterval;
         
         progressBar.style.display = 'block';
         progressFill.style.width = '0%';
         statusText.textContent = 'Starting voice training...';
 
+        // Start the training request
+        const startTime = Date.now();
+        
         fetch('/api/train-voice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
             user_name: userName, 
             training_text: trainingText,
-            duration: totalDuration / 100 // Send duration in seconds
+            duration: actualDuration
           })
         })
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            let progress = 0;
-            const incrementTime = totalDuration / 100; // Time per 1% progress
-            
-            const interval = setInterval(() => {
-              progress += 1;
-              progressFill.style.width = progress + '%';
-              
-              if (progress <= 25) {
-                statusText.textContent = 'Recording voice samples...';
-              } else if (progress <= 50) {
-                statusText.textContent = 'Analyzing voice patterns...';
-              } else if (progress <= 75) {
-                statusText.textContent = 'Training voice model...';
-              } else if (progress < 100) {
-                statusText.textContent = 'Finalizing voice profile...';
-              }
-              
-              if (progress >= 100) {
-                clearInterval(interval);
-                statusText.textContent = 'Training completed successfully!';
-                setTimeout(() => {
-                  alert(data.message);
-                  progressBar.style.display = 'none';
-                }, 1000);
-              }
-            }, incrementTime);
+            // Progress will be handled by the interval below
+            console.log('Training completed on server');
           } else {
             alert('Error training voice: ' + data.error);
             progressBar.style.display = 'none';
@@ -673,6 +654,35 @@
           alert('Error training voice');
           progressBar.style.display = 'none';
         });
+
+        // Progress animation that matches actual duration
+        let step = 0;
+        const interval = setInterval(() => {
+          step++;
+          const progress = Math.min((step / totalSteps) * 100, 100);
+          progressFill.style.width = progress + '%';
+          
+          // Update status based on progress
+          if (progress <= 25) {
+            statusText.textContent = 'Recording voice samples...';
+          } else if (progress <= 50) {
+            statusText.textContent = 'Analyzing voice patterns...';
+          } else if (progress <= 75) {
+            statusText.textContent = 'Training voice model...';
+          } else if (progress < 100) {
+            statusText.textContent = 'Finalizing voice profile...';
+          } else {
+            statusText.textContent = 'Training completed successfully!';
+          }
+          
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              alert(`Voice training completed for ${userName}!`);
+              progressBar.style.display = 'none';
+            }, 1000);
+          }
+        }, progressInterval);
       }
 
       // Add this function to calculate training duration
@@ -686,8 +696,34 @@
       // Utility functions
       function clearTranscript() {
         if (confirm('Are you sure you want to clear the transcript?')) {
+          // Clear all transcript-related variables
           currentTranscript = "";
+          window.currentUploadTranscript = "";
+          window.currentUploadSummary = "";
+          window.currentSessionId = null;
+          
+          // Clear UI elements
           document.getElementById('live-transcript').textContent = 'Transcript cleared. Start recording to begin again...';
+          
+          // Clear upload preview
+          const previewSection = document.getElementById('upload-preview');
+          if (previewSection) {
+            previewSection.style.display = 'none';
+          }
+          
+          // Clear AI summary
+          const summaryContent = document.querySelector('.ai-summary');
+          if (summaryContent) {
+            summaryContent.innerHTML = 'No AI summary available. Upload an audio file or start recording to generate a summary.';
+          }
+          
+          // Reset form
+          const uploadForm = document.getElementById('upload-form');
+          if (uploadForm) {
+            uploadForm.reset();
+          }
+          
+          console.log('Transcript cleared successfully');
         }
       }
 
@@ -764,43 +800,99 @@
       }
 
       function exportSession(sessionId, format) {
+        console.log(`Exporting session ${sessionId} as ${format}`);
+        
+        // Method 1: Try direct URL approach
+        const exportUrl = `/api/export-transcript/${sessionId}/${format}`;
+        
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = exportUrl;
+        link.download = `transcript_${sessionId}.${format}`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Alternative method with fetch for better error handling
+        /*
         fetch('/api/export-transcript', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            session_id: sessionId, 
-            format: format 
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            session_id: sessionId,
+            format: format
           })
         })
         .then(response => {
           if (response.ok) {
             return response.blob();
           } else {
-            throw new Error('Export failed');
+            return response.json().then(err => Promise.reject(err));
           }
         })
         .then(blob => {
           const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `transcript_${sessionId}.${format}`;
-          a.click();
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `transcript_${sessionId}.${format}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
         })
         .catch(error => {
-          console.error('Error:', error);
-          alert('Error exporting transcript');
+          console.error('Export error:', error);
+          alert('Error exporting transcript: ' + (error.error || error.message || 'Unknown error'));
         });
+        */
       }
 
       function exportCurrentTranscript(format) {
-        if (!window.currentSessionId && !currentTranscript) {
-          alert('No transcript available to export. Please record audio or upload a file first.');
+        if (!currentTranscript || currentTranscript.trim() === '') {
+          alert('No transcript available to export');
           return;
         }
         
-        const sessionId = window.currentSessionId || 'current';
-        exportSession(sessionId, format);
+        // Create a temporary session for current transcript
+        const tempSessionId = `temp_${Date.now()}`;
+        
+        // Use the direct export approach
+        fetch('/api/export-transcript', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            session_id: tempSessionId,
+            format: format,
+            transcript: currentTranscript,
+            summary: document.querySelector('.ai-summary')?.textContent || '',
+            temporary: true
+          })
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            return response.json().then(err => Promise.reject(err));
+          }
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `current_transcript_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.${format}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Export error:', error);
+          alert('Error exporting transcript: ' + (error.error || error.message || 'Unknown error'));
+        });
       }
 
       function generateSummary() {

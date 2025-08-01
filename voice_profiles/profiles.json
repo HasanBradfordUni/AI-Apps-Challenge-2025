@@ -3,5 +3,10 @@
     "created_at": "2025-07-13T19:12:34.910369",
     "training_text": "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training. Please read this clearly and at a normal pace.\n          ",
     "samples_count": 3
+  },
+  "Hasan": {
+    "created_at": "2025-07-29T17:31:42.814227",
+    "training_text": "The quick brown fox jumps over the lazy dog.",
+    "samples_count": 3
   }
 }
