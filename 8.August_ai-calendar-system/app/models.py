@@ -1,181 +1,94 @@
 import sqlite3
-from sqlite3 import Error
-import os
 from datetime import datetime
+import json
 
-def create_connection(path):
-    connection = None
-    try:
-        connection = sqlite3.connect(path, check_same_thread=False)
-        print("Connection to SQLite DB successful")
-    except Error as e:
-        print(f"The error '{e}' occurred")
+class CalendarEvent:
+    def __init__(self, id=None, user_id=None, title=None, description=None, 
+                 start_time=None, end_time=None, location=None, attendees=None,
+                 calendar_source=None, external_id=None, created_at=None):
+        self.id = id
+        self.user_id = user_id
+        self.title = title
+        self.description = description
+        self.start_time = start_time
+        self.end_time = end_time
+        self.location = location
+        self.attendees = attendees if attendees else []
+        self.calendar_source = calendar_source  # 'google', 'outlook', 'manual'
+        self.external_id = external_id
+        self.created_at = created_at or datetime.now()
 
-    return connection
+class User:
+    def __init__(self, id=None, name=None, email=None, google_calendar_token=None,
+                 outlook_token=None, preferences=None, created_at=None):
+        self.id = id
+        self.name = name
+        self.email = email
+        self.google_calendar_token = google_calendar_token
+        self.outlook_token = outlook_token
+        self.preferences = preferences if preferences else {}
+        self.created_at = created_at or datetime.now()
 
-def execute_query(connection, query, params=None):
+def create_calendar_tables(connection):
+    """Create calendar-specific database tables"""
     cursor = connection.cursor()
-    try:
-        if params:
-            cursor.execute(query, params)
-        else:
-            cursor.execute(query)
-        connection.commit()
-        return cursor.lastrowid
-    except Error as e:
-        print(f"The error '{e}' occurred")
-        return None
-
-def create_tables(conn):
-    """Create necessary database tables if they don't exist"""
-    try:
-        cursor = conn.cursor()
-        
-        # Create users table
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            company_name TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        ''')
-        
-        # Create job_ads table
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS job_ads (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            role_title TEXT NOT NULL,
-            department TEXT,
-            job_ad_text TEXT NOT NULL,
-            template_name TEXT,
-            is_template INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-        ''')
-
-        # Create templates table
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS templates (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            template_name TEXT NOT NULL,
-            job_ad_id INTEGER NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users (id),
-            FOREIGN KEY (job_ad_id) REFERENCES job_ads (id)
-        )
-        ''')
-        
-        conn.commit()
-    except Exception as e:
-        print(f"Error creating tables: {str(e)}")
-        conn.rollback()
-
-# User data functions
-def add_user(connection, name, email, company_name):
-    query = "INSERT INTO users (name, email, company_name) VALUES (?, ?, ?)"
-    return execute_query(connection, query, (name, email, company_name))
-
-def get_user(connection, user_id):
-    cursor = connection.cursor()
-    query = "SELECT * FROM users WHERE id = ?"
-    cursor.execute(query, (user_id,))
-    return cursor.fetchone()
-
-def find_user_by_email(connection, email):
-    cursor = connection.cursor()
-    query = "SELECT * FROM users WHERE email = ?"
-    cursor.execute(query, (email,))
-    return cursor.fetchone()
-
-# Job ad functions
-def save_job_ad(connection, user_id, role_title, department, job_ad_text, is_template=False, template_name=None):
-    """Save a job ad to the database"""
-    try:
-        cursor = connection.cursor()
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        query = '''
-        INSERT INTO job_ads (user_id, role_title, department, job_ad_text, is_template, template_name, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        '''
-        cursor.execute(query, (user_id, role_title, department, job_ad_text, 
-                              1 if is_template else 0, template_name, timestamp))
-        connection.commit()
-        
-        # Return the ID of the inserted row
-        return cursor.lastrowid
-    except Exception as e:
-        print(f"Error saving job ad: {str(e)}")
-        connection.rollback()
-        return None
-
-def get_job_ad(connection, ad_id):
-    cursor = connection.cursor()
-    query = "SELECT * FROM job_ads WHERE id = ?"
-    cursor.execute(query, (ad_id,))
-    return cursor.fetchone()
-
-def get_user_job_ads(connection, user_id):
-    """Get all job ads for a specific user"""
-    try:
-        cursor = connection.cursor()
-        query = '''
-        SELECT * FROM job_ads 
-        WHERE user_id = ? 
-        ORDER BY created_at DESC
-        '''
-        cursor.execute(query, (user_id,))
-        return cursor.fetchall()
-    except Exception as e:
-        print(f"Error retrieving user job ads: {str(e)}")
-        return []
-
-# Template functions
-def add_template(connection, user_id, template_name, job_ad_id):
-    query = """
-    INSERT INTO templates (user_id, template_name, job_ad_id)
-    VALUES (?, ?, ?)
-    """
-    return execute_query(connection, query, (user_id, template_name, job_ad_id))
-
-def get_templates(connection, user_id):
-    cursor = connection.cursor()
-    query = """
-    SELECT t.id, t.template_name, j.role_title, j.department, t.created_at
-    FROM templates t
-    JOIN job_ads j ON t.job_ad_id = j.id
-    WHERE t.user_id = ?
-    ORDER BY t.created_at DESC
-    """
-    cursor.execute(query, (user_id,))
-    return cursor.fetchall()
-
-def get_template(connection, template_id):
-    cursor = connection.cursor()
-    query = """
-    SELECT t.*, j.* 
-    FROM templates t
-    JOIN job_ads j ON t.job_ad_id = j.id
-    WHERE t.id = ?
-    """
-    cursor.execute(query, (template_id,))
-    return cursor.fetchone()
-
-def delete_job_ad(connection, ad_id):
-    # First check if it's used as a template
-    cursor = connection.cursor()
-    check_query = "SELECT id FROM templates WHERE job_ad_id = ?"
-    cursor.execute(check_query, (ad_id,))
-    if cursor.fetchone():
-        # Remove template reference first
-        delete_template_query = "DELETE FROM templates WHERE job_ad_id = ?"
-        execute_query(connection, delete_template_query, (ad_id,))
     
-    # Now delete the job ad
-    delete_query = "DELETE FROM job_ads WHERE id = ?"
-    return execute_query(connection, delete_query, (ad_id,))
+    # Users table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        google_calendar_token TEXT,
+        outlook_token TEXT,
+        preferences TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
+    # Calendar events table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS calendar_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        start_time TIMESTAMP NOT NULL,
+        end_time TIMESTAMP NOT NULL,
+        location TEXT,
+        attendees TEXT,
+        calendar_source TEXT,
+        external_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+    ''')
+    
+    # Email commands log
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS email_commands (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        email_subject TEXT,
+        email_body TEXT,
+        parsed_command TEXT,
+        action_taken TEXT,
+        processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+    ''')
+    
+    # Voice commands log
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS voice_commands (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        command_text TEXT NOT NULL,
+        parsed_intent TEXT,
+        action_taken TEXT,
+        processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+    ''')
+    
+    connection.commit()

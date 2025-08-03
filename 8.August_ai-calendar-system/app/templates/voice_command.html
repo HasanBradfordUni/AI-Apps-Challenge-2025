@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Has AI - AI Calendar and Scheduling System</title>
+    <title>Has AI - AI Calendar and Scheduling System (Voice Commands)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
@@ -48,61 +48,70 @@
             {% endif %}
         {% endwith %}
 
-        <h1 class="mainHeading">Calendar Dashboard</h1>
-        <div id="clock" class="clock"></div>
+        <h1 class="mainHeading">Voice Commands</h1>
+        <p class="subHeading">Use your voice to control your calendar</p>
 
-        <div class="dashboard-container">
-            <!-- Daily Summary Card -->
-            <div class="dashboard-card">
-                <h3 class="subHeading">Today's AI Summary</h3>
-                <div class="summary-content">
-                    {{ daily_summary if daily_summary else "No events scheduled for today." }}
-                </div>
+        <div class="voice-container">
+            <!-- Live Voice Recording -->
+            <div class="voice-card">
+                <h3 class="subHeading">🎤 Live Voice Command</h3>
+                <p class="largeText">Click to start recording your voice command</p>
+                <button id="recordButton" onclick="startVoiceRecording()" class="voice-btn">
+                    🎤 Start Recording
+                </button>
+                <div id="recordingStatus" class="recording-status"></div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="dashboard-card">
-                <h3 class="subHeading">Quick Actions</h3>
-                <div class="quick-actions">
-                    <button onclick="createQuickEvent()" class="action-btn">Create Event</button>
-                    <button onclick="startVoiceCommand()" class="action-btn">Voice Command</button>
-                    <button onclick="suggestMeetingTimes()" class="action-btn">Suggest Times</button>
-                </div>
-            </div>
-
-            <!-- Today's Events -->
-            <div class="dashboard-card events-card">
-                <h3 class="subHeading">Today's Schedule</h3>
-                <div class="events-list">
-                    {% if events %}
-                        {% for event in events %}
-                        <div class="event-item">
-                            <div class="event-time">{{ event[4][:5] if event[4] else 'TBD' }}</div>
-                            <div class="event-details">
-                                <h4>{{ event[2] }}</h4>
-                                {% if event[3] %}
-                                <p>{{ event[3] }}</p>
-                                {% endif %}
-                                {% if event[6] %}
-                                <p class="event-location">📍 {{ event[6] }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="largeText">No events scheduled for today.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Email Parser -->
-            <div class="dashboard-card">
-                <h3 class="subHeading">Parse Email</h3>
-                <form action="{{ url_for('calendar.sync_emails') }}" method="POST" class="email-form">
-                    <input type="text" name="subject" placeholder="Email Subject" class="email-input">
-                    <textarea name="body" placeholder="Email Body" class="email-textarea" rows="4"></textarea>
-                    <button type="submit" class="submit-btn">Parse Email</button>
+            <!-- Audio File Upload -->
+            <div class="voice-card">
+                <h3 class="subHeading">📁 Upload Audio File</h3>
+                <form action="{{ url_for('calendar.voice_command') }}" method="POST" enctype="multipart/form-data" class="upload-form">
+                    <input type="file" name="audio_file" accept="audio/*" class="file-input">
+                    <button type="submit" class="submit-btn">Process Audio</button>
                 </form>
+            </div>
+
+            <!-- Voice Command Examples -->
+            <div class="voice-card examples-card">
+                <h3 class="subHeading">📝 Example Commands</h3>
+                <div class="examples-grid">
+                    <div class="example-item">
+                        <strong>"Schedule a meeting with John tomorrow at 2 PM"</strong>
+                        <p>Creates a new meeting event</p>
+                    </div>
+                    <div class="example-item">
+                        <strong>"What's on my calendar today?"</strong>
+                        <p>Shows today's schedule</p>
+                    </div>
+                    <div class="example-item">
+                        <strong>"Cancel my 3 PM meeting"</strong>
+                        <p>Cancels specified meeting</p>
+                    </div>
+                    <div class="example-item">
+                        <strong>"Move tomorrow's lunch meeting to Friday"</strong>
+                        <p>Reschedules existing event</p>
+                    </div>
+                    <div class="example-item">
+                        <strong>"Create a team standup every Monday at 9 AM"</strong>
+                        <p>Creates recurring events</p>
+                    </div>
+                    <div class="example-item">
+                        <strong>"Find a time for a 1-hour meeting this week"</strong>
+                        <p>Suggests optimal meeting times</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Voice Tips -->
+            <div class="voice-card">
+                <h3 class="subHeading">💡 Voice Tips</h3>
+                <ul class="tips-list">
+                    <li>Speak clearly and at a normal pace</li>
+                    <li>Include specific dates and times</li>
+                    <li>Mention attendees if needed</li>
+                    <li>Use natural language - the AI understands context</li>
+                    <li>Ensure your microphone is working properly</li>
+                </ul>
             </div>
         </div>
     </section>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Has AI - AI Calendar and Scheduling System</title>
+    <<title>Has AI - AI Calendar and Scheduling System (Calendar View)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
@@ -48,67 +48,77 @@
             {% endif %}
         {% endwith %}
 
-        <h1 class="mainHeading">Calendar Dashboard</h1>
-        <div id="clock" class="clock"></div>
-
-        <div class="dashboard-container">
-            <!-- Daily Summary Card -->
-            <div class="dashboard-card">
-                <h3 class="subHeading">Today's AI Summary</h3>
-                <div class="summary-content">
-                    {{ daily_summary if daily_summary else "No events scheduled for today." }}
-                </div>
+        <h1 class="mainHeading">Calendar View</h1>
+        
+        <div class="calendar-container">
+            <!-- Calendar Navigation -->
+            <div class="calendar-nav">
+                <button onclick="changeMonth(-1)" class="nav-btn">← Previous</button>
+                <h2 class="subHeading">{{ current_month.strftime('%B %Y') }}</h2>
+                <button onclick="changeMonth(1)" class="nav-btn">Next →</button>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="dashboard-card">
-                <h3 class="subHeading">Quick Actions</h3>
-                <div class="quick-actions">
-                    <button onclick="createQuickEvent()" class="action-btn">Create Event</button>
-                    <button onclick="startVoiceCommand()" class="action-btn">Voice Command</button>
-                    <button onclick="suggestMeetingTimes()" class="action-btn">Suggest Times</button>
-                </div>
-            </div>
+            <!-- Calendar Grid -->
+            <div class="calendar-grid">
+                <!-- Day Headers -->
+                <div class="calendar-header">Sun</div>
+                <div class="calendar-header">Mon</div>
+                <div class="calendar-header">Tue</div>
+                <div class="calendar-header">Wed</div>
+                <div class="calendar-header">Thu</div>
+                <div class="calendar-header">Fri</div>
+                <div class="calendar-header">Sat</div>
 
-            <!-- Today's Events -->
-            <div class="dashboard-card events-card">
-                <h3 class="subHeading">Today's Schedule</h3>
-                <div class="events-list">
-                    {% if events %}
-                        {% for event in events %}
-                        <div class="event-item">
-                            <div class="event-time">{{ event[4][:5] if event[4] else 'TBD' }}</div>
-                            <div class="event-details">
-                                <h4>{{ event[2] }}</h4>
-                                {% if event[3] %}
-                                <p>{{ event[3] }}</p>
+                <!-- Calendar Days -->
+                {% set today = current_month %}
+                {% set start_of_month = today.replace(day=1) %}
+                {% set start_of_calendar = start_of_month - (start_of_month.weekday() + 1) * timedelta(days=1) %}
+                
+                {% for i in range(42) %}
+                    {% set current_date = start_of_calendar + timedelta(days=i) %}
+                    {% set is_current_month = current_date.month == today.month %}
+                    {% set is_today = current_date == today %}
+                    {% set date_string = current_date.strftime('%Y-%m-%d') %}
+                    
+                    <div class="calendar-day {{ 'other-month' if not is_current_month else '' }} {{ 'today' if is_today else '' }}" 
+                         data-date="{{ date_string }}" 
+                         onclick="selectDate('{{ date_string }}')">
+                        <div class="day-number">{{ current_date.day }}</div>
+                        <div class="day-events">
+                            {% for event in events %}
+                                {% if event[4][:10] == date_string %}
+                                    <div class="day-event" data-event-id="{{ event[0] }}">
+                                        {% if event[2]|length > 15 %}
+                                            {{ event[2][:15] }}...
+                                        {% else %}
+                                            {{ event[2] }}
+                                        {% endif %}
+                                    </div>
                                 {% endif %}
-                                {% if event[6] %}
-                                <p class="event-location">📍 {{ event[6] }}</p>
-                                {% endif %}
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="largeText">No events scheduled for today.</p>
-                    {% endif %}
-                </div>
+                    </div>
+                {% endfor %}
             </div>
 
-            <!-- Email Parser -->
-            <div class="dashboard-card">
-                <h3 class="subHeading">Parse Email</h3>
-                <form action="{{ url_for('calendar.sync_emails') }}" method="POST" class="email-form">
-                    <input type="text" name="subject" placeholder="Email Subject" class="email-input">
-                    <textarea name="body" placeholder="Email Body" class="email-textarea" rows="4"></textarea>
-                    <button type="submit" class="submit-btn">Parse Email</button>
+            <!-- Create Event Form -->
+            <div class="create-event-section">
+                <h3 class="subHeading">Create New Event</h3>
+                <form action="{{ url_for('calendar.create_event') }}" method="POST" class="event-form">
+                    <input type="text" name="title" placeholder="Event Title" class="form-input" required>
+                    <textarea name="description" placeholder="Description" class="form-textarea" rows="3"></textarea>
+                    <input type="datetime-local" name="start_time" class="form-input" required>
+                    <input type="datetime-local" name="end_time" class="form-input" required>
+                    <input type="text" name="location" placeholder="Location" class="form-input">
+                    <input type="text" name="attendees" placeholder="Attendees (comma-separated emails)" class="form-input">
+                    <button type="submit" class="submit-btn">Create Event</button>
                 </form>
             </div>
         </div>
     </section>
 
     <footer>
-    <div class="footer">
+        <div class="footer">
         <div class="w-container">
           <div class="w-row">
             <div class="w-col w-col-4">

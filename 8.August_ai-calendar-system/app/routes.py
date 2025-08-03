@@ -1,392 +1,249 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 import os
-from .forms import JobAdForm, RoleTypeForm, QualificationsForm, ExperienceForm, SkillsForm, OutputForm, UserForm
-from .models import create_connection, create_tables, save_job_ad, get_job_ad, get_user_job_ads, find_user_by_email
-from .models import add_user, add_template, get_templates
-from .utils import generate_job_ad, refine_job_ad, extract_text_from_pdf, format_for_pdf, model
+from datetime import datetime, timedelta
+import json
+from .models import create_calendar_tables, CalendarEvent, User
+from .services.ai_parser import AICommandParser
+from .services.voice_recognition import VoiceRecognitionService
+from .services.calendar_sync import GoogleCalendarService, OutlookCalendarService
+from .models import create_connection
 
-app = Blueprint('app', __name__)
+calendar_bp = Blueprint('calendar', __name__)
 
-# Database connection
-db_path = os.path.join(os.path.dirname(__file__), 'static', 'database.db')
+# Database setup
+db_path = os.path.join(os.path.dirname(__file__), 'static', 'calendar.db')
 connection = create_connection(db_path)
-create_tables(connection)
+create_calendar_tables(connection)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# Initialize services
+ai_parser = AICommandParser()
+voice_service = VoiceRecognitionService()
 
-job_details = {}
-
-@app.route('/profile', methods=['GET', 'POST'])
-def profile():
-    form = UserForm()
-    if form.validate_on_submit():
-        # Save user profile data
-        user = find_user_by_email(connection, form.email.data)
-        if user:
-            flash('Email already exists. Signing you in.', 'success')
-            session['user_id'] = user[0]  # Assuming the first column is the user ID
-            return redirect(url_for('app.role_type'))
-        else:
-            user_id = add_user(connection, form.name.data, form.email.data, form.company_name.data)
-            if not user_id:
-                flash('Error creating user profile', 'error')
-                return redirect(url_for('app.index'))
-            session['user_id'] = user_id
-            flash('Profile saved successfully!', 'success')
-            return redirect(url_for('app.role_type'))
-    
-    return render_template('profile.html', form=form)
-
-@app.route('/role_type', methods=['GET', 'POST'])
-def role_type():
+@calendar_bp.route('/')
+def dashboard():
+    """Main dashboard showing calendar overview"""
     if 'user_id' not in session:
-        flash('Please create a profile first', 'warning')
-        return redirect(url_for('app.profile'))
+        return redirect(url_for('calendar.login'))
     
-    form = RoleTypeForm()
+    # Get today's events
+    today = datetime.now().date()
+    events = get_user_events(session['user_id'], today, today + timedelta(days=1))
     
-    # Get saved templates for this user
-    templates = get_templates(connection, session['user_id'])
+    # Generate daily summary
+    daily_summary = ai_parser.generate_daily_summary(events, str(today))
     
-    if form.validate_on_submit():
-        # Process the role type form
-        job_details['role_title'] = form.role_title.data
-        job_details['role_type'] = form.role_type.data
-        job_details['department'] = form.department.data
-        job_details['location'] = form.location.data
-        job_details['remote_option'] = form.remote_option.data
-        job_details['salary_range'] = form.salary_range.data
-        job_details['template_name'] = form.template_name.data
-        
-        # Check if it's a template load request
-        if form.load_template.data and form.template_id.data:
-            template_id = int(form.template_id.data)
-            for template in templates:
-                if template[0] == template_id:  # Assuming first column is ID
-                    # Load template data into session
-                    job_ad_data = get_job_ad(connection, template_id)
-                    if job_ad_data:
-                        # Parse stored JSON data
-                        import json
-                        try:
-                            stored_details = json.loads(job_ad_data[5])  # Assuming 6th column is JSON data
-                            job_details.update(stored_details)
-                            flash('Template loaded successfully', 'success')
-                            return redirect(url_for('app.qualifications'))
-                        except:
-                            flash('Error loading template data', 'error')
-            
-            flash('Selected template not found', 'error')
-            return redirect(url_for('app.role_type'))
-        
-        return redirect(url_for('app.qualifications'))
-    
-    return render_template('role_type.html', form=form, templates=templates)
+    return render_template('index.html', events=events, daily_summary=daily_summary, today=today)
 
-@app.route('/qualifications', methods=['GET', 'POST'])
-def qualifications():
-    if 'user_id' not in session or 'role_title' not in job_details:
-        flash('Please complete all previous steps first', 'warning')
-        return redirect(url_for('app.role_type'))
-    
-    form = QualificationsForm()
-    
-    if form.validate_on_submit():
-        # Process the qualifications form
-        job_details['education_required'] = form.education_required.data
-        job_details['certifications'] = []
-        
-        # Process certifications from dynamically added fields
-        for key, value in request.form.items():
-            if key.startswith('certifications-') and key.endswith('-name'):
-                index = key.split('-')[1]
-                name = value
-                required = request.form.get(f'certifications-{index}-required', 'off') == 'on'
-                
-                if name.strip():  # Only add non-empty certifications
-                    job_details['certifications'].append({
-                        'name': name,
-                        'required': required
-                    })
-        
-        return redirect(url_for('app.experience'))
-    
-    return render_template('qualifications.html', form=form, job_details=job_details)
-
-@app.route('/experience', methods=['GET', 'POST'])
-def experience():
-    if 'user_id' not in session or 'education_required' not in job_details:
-        flash('Please complete all previous steps first', 'warning')
-        return redirect(url_for('app.qualifications'))
-    
-    form = ExperienceForm()
-    
-    if form.validate_on_submit():
-        # Process the experience form
-        job_details['years_experience'] = form.years_experience.data
-        job_details['specific_experience'] = form.specific_experience.data
-        job_details['responsibilities'] = []
-        
-        # Process responsibilities from dynamically added fields
-        for key, value in request.form.items():
-            if key.startswith('responsibilities-') and key.endswith('-description'):
-                index = key.split('-')[1]
-                description = value
-                
-                if description.strip():  # Only add non-empty responsibilities
-                    job_details['responsibilities'].append({
-                        'description': description
-                    })
-        
-        return redirect(url_for('app.skills'))
-    
-    return render_template('experience.html', form=form, job_details=job_details)
-
-@app.route('/skills', methods=['GET', 'POST'])
-def skills():
-    if 'user_id' not in session or 'years_experience' not in job_details:
-        flash('Please complete all previous steps first', 'warning')
-        return redirect(url_for('app.experience'))
-    
-    form = SkillsForm()
-    
-    if form.validate_on_submit():
-        # Process the skills form
-        job_details['required_skills'] = []
-        job_details['preferred_skills'] = []
-        
-        # Process required skills from dynamically added fields
-        for key, value in request.form.items():
-            if key.startswith('required_skills-') and key.endswith('-name'):
-                index = key.split('-')[1]
-                name = value
-                
-                if name.strip():  # Only add non-empty skills
-                    job_details['required_skills'].append({
-                        'name': name
-                    })
-        
-        # Process preferred skills from dynamically added fields
-        for key, value in request.form.items():
-            if key.startswith('preferred_skills-') and key.endswith('-name'):
-                index = key.split('-')[1]
-                name = value
-                
-                if name.strip():  # Only add non-empty skills
-                    job_details['preferred_skills'].append({
-                        'name': name
-                    })
-        
-        job_details['personality_traits'] = form.personality_traits.data
-        job_details['about_company'] = form.about_company.data
-        job_details['diversity_statement'] = form.diversity_statement.data
-        job_details['application_process'] = form.application_process.data
-        
-        # Generate job ad
-        return redirect(url_for('app.generate_ad'))
-    
-    return render_template('skills.html', form=form, job_details=job_details)
-
-@app.route('/generate_ad', methods=['GET', 'POST'])
-def generate_ad():
-    """Generate and save job ad page"""
-    if 'user_id' not in session:
-        flash('Please create a profile first', 'warning')
-        return redirect(url_for('app.profile'))
-    
-    form = OutputForm()
-    
-    # Debug form submission and validation
+@calendar_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    """User login/registration"""
     if request.method == 'POST':
-        print("Form submitted via POST")
-        print(f"Form errors: {form.errors}")
-        print(f"Form data: {request.form}")
+        email = request.form.get('email')
+        name = request.form.get('name')
         
-    if form.validate_on_submit():
-        # Debug form data
-        print("Form submitted and validated")
-        print(f"Job ad text length: {len(form.job_ad.data)}")
-        print(f"Save as template: {form.save_as_template.data}")
+        # Simple login - find or create user
+        user = find_user_by_email(connection, email)
+        if not user:
+            user_id = create_user(connection, name, email)
+            flash('Account created successfully!', 'success')
+        else:
+            user_id = user[0]
+            flash('Welcome back!', 'success')
         
-        # Save the job ad
-        user_id = session['user_id']
-        role_title = job_details.get('role_title', 'Untitled Position')
-        department = job_details.get('department', 'General')
-        job_ad_text = form.job_ad.data
-        is_template = form.save_as_template.data
-        template_name = job_details.get('template_name', role_title)
-        
-        # Save to database with additional error handling
-        try:
-            ad_id = save_job_ad(connection, user_id, role_title, department, 
-                              job_ad_text, is_template, template_name)
-            print(f"Job ad saved with ID: {ad_id}")
-            if ad_id:
-                flash('Job ad saved successfully!', 'success')
-                return redirect(url_for('app.view_ad', ad_id=ad_id))
-            else:
-                flash('Error saving job ad - database operation failed', 'error')
-        except Exception as e:
-            print(f"Exception saving job ad: {str(e)}")
-            flash(f'Error saving job ad: {str(e)}', 'error')
-    elif request.method == 'POST':
-        # Form validation failed
-        print("Form validation failed")
-        for field, errors in form.errors.items():
-            for error in errors:
-                flash(f'{field}: {error}', 'error')
+        session['user_id'] = user_id
+        return redirect(url_for('calendar.dashboard'))
     
-    # First load or validation error
-    if request.method == 'GET':
-        # Generate the job ad if one doesn't exist
-        initial_job_ad = generate_job_ad(job_details)
-        form.job_ad.data = initial_job_ad
-    
-    return render_template('generate_ad.html', form=form, job_details=job_details)
+    return render_template('login.html')
 
-@app.route('/view/<int:ad_id>')
-def view_ad(ad_id):
-    job_ad_data = get_job_ad(connection, ad_id)
-    if not job_ad_data:
-        flash('Job ad not found', 'error')
-        return redirect(url_for('app.index'))
-    
-    return render_template('view_ad.html', job_ad=job_ad_data)
-
-@app.route('/ad_history')
-def ad_history():
-    """Show user's saved job ads"""
+@calendar_bp.route('/voice_command', methods=['GET', 'POST'])
+def voice_command():
+    """Handle voice commands"""
     if 'user_id' not in session:
-        flash('Please create a profile first', 'warning')
-        return redirect(url_for('app.profile'))
+        return redirect(url_for('calendar.login'))
     
-    # Debug logging
-    print(f"Getting job ads for user {session['user_id']}")
-    
-    # Get user's job ads from the database
-    ads = get_user_job_ads(connection, session['user_id'])
-    print(f"Found {len(ads) if ads else 0} ads")
-    
-    return render_template('ad_history.html', ads=ads)
-
-@app.route('/refine_ad_api', methods=['POST', 'GET'])
-def refine_ad_api():
-    """API endpoint for refining job ad text"""
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No JSON data received'}), 400
-            
-        original_ad = data.get('original_ad', '')
-        feedback = data.get('feedback', '')
-        
-        if not original_ad or not feedback:
-            return jsonify({'error': 'Missing required parameters'}), 400
-            
-        # Call the refine_job_ad function from utils.py
-        refined_ad = refine_job_ad(original_ad, feedback)
-        
-        # Ensure we're returning a valid JSON response
-        return jsonify({'refined_ad': refined_ad})
-    except Exception as e:
-        print(f"Error refining job ad: {str(e)}")
-        # Return a proper JSON error response
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/download/<int:ad_id>')
-def download_ad(ad_id):
-    from flask import send_file
-    
-    job_ad_data = get_job_ad(connection, ad_id)
-    if not job_ad_data:
-        flash('Job ad not found', 'error')
-        return redirect(url_for('app.index'))
-    
-    # Format and generate PDF
-    pdf_path = format_for_pdf(job_ad_data)
-    
-    return send_file(
-        pdf_path,
-        mimetype='application/pdf',
-        as_attachment=True,
-        download_name=f"job_ad_{ad_id}.pdf"
-    )
-
-@app.route('/process_job_description', methods=['POST'])
-def process_job_description():
-    """Extract key components from an existing job description"""
-    if 'job_description_file' not in request.files:
-        return jsonify({'success': False, 'message': 'No file uploaded'})
-    
-    file = request.files['job_description_file']
-    if file.filename == '':
-        return jsonify({'success': False, 'message': 'No file selected'})
-    
-    try:
-        # Extract text from job description
-        job_description_text = extract_text_from_pdf(file)
-        
-        # Process with AI to extract structured information
-        response = model.generate_content(f"""
-        Extract structured information from this job description:
-        {job_description_text[:3000]}  # First 3000 chars for analysis
-        
-        Return ONLY valid JSON with the following structure:
-        {{
-          "role_title": "extracted title",
-          "role_type": "full-time/part-time/etc",
-          "department": "department name",
-          "education_required": "minimum education requirement",
-          "years_experience": "number of years",
-          "required_skills": ["skill1", "skill2"],
-          "preferred_skills": ["skill1", "skill2"],
-          "responsibilities": ["responsibility1", "responsibility2"]
-        }}
-        """)
-        
-        # Process the response
-        try:
-            import json
-            import re
-            
-            # Clean up the response to ensure it's valid JSON
-            clean_response = re.search(r'\{.*\}', response.text, re.DOTALL)
-            if clean_response:
-                extracted_data = json.loads(clean_response.group(0))
-                return jsonify({
-                    'success': True,
-                    'data': extracted_data
-                })
+    if request.method == 'POST':
+        # Check if it's audio file upload or live recording
+        if 'audio_file' in request.files:
+            audio_file = request.files['audio_file']
+            if audio_file.filename:
+                command_text = voice_service.process_audio_file(audio_file)
             else:
-                return jsonify({
-                    'success': False,
-                    'message': 'Could not parse structured data from response'
-                })
-        except Exception as e:
-            print(f"Error parsing AI response: {str(e)}")
-            return jsonify({
-                'success': False,
-                'message': f'Error processing job description: {str(e)}'
-            })
+                flash('No audio file provided', 'error')
+                return redirect(url_for('calendar.voice_command'))
+        else:
+            # Live recording
+            command_text = voice_service.listen_for_command()
+        
+        if command_text and not command_text.startswith(('Timeout', 'Could not', 'Error')):
+            # Parse the voice command
+            parsed_command = ai_parser.parse_voice_command(command_text)
             
-    except Exception as e:
-        print(f"Exception in process_job_description: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({
-            'success': False,
-            'message': f'Error processing job description: {str(e)}'
-        })
+            # Log the command
+            log_voice_command(connection, session['user_id'], command_text, parsed_command)
+            
+            # Execute the command
+            result = execute_voice_command(parsed_command)
+            
+            flash(f"Command processed: {result}", 'success')
+            return redirect(url_for('calendar.dashboard'))
+        else:
+            flash(f"Voice recognition failed: {command_text}", 'error')
+    
+    return render_template('voice_command.html')
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    flash('You have been logged out', 'info')
-    return redirect(url_for('app.index'))
+@calendar_bp.route('/email_sync', methods=['POST'])
+def sync_emails():
+    """Sync and parse scheduling emails"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+    
+    # This would integrate with email APIs
+    # For demo purposes, we'll accept manual email input
+    email_subject = request.form.get('subject')
+    email_body = request.form.get('body')
+    
+    if email_subject and email_body:
+        parsed_request = ai_parser.parse_email_scheduling_request(email_subject, email_body)
+        
+        if parsed_request.get('confidence', 0) > 0.7:
+            # High confidence - create event
+            if parsed_request.get('action') == 'create':
+                event_data = {
+                    'title': parsed_request.get('event_title'),
+                    'description': f"Created from email: {email_subject}",
+                    'start_time': f"{parsed_request.get('date')} {parsed_request.get('start_time')}",
+                    'end_time': f"{parsed_request.get('date')} {parsed_request.get('end_time')}",
+                    'location': parsed_request.get('location'),
+                    'attendees': parsed_request.get('attendees', [])
+                }
+                
+                create_calendar_event(connection, session['user_id'], event_data)
+                flash('Event created from email!', 'success')
+            else:
+                flash(f'Email parsed - Action: {parsed_request.get("action")}', 'info')
+        else:
+            flash('Could not understand email scheduling request', 'warning')
+    
+    return redirect(url_for('calendar.dashboard'))
 
-@app.route('/test_json')
-def test_json():
-    """Test JSON response functionality"""
-    return jsonify({'status': 'ok', 'message': 'JSON is working'})
+@calendar_bp.route('/api/suggest_times', methods=['POST'])
+def suggest_meeting_times():
+    """API endpoint to suggest optimal meeting times"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not logged in'}), 401
+    
+    duration = request.json.get('duration', 60)
+    
+    # Get existing events for the next 7 days
+    today = datetime.now().date()
+    events = get_user_events(session['user_id'], today, today + timedelta(days=7))
+    
+    suggestions = ai_parser.suggest_meeting_times(events, duration)
+    
+    return jsonify(suggestions)
+
+@calendar_bp.route('/calendar_view')
+def calendar_view():
+    """Calendar view page"""
+    if 'user_id' not in session:
+        return redirect(url_for('calendar.login'))
+    
+    # Get events for the current month
+    today = datetime.now().date()
+    start_of_month = today.replace(day=1)
+    end_of_month = (start_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+    
+    events = get_user_events(session['user_id'], start_of_month, end_of_month)
+    
+    return render_template('calendar_view.html', events=events, current_month=today)
+
+@calendar_bp.route('/create_event', methods=['GET', 'POST'])
+def create_event():
+    """Manual event creation"""
+    if 'user_id' not in session:
+        return redirect(url_for('calendar.login'))
+    
+    if request.method == 'POST':
+        event_data = {
+            'title': request.form.get('title'),
+            'description': request.form.get('description'),
+            'start_time': request.form.get('start_time'),
+            'end_time': request.form.get('end_time'),
+            'location': request.form.get('location'),
+            'attendees': request.form.get('attendees', '').split(',') if request.form.get('attendees') else []
+        }
+        
+        create_calendar_event(connection, session['user_id'], event_data)
+        flash('Event created successfully!', 'success')
+        return redirect(url_for('calendar.dashboard'))
+    
+    return render_template('create_event.html')
+
+# Helper functions
+def get_user_events(user_id, start_date, end_date):
+    """Get user events between dates"""
+    cursor = connection.cursor()
+    query = """
+    SELECT * FROM calendar_events 
+    WHERE user_id = ? AND date(start_time) BETWEEN ? AND ?
+    ORDER BY start_time
+    """
+    cursor.execute(query, (user_id, start_date, end_date))
+    return cursor.fetchall()
+
+def create_calendar_event(connection, user_id, event_data):
+    """Create a new calendar event"""
+    cursor = connection.cursor()
+    query = """
+    INSERT INTO calendar_events (user_id, title, description, start_time, end_time, location, attendees)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+    """
+    attendees_json = json.dumps(event_data.get('attendees', []))
+    cursor.execute(query, (
+        user_id,
+        event_data.get('title'),
+        event_data.get('description'),
+        event_data.get('start_time'),
+        event_data.get('end_time'),
+        event_data.get('location'),
+        attendees_json
+    ))
+    connection.commit()
+    return cursor.lastrowid
+
+def find_user_by_email(connection, email):
+    """Find user by email"""
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
+    return cursor.fetchone()
+
+def create_user(connection, name, email):
+    """Create new user"""
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO users (name, email) VALUES (?, ?)", (name, email))
+    connection.commit()
+    return cursor.lastrowid
+
+def log_voice_command(connection, user_id, command_text, parsed_command):
+    """Log voice command"""
+    cursor = connection.cursor()
+    cursor.execute("""
+    INSERT INTO voice_commands (user_id, command_text, parsed_intent, action_taken)
+    VALUES (?, ?, ?, ?)
+    """, (user_id, command_text, json.dumps(parsed_command), 'processed'))
+    connection.commit()
+
+def execute_voice_command(parsed_command):
+    """Execute parsed voice command"""
+    intent = parsed_command.get('intent')
+    
+    if intent == 'create_event':
+        details = parsed_command.get('action_details', {})
+        # Create event logic here
+        return f"Created event: {details.get('event_title')}"
+    elif intent == 'check_schedule':
+        return "Checking your schedule..."
+    elif intent == 'cancel_event':
+        return "Event cancellation requested"
+    else:
+        return "Command not recognized"
