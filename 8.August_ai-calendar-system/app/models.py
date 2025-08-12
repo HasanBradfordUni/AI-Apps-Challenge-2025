@@ -1,6 +1,7 @@
 import sqlite3
+from sqlite3 import Error
 from datetime import datetime
-import json
+import json, os
 
 class CalendarEvent:
     def __init__(self, id=None, user_id=None, title=None, description=None, 
@@ -28,6 +29,20 @@ class User:
         self.outlook_token = outlook_token
         self.preferences = preferences if preferences else {}
         self.created_at = created_at or datetime.now()
+
+def create_connection(db_file='calendar.db'):
+    """Create a database connection to the SQLite database specified by db_file"""
+    this_dir = os.path.dirname(os.path.abspath(__file__))
+    path_to = os.path.join(this_dir, "/static")
+    db_file = os.path.join(path_to, db_file)
+    connection = None
+    try:
+        connection = sqlite3.connect(db_file, check_same_thread=False)
+        print("Connection to SQLite DB successful")
+    except Error as e:
+        print(f"The error '{e}' occurred")
+
+    return connection
 
 def create_calendar_tables(connection):
     """Create calendar-specific database tables"""

@@ -2,11 +2,10 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 import os
 from datetime import datetime, timedelta
 import json
-from .models import create_calendar_tables, CalendarEvent, User
+from .models import create_connection, create_calendar_tables, CalendarEvent, User
 from .services.ai_parser import AICommandParser
 from .services.voice_recognition import VoiceRecognitionService
 from .services.calendar_sync import GoogleCalendarService, OutlookCalendarService
-from .models import create_connection
 
 calendar_bp = Blueprint('calendar', __name__)
 
