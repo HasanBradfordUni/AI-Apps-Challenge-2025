@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta  # Make sure timedelta is imported
 import json
 from .models import create_connection, create_calendar_tables, CalendarEvent, User
 from .services.ai_parser import AICommandParser
@@ -154,7 +154,11 @@ def calendar_view():
     
     events = get_user_events(session['user_id'], start_of_month, end_of_month)
     
-    return render_template('calendar_view.html', events=events, current_month=today)
+    # Pass timedelta to template
+    return render_template('calendar_view.html', 
+                         events=events, 
+                         current_month=today,
+                         timedelta=timedelta)
 
 @calendar_bp.route('/create_event', methods=['GET', 'POST'])
 def create_event():

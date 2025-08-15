@@ -70,6 +70,16 @@
                 </div>
             </div>
 
+            <!-- Email Parser -->
+            <div class="dashboard-card">
+                <h3 class="subHeading">Parse Email</h3>
+                <form action="{{ url_for('calendar.sync_emails') }}" method="POST" class="email-form">
+                    <input type="text" name="subject" placeholder="Email Subject" class="email-input">
+                    <textarea name="body" placeholder="Email Body" class="email-textarea" rows="4"></textarea>
+                    <button type="submit" class="submit-btn">Parse Email</button>
+                </form>
+            </div>
+
             <!-- Today's Events -->
             <div class="dashboard-card events-card">
                 <h3 class="subHeading">Today's Schedule</h3>
@@ -93,16 +103,6 @@
                         <p class="largeText">No events scheduled for today.</p>
                     {% endif %}
                 </div>
-            </div>
-
-            <!-- Email Parser -->
-            <div class="dashboard-card">
-                <h3 class="subHeading">Parse Email</h3>
-                <form action="{{ url_for('calendar.sync_emails') }}" method="POST" class="email-form">
-                    <input type="text" name="subject" placeholder="Email Subject" class="email-input">
-                    <textarea name="body" placeholder="Email Body" class="email-textarea" rows="4"></textarea>
-                    <button type="submit" class="submit-btn">Parse Email</button>
-                </form>
             </div>
         </div>
     </section>
