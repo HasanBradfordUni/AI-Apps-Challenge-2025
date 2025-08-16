@@ -458,109 +458,157 @@ header {
     border: 1px solid #2196F3;
 }
 
-/* Footer Styles */
-footer {
-    height: 350px;
-    background-color: goldenrod;
-    margin-top: 50px;
-}
-
-.footer {
-    padding-top: 35px;
-    padding-bottom: 35px;
-    background-color: goldenrod;
-    box-sizing: border-box;
-    height: 250px;
-}
-
-.w-container {
-    max-width: 940px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.w-container .w-row {
-    margin-left: -10px;
-    margin-right: -10px;
-}
-
-.w-col {
-    float: left;
-    min-height: 1px;
-    padding-left: 10px;
-    padding-right: 10px;
-    position: relative;
-}
-
-.w-col-4 {
-    width: 33.3333%;
-}
-
-.footer-link-row {
-    display: flex;
-    justify-content: space-evenly;
-}
-
-.footer-link {
-    color: crimson;
-    border-bottom: 1px solid red;
-    margin-bottom: 6px;
-    padding-bottom: 10px;
-    font-size: 14px;
-    font-weight: 300;
-    text-decoration: none;
-    display: block;
-}
-
-.footer-link:hover {
-    color: rgb(122, 106, 17);
-    text-decoration: underline;
-}
-
-/* Animations */
-@keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-
-/* Notification Styles */
-.notification {
+/* Modal Styles */
+.modal-overlay {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 20px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     z-index: 2000;
-    animation: slideIn 0.3s ease-out;
 }
 
-.notification-success {
-    background: #4CAF50;
+.modal-content {
+    background: black;
+    border: 2px solid goldenrod;
+    border-radius: 10px;
+    padding: 25px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
-.notification-error {
-    background: #f44336;
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-.notification-info {
-    background: #2196F3;
+.close-btn {
+    background: none;
+    border: none;
+    color: crimson;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-@keyframes slideIn {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
+.close-btn:hover {
+    color: goldenrod;
 }
 
-/* Responsive Design */
+.quick-event-form, .edit-event-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.cancel-btn {
+    background: transparent;
+    color: darkkhaki;
+    border: 2px solid darkkhaki;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+    background: darkkhaki;
+    color: black;
+}
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    border: 2px solid #c0392b;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+}
+
+/* Enhanced event display */
+.event-time-display {
+    font-size: 14px;
+    font-weight: bold;
+    color: goldenrod;
+}
+
+.day-event {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.day-event:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 5px rgba(220,20,60,0.5);
+}
+
+/* Import buttons */
+.import-section {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid goldenrod;
+    margin-bottom: 20px;
+}
+
+.import-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.import-btn {
+    background: crimson;
+    color: goldenrod;
+    border: 2px solid gray;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.import-btn:hover {
+    background: blue;
+    color: rebeccapurple;
+    transform: scale(1.05);
+}
+
 @media (max-width: 768px) {
     .dashboard-container {
         grid-template-columns: 1fr;
@@ -612,6 +660,18 @@ footer {
     .calendar-nav {
         flex-direction: column;
         gap: 10px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .import-buttons {
+        flex-direction: column;
+    }
+    
+    .form-actions {
+        flex-direction: column;
     }
 }
 

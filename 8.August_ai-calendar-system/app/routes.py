@@ -182,6 +182,139 @@ def create_event():
     
     return render_template('create_event.html')
 
+@calendar_bp.route('/api/get_event/<int:event_id>')
+def get_event(event_id):
+    """Get event details for editing"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        event = get_event_by_id(connection, event_id, session['user_id'])
+        if event:
+            return jsonify({
+                'id': event[0],
+                'title': event[2],
+                'description': event[3],
+                'start_time': event[4],
+                'end_time': event[5],
+                'location': event[6],
+                'attendees': event[7] if len(event) > 7 else ''
+            })
+        else:
+            return jsonify({'error': 'Event not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@calendar_bp.route('/edit_event/<int:event_id>', methods=['POST'])
+def edit_event(event_id):
+    """Edit existing event"""
+    if 'user_id' not in session:
+        return redirect(url_for('calendar.login'))
+    
+    try:
+        title = request.form.get('title')
+        description = request.form.get('description', '')
+        date = request.form.get('date')
+        start_time = request.form.get('start_time')
+        duration = request.form.get('duration', '1h')
+        location = request.form.get('location', '')
+        attendees = request.form.get('attendees', '')
+        
+        # Parse duration and calculate end time
+        duration_info = parse_duration_string(duration)
+        start_datetime = f"{date} {start_time}"
+        end_datetime = calculate_end_datetime(start_datetime, duration_info)
+        
+        # Update event in database
+        update_event(connection, event_id, session['user_id'], title, description, 
+                    start_datetime, end_datetime, location, attendees)
+        
+        flash('Event updated successfully!', 'success')
+        return redirect(url_for('calendar.calendar_view'))
+        
+    except Exception as e:
+        flash(f'Error updating event: {str(e)}', 'error')
+        return redirect(url_for('calendar.calendar_view'))
+
+@calendar_bp.route('/delete_event/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    """Delete event"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        delete_event_by_id(connection, event_id, session['user_id'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@calendar_bp.route('/auth/google')
+def auth_google():
+    """Initialize Google Calendar OAuth"""
+    # Implement Google OAuth flow
+    flash('Google Calendar integration coming soon!', 'info')
+    return redirect(url_for('calendar.dashboard'))
+
+@calendar_bp.route('/auth/outlook')
+def auth_outlook():
+    """Initialize Outlook Calendar OAuth"""
+    # Implement Outlook OAuth flow
+    flash('Outlook Calendar integration coming soon!', 'info')
+    return redirect(url_for('calendar.dashboard'))
+
+def parse_duration_string(duration_str):
+    """Parse duration string into minutes"""
+    if not duration_str or duration_str.lower() == 'all day':
+        return {'minutes': 0, 'is_all_day': True}
+    
+    duration_str = duration_str.lower().strip()
+    total_minutes = 0
+    
+    # Parse "1h 30m" format
+    import re
+    hour_match = re.search(r'(\d+)h', duration_str)
+    minute_match = re.search(r'(\d+)m', duration_str)
+    
+    if hour_match or minute_match:
+        if hour_match:
+            total_minutes += int(hour_match.group(1)) * 60
+        if minute_match:
+            total_minutes += int(minute_match.group(1))
+    else:
+        # Parse plain numbers
+        try:
+            number = int(duration_str)
+            if number < 10:
+                total_minutes = number * 60  # Hours
+            else:
+                total_minutes = number  # Minutes
+        except ValueError:
+            total_minutes = 60  # Default 1 hour
+    
+    return {'minutes': total_minutes, 'is_all_day': False}
+
+def calculate_end_datetime(start_datetime, duration_info):
+    """Calculate end datetime based on duration"""
+    from datetime import datetime, timedelta
+    import pytz
+    
+    # Assuming start_datetime is in the format "YYYY-MM-DD HH:MM"
+    naive_start = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M")
+    
+    # Localize to current timezone
+    local_tz = pytz.timezone("UTC")  # Change this to your desired timezone
+    localized_start = local_tz.localize(naive_start)
+    
+    if duration_info.get('is_all_day'):
+        # For all-day events, we set the time to 00:00 and add 1 day for the end time
+        end_datetime = localized_start.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    else:
+        # For timed events, just add the duration in minutes
+        end_datetime = localized_start + timedelta(minutes=duration_info.get('minutes', 60))
+    
+    # Convert back to naive datetime for storage
+    return end_datetime.astimezone(pytz.utc).replace(tzinfo=None)
+
 # Helper functions
 def get_user_events(user_id, start_date, end_date):
     """Get user events between dates"""
@@ -250,3 +383,26 @@ def execute_voice_command(parsed_command):
         return "Event cancellation requested"
     else:
         return "Command not recognized"
+
+def get_event_by_id(connection, event_id, user_id):
+    """Get event by ID"""
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM calendar_events WHERE id = ? AND user_id = ?", (event_id, user_id))
+    return cursor.fetchone()
+
+def update_event(connection, event_id, user_id, title, description, start_time, end_time, location, attendees):
+    """Update an existing event"""
+    cursor = connection.cursor()
+    attendees_json = json.dumps(attendees.split(',')) if attendees else '[]'
+    cursor.execute("""
+    UPDATE calendar_events 
+    SET title = ?, description = ?, start_time = ?, end_time = ?, location = ?, attendees = ?
+    WHERE id = ? AND user_id = ?
+    """, (title, description, start_time, end_time, location, attendees_json, event_id, user_id))
+    connection.commit()
+
+def delete_event_by_id(connection, event_id, user_id):
+    """Delete event by ID"""
+    cursor = connection.cursor()
+    cursor.execute("DELETE FROM calendar_events WHERE id = ? AND user_id = ?", (event_id, user_id))
+    connection.commit()

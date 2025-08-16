@@ -145,249 +145,304 @@ function suggestMeetingTimes(duration = 60) {
 
 // Quick Event Creation
 function createQuickEvent() {
-    const title = prompt('Enter event title:');
-    if (!title) return;
+    // Create modal HTML
+    const modalHTML = `
+        <div id="quickEventModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="subHeading">🚀 Quick Create Event</h3>
+                    <button onclick="closeQuickEventModal()" class="close-btn">&times;</button>
+                </div>
+                <form id="quickEventForm" class="quick-event-form">
+                    <input type="text" name="title" placeholder="Event Title" class="form-input" required>
+                    <textarea name="description" placeholder="Description (optional)" class="form-textarea" rows="2"></textarea>
+                    
+                    <div class="form-row">
+                        <input type="date" name="date" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+                        <input type="time" name="start_time" class="form-input" value="09:00">
+                    </div>
+                    
+                    <div class="form-row">
+                        <input type="text" name="duration" placeholder="Duration (e.g., 1h 30m, 45, All Day)" class="form-input" value="1h">
+                        <select name="platform" class="form-input">
+                            <option value="">Select Platform</option>
+                            <option value="In Person">In Person</option>
+                            <option value="Microsoft Teams">Microsoft Teams</option>
+                            <option value="Zoom">Zoom</option>
+                            <option value="Google Meet">Google Meet</option>
+                            <option value="Phone Call">Phone Call</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <input type="text" name="location" placeholder="Location/Meeting Link" class="form-input">
+                    <input type="text" name="attendees" placeholder="Attendees (comma-separated emails)" class="form-input">
+                    
+                    <div class="form-actions">
+                        <button type="button" onclick="closeQuickEventModal()" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Create Event</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
     
-    const date = prompt('Enter date (YYYY-MM-DD) or leave blank for today:');
-    const time = prompt('Enter time (HH:MM) or leave blank for now:');
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
     
-    const today = new Date();
-    const eventDate = date || today.toISOString().split('T')[0];
-    const eventTime = time || today.toTimeString().split(' ')[0].substring(0, 5);
+    // Handle form submission
+    document.getElementById('quickEventForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitQuickEvent(this);
+    });
+}
+
+function submitQuickEvent(form) {
+    const formData = new FormData(form);
+    const duration = parseDuration(formData.get('duration'));
+    const startDateTime = `${formData.get('date')} ${formData.get('start_time')}`;
     
-    // Create form data
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('start_time', `${eventDate} ${eventTime}`);
-    formData.append('end_time', `${eventDate} ${addHour(eventTime)}`);
-    formData.append('description', 'Created via quick action');
+    // Calculate end time based on duration
+    const endDateTime = calculateEndTime(startDateTime, duration);
+    
+    // Prepare final form data
+    const finalFormData = new FormData();
+    finalFormData.append('title', formData.get('title'));
+    finalFormData.append('description', formData.get('description'));
+    finalFormData.append('start_time', startDateTime);
+    finalFormData.append('end_time', endDateTime);
+    finalFormData.append('location', combineLocationAndPlatform(formData.get('location'), formData.get('platform')));
+    finalFormData.append('attendees', formData.get('attendees'));
+    finalFormData.append('is_all_day', duration.isAllDay ? 'true' : 'false');
     
     fetch('/create_event', {
+        method: 'POST',
+        body: finalFormData
+    })
+    .then(response => {
+        if (response.ok) {
+            showNotification('Event created successfully!', 'success');
+            closeQuickEventModal();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Failed to create event.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Error creating event.', 'error');
+    });
+}
+
+function parseDuration(durationStr) {
+    if (!durationStr || durationStr.toLowerCase() === 'all day') {
+        return { minutes: 0, isAllDay: true };
+    }
+    
+    durationStr = durationStr.toLowerCase().trim();
+    let totalMinutes = 0;
+    
+    // Parse "1h 30m" format
+    const hourMatch = durationStr.match(/(\d+)h/);
+    const minuteMatch = durationStr.match(/(\d+)m/);
+    
+    if (hourMatch || minuteMatch) {
+        if (hourMatch) totalMinutes += parseInt(hourMatch[1]) * 60;
+        if (minuteMatch) totalMinutes += parseInt(minuteMatch[1]);
+    } else {
+        // Parse plain numbers
+        const number = parseInt(durationStr);
+        if (!isNaN(number)) {
+            if (number < 10) {
+                totalMinutes = number * 60; // Hours
+            } else {
+                totalMinutes = number; // Minutes
+            }
+        } else {
+            totalMinutes = 60; // Default 1 hour
+        }
+    }
+    
+    return { minutes: totalMinutes, isAllDay: false };
+}
+
+function calculateEndTime(startDateTime, duration) {
+    if (duration.isAllDay) {
+        const date = startDateTime.split(' ')[0];
+        return `${date} 23:59`;
+    }
+    
+    const start = new Date(startDateTime);
+    const end = new Date(start.getTime() + duration.minutes * 60000);
+    
+    return `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, '0')}-${String(end.getDate()).padStart(2, '0')} ${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`;
+}
+
+function combineLocationAndPlatform(location, platform) {
+    if (platform && platform !== 'In Person' && platform !== '') {
+        return platform + (location ? ` - ${location}` : '');
+    }
+    return location || '';
+}
+
+function closeQuickEventModal() {
+    const modal = document.getElementById('quickEventModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Edit Event Functionality
+function editEvent(eventId) {
+    fetch(`/api/get_event/${eventId}`)
+        .then(response => response.json())
+        .then(event => {
+            showEditEventModal(event);
+        })
+        .catch(error => {
+            console.error('Error fetching event:', error);
+            showNotification('Error loading event details.', 'error');
+        });
+}
+
+function showEditEventModal(event) {
+    const startDate = event.start_time ? event.start_time.split(' ')[0] : '';
+    const startTime = event.start_time ? event.start_time.split(' ')[1] : '';
+    
+    const modalHTML = `
+        <div id="editEventModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="subHeading">✏️ Edit Event</h3>
+                    <button onclick="closeEditEventModal()" class="close-btn">&times;</button>
+                </div>
+                <form id="editEventForm" class="edit-event-form">
+                    <input type="hidden" name="event_id" value="${event.id}">
+                    <input type="text" name="title" placeholder="Event Title" class="form-input" value="${event.title || ''}" required>
+                    <textarea name="description" placeholder="Description" class="form-textarea" rows="3">${event.description || ''}</textarea>
+                    
+                    <div class="form-row">
+                        <input type="date" name="date" class="form-input" value="${startDate}">
+                        <input type="time" name="start_time" class="form-input" value="${startTime}">
+                    </div>
+                    
+                    <div class="form-row">
+                        <input type="text" name="duration" placeholder="Duration" class="form-input" value="1h">
+                        <select name="platform" class="form-input">
+                            <option value="">Select Platform</option>
+                            <option value="In Person">In Person</option>
+                            <option value="Microsoft Teams">Microsoft Teams</option>
+                            <option value="Zoom">Zoom</option>
+                            <option value="Google Meet">Google Meet</option>
+                            <option value="Phone Call">Phone Call</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <input type="text" name="location" placeholder="Location/Meeting Link" class="form-input" value="${event.location || ''}">
+                    <input type="text" name="attendees" placeholder="Attendees" class="form-input" value="${event.attendees || ''}">
+                    
+                    <div class="form-actions">
+                        <button type="button" onclick="deleteEvent(${event.id})" class="delete-btn">Delete</button>
+                        <button type="button" onclick="closeEditEventModal()" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="submit-btn">Update Event</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    document.getElementById('editEventForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitEditEvent(this);
+    });
+}
+
+function submitEditEvent(form) {
+    const formData = new FormData(form);
+    const eventId = formData.get('event_id');
+    
+    fetch(`/edit_event/${eventId}`, {
         method: 'POST',
         body: formData
     })
     .then(response => {
         if (response.ok) {
-            alert('Event created successfully!');
-            location.reload();
+            showNotification('Event updated successfully!', 'success');
+            closeEditEventModal();
+            setTimeout(() => location.reload(), 1000);
         } else {
-            alert('Failed to create event.');
+            showNotification('Failed to update event.', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error creating event.');
+        showNotification('Error updating event.', 'error');
     });
 }
 
-// Calendar Navigation
-function changeMonth(direction) {
-    const currentUrl = new URL(window.location);
-    const urlParams = new URLSearchParams(currentUrl.search);
-    
-    const currentMonth = parseInt(urlParams.get('month')) || new Date().getMonth() + 1;
-    const currentYear = parseInt(urlParams.get('year')) || new Date().getFullYear();
-    
-    let newMonth = currentMonth + direction;
-    let newYear = currentYear;
-    
-    if (newMonth > 12) {
-        newMonth = 1;
-        newYear++;
-    } else if (newMonth < 1) {
-        newMonth = 12;
-        newYear--;
-    }
-    
-    urlParams.set('month', newMonth);
-    urlParams.set('year', newYear);
-    currentUrl.search = urlParams.toString();
-    window.location.href = currentUrl.toString();
-}
-
-// Event Modal Functions
-function showCreateEventModal(date) {
-    const startTimeInput = document.querySelector('input[name="start_time"]');
-    const endTimeInput = document.querySelector('input[name="end_time"]');
-    
-    if (startTimeInput && endTimeInput) {
-        const selectedDate = new Date(date);
-        const defaultTime = '09:00';
-        const defaultEndTime = '10:00';
-        
-        startTimeInput.value = `${date}T${defaultTime}`;
-        endTimeInput.value = `${date}T${defaultEndTime}`;
-        
-        // Scroll to form
-        document.querySelector('.create-event-section').scrollIntoView({ 
-            behavior: 'smooth' 
-        });
-    }
-}
-
-// Drag and Drop Functionality
-function enableEventDragDrop() {
-    const events = document.querySelectorAll('.day-event');
-    const days = document.querySelectorAll('.calendar-day');
-    
-    events.forEach(event => {
-        event.draggable = true;
-        event.addEventListener('dragstart', function(e) {
-            e.dataTransfer.setData('text/plain', this.dataset.eventId);
-            this.style.opacity = '0.5';
-        });
-        
-        event.addEventListener('dragend', function(e) {
-            this.style.opacity = '1';
-        });
-    });
-    
-    days.forEach(day => {
-        day.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.style.backgroundColor = '#e3f2fd';
-        });
-        
-        day.addEventListener('dragleave', function(e) {
-            this.style.backgroundColor = '';
-        });
-        
-        day.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.style.backgroundColor = '';
-            
-            const eventId = e.dataTransfer.getData('text/plain');
-            const newDate = this.dataset.date;
-            
-            if (eventId && newDate) {
-                moveEvent(eventId, newDate);
-            }
-        });
-    });
-}
-
-function moveEvent(eventId, newDate) {
-    fetch('/api/move_event', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            eventId: eventId,
-            newDate: newDate
+function deleteEvent(eventId) {
+    if (confirm('Are you sure you want to delete this event?')) {
+        fetch(`/delete_event/${eventId}`, {
+            method: 'DELETE'
         })
-    })
-    .then(response => {
-        if (response.ok) {
-            location.reload();
-        } else {
-            alert('Failed to move event.');
-        }
-    })
-    .catch(error => {
-        console.error('Error moving event:', error);
-        alert('Error moving event.');
-    });
-}
-
-// Form Validation
-function validateForm(event) {
-    const form = event.target;
-    const requiredFields = form.querySelectorAll('[required]');
-    let isValid = true;
-    
-    requiredFields.forEach(field => {
-        if (!field.value.trim()) {
-            field.style.borderColor = '#e74c3c';
-            isValid = false;
-        } else {
-            field.style.borderColor = '';
-        }
-    });
-    
-    // Validate datetime fields
-    const startTime = form.querySelector('input[name="start_time"]');
-    const endTime = form.querySelector('input[name="end_time"]');
-    
-    if (startTime && endTime && startTime.value && endTime.value) {
-        if (new Date(startTime.value) >= new Date(endTime.value)) {
-            alert('End time must be after start time.');
-            isValid = false;
-        }
-    }
-    
-    if (!isValid) {
-        event.preventDefault();
-        alert('Please fill in all required fields correctly.');
-    }
-}
-
-// Utility Functions
-function addHour(timeString) {
-    const [hours, minutes] = timeString.split(':');
-    const date = new Date();
-    date.setHours(parseInt(hours) + 1, parseInt(minutes));
-    return date.toTimeString().split(' ')[0].substring(0, 5);
-}
-
-function formatTime(timeString) {
-    const time = new Date(`2000-01-01T${timeString}`);
-    return time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-}
-
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 5000);
-}
-
-// Copy to clipboard functions
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showNotification('Copied to clipboard!', 'success');
-    }).catch(err => {
-        console.error('Failed to copy: ', err);
-        showNotification('Failed to copy to clipboard', 'error');
-    });
-}
-
-// Auto-save draft functionality for forms
-function enableAutoSave() {
-    const forms = document.querySelectorAll('form');
-    
-    forms.forEach(form => {
-        const inputs = form.querySelectorAll('input, textarea, select');
-        
-        inputs.forEach(input => {
-            input.addEventListener('input', function() {
-                const key = `autosave_${form.className}_${input.name}`;
-                localStorage.setItem(key, input.value);
-            });
-            
-            // Restore saved values
-            const key = `autosave_${form.className}_${input.name}`;
-            const savedValue = localStorage.getItem(key);
-            if (savedValue && !input.value) {
-                input.value = savedValue;
+        .then(response => {
+            if (response.ok) {
+                showNotification('Event deleted successfully!', 'success');
+                closeEditEventModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Failed to delete event.', 'error');
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Error deleting event.', 'error');
         });
-        
-        // Clear autosave on successful submit
-        form.addEventListener('submit', function() {
-            const inputs = this.querySelectorAll('input, textarea, select');
-            inputs.forEach(input => {
-                const key = `autosave_${this.className}_${input.name}`;
-                localStorage.removeItem(key);
-            });
-        });
-    });
+    }
 }
 
-// Initialize autosave
-enableAutoSave();
+function closeEditEventModal() {
+    const modal = document.getElementById('editEventModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Calendar Import Functions
+function importGoogleCalendar() {
+    showNotification('Connecting to Google Calendar...', 'info');
+    window.location.href = '/auth/google';
+}
+
+function importOutlookCalendar() {
+    showNotification('Connecting to Outlook Calendar...', 'info');
+    window.location.href = '/auth/outlook';
+}
+
+// Enhanced event click handling for calendar
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Add event click handling for edit functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('day-event')) {
+            const eventId = e.target.dataset.eventId;
+            if (eventId) {
+                editEvent(eventId);
+            }
+        }
+    });
+});
+
+// Format time for display (remove year, just show time)
+function formatEventTime(dateTimeString) {
+    if (!dateTimeString) return 'TBD';
+    
+    const date = new Date(dateTimeString);
+    return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+}
+
+// ... rest of existing scripts.js code ...

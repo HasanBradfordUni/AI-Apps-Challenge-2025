@@ -70,6 +70,20 @@
                 </div>
             </div>
 
+            <!-- Import Calendar Section -->
+            <div class="dashboard-card import-section">
+                <h3 class="subHeading">📅 Import Calendar</h3>
+                <p class="largeText">Connect your existing calendars</p>
+                <div class="import-buttons">
+                    <button onclick="importGoogleCalendar()" class="import-btn">
+                        📧 Import Google Calendar
+                    </button>
+                    <button onclick="importOutlookCalendar()" class="import-btn">
+                        📧 Import Outlook Calendar
+                    </button>
+                </div>
+            </div>
+
             <!-- Email Parser -->
             <div class="dashboard-card">
                 <h3 class="subHeading">Parse Email</h3>
@@ -87,7 +101,13 @@
                     {% if events %}
                         {% for event in events %}
                         <div class="event-item">
-                            <div class="event-time">{{ event[4][:5] if event[4] else 'TBD' }}</div>
+                            <div class="event-time-display">
+                                {% if event[4] %}
+                                    {{ event[4].split(' ')[1][:5] if ' ' in event[4] else event[4][:5] }}
+                                {% else %}
+                                    TBD
+                                {% endif %}
+                            </div>
                             <div class="event-details">
                                 <h4>{{ event[2] }}</h4>
                                 {% if event[3] %}

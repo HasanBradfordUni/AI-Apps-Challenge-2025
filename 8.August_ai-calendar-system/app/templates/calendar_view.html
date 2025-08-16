@@ -87,7 +87,7 @@
                         <div class="day-events">
                             {% for event in events %}
                                 {% if event[4][:10] == date_string %}
-                                    <div class="day-event" data-event-id="{{ event[0] }}">
+                                    <div class="day-event" data-event-id="{{ event[0] }}" title="Click to edit">
                                         {% if event[2]|length > 15 %}
                                             {{ event[2][:15] }}...
                                         {% else %}
