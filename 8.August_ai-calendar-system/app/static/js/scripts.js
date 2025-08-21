@@ -205,31 +205,55 @@ function submitQuickEvent(form) {
     // Calculate end time based on duration
     const endDateTime = calculateEndTime(startDateTime, duration);
     
-    // Prepare final form data
-    const finalFormData = new FormData();
-    finalFormData.append('title', formData.get('title'));
-    finalFormData.append('description', formData.get('description'));
-    finalFormData.append('start_time', startDateTime);
-    finalFormData.append('end_time', endDateTime);
-    finalFormData.append('location', combineLocationAndPlatform(formData.get('location'), formData.get('platform')));
-    finalFormData.append('attendees', formData.get('attendees'));
-    finalFormData.append('is_all_day', duration.isAllDay ? 'true' : 'false');
+    // Show loading state
+    const submitBtn = form.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Creating...';
+    submitBtn.disabled = true;
+    
+    // Prepare final form data as JSON
+    const eventData = {
+        'title': formData.get('title'),
+        'description': formData.get('description'),
+        'start_time': startDateTime,
+        'end_time': endDateTime,
+        'location': combineLocationAndPlatform(formData.get('location'), formData.get('platform')),
+        'attendees': formData.get('attendees'),
+        'is_all_day': duration.isAllDay ? 'true' : 'false'
+    };
     
     fetch('/create_event', {
         method: 'POST',
-        body: finalFormData
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(eventData)
     })
-    .then(response => {
-        if (response.ok) {
-            showNotification('Event created successfully!', 'success');
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
             closeQuickEventModal();
-            setTimeout(() => location.reload(), 1000);
+            
+            // Update today's schedule in real-time
+            updateTodaysSchedule();
+            
+            // If on calendar page, refresh the view
+            if (window.location.pathname.includes('calendar_view')) {
+                setTimeout(() => location.reload(), 1000);
+            }
         } else {
-            showNotification('Failed to create event.', 'error');
+            showNotification(data.error || 'Failed to create event.', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
         showNotification('Error creating event.', 'error');
     });
 }
@@ -364,37 +388,78 @@ function submitEditEvent(form) {
     const formData = new FormData(form);
     const eventId = formData.get('event_id');
     
+    // Show loading state
+    const submitBtn = form.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Updating...';
+    submitBtn.disabled = true;
+    
+    const eventData = {
+        'title': formData.get('title'),
+        'description': formData.get('description'),
+        'date': formData.get('date'),
+        'start_time': formData.get('start_time'),
+        'duration': formData.get('duration'),
+        'location': formData.get('location'),
+        'attendees': formData.get('attendees')
+    };
+    
     fetch(`/edit_event/${eventId}`, {
         method: 'POST',
-        body: formData
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(eventData)
     })
-    .then(response => {
-        if (response.ok) {
-            showNotification('Event updated successfully!', 'success');
+    .then(response => response.json())
+    .then(data => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
             closeEditEventModal();
-            setTimeout(() => location.reload(), 1000);
+            
+            // Update UI in real-time
+            updateTodaysSchedule();
+            updateCalendarDisplay();
         } else {
-            showNotification('Failed to update event.', 'error');
+            showNotification(data.error || 'Failed to update event.', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
         showNotification('Error updating event.', 'error');
     });
 }
 
 function deleteEvent(eventId) {
     if (confirm('Are you sure you want to delete this event?')) {
+        // Show loading notification
+        showNotification('Deleting event...', 'info');
+        
         fetch(`/delete_event/${eventId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         })
-        .then(response => {
-            if (response.ok) {
-                showNotification('Event deleted successfully!', 'success');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
                 closeEditEventModal();
-                setTimeout(() => location.reload(), 1000);
+                
+                // Remove event from UI immediately
+                removeEventFromUI(eventId);
+                
+                // Update today's schedule
+                updateTodaysSchedule();
             } else {
-                showNotification('Failed to delete event.', 'error');
+                showNotification(data.error || 'Failed to delete event.', 'error');
             }
         })
         .catch(error => {
@@ -445,4 +510,124 @@ function formatEventTime(dateTimeString) {
     return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 }
 
-// ... rest of existing scripts.js code ...
+// New function to update today's schedule in real-time
+function updateTodaysSchedule() {
+    fetch('/api/today_events', {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.events) {
+            const eventsContainer = document.querySelector('.events-list');
+            if (eventsContainer) {
+                if (data.events.length > 0) {
+                    eventsContainer.innerHTML = data.events.map(event => `
+                        <div class="event-item">
+                            <div class="event-time-display">${event.time_display}</div>
+                            <div class="event-details">
+                                <h4>${event.title}</h4>
+                                ${event.description ? `<p>${event.description}</p>` : ''}
+                                ${event.location ? `<p class="event-location">📍 ${event.location}</p>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    eventsContainer.innerHTML = '<p class="largeText">No events scheduled for today.</p>';
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error updating today\'s schedule:', error);
+    });
+}
+
+// Function to remove event from calendar UI immediately
+function removeEventFromUI(eventId) {
+    const eventElements = document.querySelectorAll(`[data-event-id="${eventId}"]`);
+    eventElements.forEach(element => {
+        element.style.transition = 'all 0.3s ease';
+        element.style.opacity = '0';
+        element.style.transform = 'scale(0.8)';
+        
+        setTimeout(() => {
+            element.remove();
+        }, 300);
+    });
+}
+
+// Function to update calendar display after changes
+function updateCalendarDisplay() {
+    // If we're on the calendar page, we can reload specific parts
+    if (window.location.pathname.includes('calendar_view')) {
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+}
+
+// Enhanced notification system with auto-dismiss
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" style="background: none; border: none; color: white; margin-left: 10px; cursor: pointer;">&times;</button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-dismiss after 5 seconds for success messages, 8 seconds for errors
+    const dismissTime = type === 'error' ? 8000 : 5000;
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.style.transition = 'all 0.3s ease';
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }
+    }, dismissTime);
+}
+
+// Add event listener for real-time event clicking
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('day-event')) {
+        e.stopPropagation(); // Prevent day selection
+        const eventId = e.target.dataset.eventId;
+        if (eventId) {
+            editEvent(eventId);
+        }
+    }
+});
+
+// Auto-refresh dashboard events every 30 seconds (optional)
+if (window.location.pathname === '/') {
+    setInterval(updateTodaysSchedule, 30000);
+}
+
+// Fix calendar day click to not interfere with event clicks
+function selectDate(date) {
+    // Only show create modal if we didn't click on an event
+    showCreateEventModal(date);
+}
+
+// Update calendar day click handling to prevent event bubble
+document.addEventListener('DOMContentLoaded', function() {
+    // Update calendar day clicks to handle event vs day clicks
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('calendar-day')) {
+            const date = e.target.dataset.date;
+            if (date && !e.target.querySelector('.day-event:hover')) {
+                selectDate(date);
+            }
+        }
+    });
+});

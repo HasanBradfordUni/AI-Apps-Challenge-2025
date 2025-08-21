@@ -70,20 +70,6 @@
                 </div>
             </div>
 
-            <!-- Import Calendar Section -->
-            <div class="dashboard-card import-section">
-                <h3 class="subHeading">📅 Import Calendar</h3>
-                <p class="largeText">Connect your existing calendars</p>
-                <div class="import-buttons">
-                    <button onclick="importGoogleCalendar()" class="import-btn">
-                        📧 Import Google Calendar
-                    </button>
-                    <button onclick="importOutlookCalendar()" class="import-btn">
-                        📧 Import Outlook Calendar
-                    </button>
-                </div>
-            </div>
-
             <!-- Email Parser -->
             <div class="dashboard-card">
                 <h3 class="subHeading">Parse Email</h3>
@@ -123,6 +109,20 @@
                         <p class="largeText">No events scheduled for today.</p>
                     {% endif %}
                 </div>
+            </div>
+        </div>
+
+        <!-- Import Calendar Section -->
+        <div class="dashboard-card import-section">
+            <h3 class="subHeading">📅 Import Calendar</h3>
+            <p class="largeText">Connect your existing calendars</p>
+            <div class="import-buttons">
+                <button onclick="importGoogleCalendar()" class="import-btn">
+                    📧 Import Google Calendar
+                </button>
+                <button onclick="importOutlookCalendar()" class="import-btn">
+                    📧 Import Outlook Calendar
+                </button>
             </div>
         </div>
     </section>

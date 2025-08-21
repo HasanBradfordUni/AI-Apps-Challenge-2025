@@ -164,21 +164,47 @@ def calendar_view():
 def create_event():
     """Manual event creation"""
     if 'user_id' not in session:
+        if request.is_json or request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'error': 'Not logged in'}), 401
         return redirect(url_for('calendar.login'))
     
     if request.method == 'POST':
-        event_data = {
-            'title': request.form.get('title'),
-            'description': request.form.get('description'),
-            'start_time': request.form.get('start_time'),
-            'end_time': request.form.get('end_time'),
-            'location': request.form.get('location'),
-            'attendees': request.form.get('attendees', '').split(',') if request.form.get('attendees') else []
-        }
-        
-        create_calendar_event(connection, session['user_id'], event_data)
-        flash('Event created successfully!', 'success')
-        return redirect(url_for('calendar.dashboard'))
+        try:
+            # Handle both form data and JSON data
+            if request.is_json:
+                data = request.get_json()
+            else:
+                data = request.form
+            
+            event_data = {
+                'title': data.get('title'),
+                'description': data.get('description'),
+                'start_time': data.get('start_time'),
+                'end_time': data.get('end_time'),
+                'location': data.get('location'),
+                'attendees': data.get('attendees', '').split(',') if data.get('attendees') else []
+            }
+            
+            event_id = create_calendar_event(connection, session['user_id'], event_data)
+            
+            # Return JSON for AJAX requests
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': True, 
+                    'message': 'Event created successfully!',
+                    'event_id': event_id,
+                    'event': event_data
+                })
+            
+            flash('Event created successfully!', 'success')
+            return redirect(url_for('calendar.dashboard'))
+            
+        except Exception as e:
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': f'Error creating event: {str(e)}'}), 500
+            
+            flash(f'Error creating event: {str(e)}', 'error')
+            return redirect(url_for('calendar.dashboard'))
     
     return render_template('create_event.html')
 
@@ -209,16 +235,24 @@ def get_event(event_id):
 def edit_event(event_id):
     """Edit existing event"""
     if 'user_id' not in session:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': 'Unauthorized'}), 401
         return redirect(url_for('calendar.login'))
     
     try:
-        title = request.form.get('title')
-        description = request.form.get('description', '')
-        date = request.form.get('date')
-        start_time = request.form.get('start_time')
-        duration = request.form.get('duration', '1h')
-        location = request.form.get('location', '')
-        attendees = request.form.get('attendees', '')
+        # Handle both form data and JSON data
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = request.form
+        
+        title = data.get('title')
+        description = data.get('description', '')
+        date = data.get('date')
+        start_time = data.get('start_time')
+        duration = data.get('duration', '1h')
+        location = data.get('location', '')
+        attendees = data.get('attendees', '')
         
         # Parse duration and calculate end time
         duration_info = parse_duration_string(duration)
@@ -229,22 +263,49 @@ def edit_event(event_id):
         update_event(connection, event_id, session['user_id'], title, description, 
                     start_datetime, end_datetime, location, attendees)
         
+        # Return JSON for AJAX requests
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True, 
+                'message': 'Event updated successfully!',
+                'event_id': event_id
+            })
+        
         flash('Event updated successfully!', 'success')
         return redirect(url_for('calendar.calendar_view'))
         
     except Exception as e:
+        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': f'Error updating event: {str(e)}'}), 500
+        
         flash(f'Error updating event: {str(e)}', 'error')
         return redirect(url_for('calendar.calendar_view'))
 
-@calendar_bp.route('/delete_event/<int:event_id>', methods=['DELETE'])
-def delete_event(event_id):
-    """Delete event"""
+# Add route to get today's events for real-time updates
+@calendar_bp.route('/api/today_events')
+def get_today_events():
+    """Get today's events for dashboard updates"""
     if 'user_id' not in session:
         return jsonify({'error': 'Unauthorized'}), 401
     
     try:
-        delete_event_by_id(connection, event_id, session['user_id'])
-        return jsonify({'success': True})
+        today = datetime.now().date()
+        events = get_user_events(session['user_id'], today, today + timedelta(days=1))
+        
+        # Format events for JSON response
+        formatted_events = []
+        for event in events:
+            formatted_events.append({
+                'id': event[0],
+                'title': event[2],
+                'description': event[3],
+                'start_time': event[4],
+                'end_time': event[5],
+                'location': event[6],
+                'time_display': event[4].split(' ')[1][:5] if event[4] and ' ' in event[4] else 'TBD'
+            })
+        
+        return jsonify({'events': formatted_events})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -265,7 +326,7 @@ def auth_outlook():
 def parse_duration_string(duration_str):
     """Parse duration string into minutes"""
     if not duration_str or duration_str.lower() == 'all day':
-        return {'minutes': 0, 'is_all_day': True}
+        return {'minutes': 0, 'is_all_day': True }
     
     duration_str = duration_str.lower().strip()
     total_minutes = 0

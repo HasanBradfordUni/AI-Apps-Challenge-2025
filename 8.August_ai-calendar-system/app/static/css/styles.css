@@ -580,6 +580,7 @@ header {
     padding: 20px;
     border: 2px solid goldenrod;
     margin-bottom: 20px;
+    grid-column: 1 / -1;
 }
 
 .import-buttons {
@@ -607,6 +608,110 @@ header {
     background: blue;
     color: rebeccapurple;
     transform: scale(1.05);
+}
+
+/* Enhanced Notification Styles */
+.notification {
+    position: fixed;
+    top: 120px; /* Below the header */
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    z-index: 2000;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 350px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.notification-success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    border-left: 4px solid #2e7d32;
+}
+
+.notification-error {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    border-left: 4px solid #c62828;
+}
+
+.notification-info {
+    background: linear-gradient(135deg, #2196F3, #1976d2);
+    border-left: 4px solid #1565c0;
+}
+
+.notification-warning {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    border-left: 4px solid #ef6c00;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Loading states */
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.submit-btn:disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Enhanced event removal animation */
+.event-removing {
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+/* Real-time update indicators */
+.updating {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.updated {
+    animation: highlightUpdate 1s ease-out;
+}
+
+@keyframes highlightUpdate {
+    0% {
+        background-color: rgba(76, 175, 80, 0.3);
+        transform: scale(1.02);
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
 }
 
 @media (max-width: 768px) {
