@@ -45,65 +45,161 @@ def create_connection(db_file='calendar.db'):
     return connection
 
 def create_calendar_tables(connection):
-    """Create calendar-specific database tables"""
+    """Create calendar tables with proper schema"""
     cursor = connection.cursor()
     
     # Users table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        google_calendar_token TEXT,
-        outlook_token TEXT,
-        preferences TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
     ''')
     
-    # Calendar events table
+    # Events table with all required fields
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS calendar_events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT,
-        start_time TIMESTAMP NOT NULL,
-        end_time TIMESTAMP NOT NULL,
-        location TEXT,
-        attendees TEXT,
-        calendar_source TEXT,
-        external_id TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            title TEXT NOT NULL,
+            description TEXT,
+            start_time TEXT NOT NULL,
+            end_time TEXT NOT NULL,
+            location TEXT,
+            attendees TEXT,
+            platform TEXT,
+            duration_minutes INTEGER DEFAULT 60,
+            is_all_day BOOLEAN DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
     ''')
     
-    # Email commands log
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS email_commands (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        email_subject TEXT,
-        email_body TEXT,
-        parsed_command TEXT,
-        action_taken TEXT,
-        processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )
-    ''')
+    # Check if columns exist and add them if they don't
+    cursor.execute("PRAGMA table_info(events)")
+    columns = [column[1] for column in cursor.fetchall()]
     
-    # Voice commands log
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS voice_commands (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        command_text TEXT NOT NULL,
-        parsed_intent TEXT,
-        action_taken TEXT,
-        processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    )
-    ''')
+    if 'platform' not in columns:
+        cursor.execute('ALTER TABLE events ADD COLUMN platform TEXT')
+    if 'duration_minutes' not in columns:
+        cursor.execute('ALTER TABLE events ADD COLUMN duration_minutes INTEGER DEFAULT 60')
+    if 'is_all_day' not in columns:
+        cursor.execute('ALTER TABLE events ADD COLUMN is_all_day BOOLEAN DEFAULT 0')
+    if 'updated_at' not in columns:
+        cursor.execute('ALTER TABLE events ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP')
     
     connection.commit()
+
+def create_calendar_event(connection, user_id, event_data):
+    """Create a new calendar event with all fields"""
+    cursor = connection.cursor()
+    
+    # Parse attendees if it's a string
+    attendees = event_data.get('attendees', '')
+    if isinstance(attendees, list):
+        attendees = ', '.join(attendees)
+    
+    # Parse duration
+    duration_minutes = event_data.get('duration_minutes', 60)
+    if isinstance(duration_minutes, str):
+        duration_minutes = parse_duration_to_minutes(duration_minutes)
+    
+    cursor.execute('''
+        INSERT INTO events (user_id, title, description, start_time, end_time, 
+                          location, attendees, platform, duration_minutes, is_all_day)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        user_id,
+        event_data['title'],
+        event_data.get('description', ''),
+        event_data['start_time'],
+        event_data['end_time'],
+        event_data.get('location', ''),
+        attendees,
+        event_data.get('platform', ''),
+        duration_minutes,
+        event_data.get('is_all_day', False)
+    ))
+    
+    connection.commit()
+    return cursor.lastrowid
+
+def update_event(connection, event_id, user_id, title, description, start_time, end_time, location, attendees, platform=None, duration_minutes=60):
+    """Update an existing event"""
+    cursor = connection.cursor()
+    
+    # Parse attendees if it's a string
+    if isinstance(attendees, list):
+        attendees = ', '.join(attendees)
+    
+    cursor.execute('''
+        UPDATE events 
+        SET title = ?, description = ?, start_time = ?, end_time = ?, 
+            location = ?, attendees = ?, platform = ?, duration_minutes = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ? AND user_id = ?
+    ''', (title, description, start_time, end_time, location, attendees, platform or '', duration_minutes, event_id, user_id))
+    
+    connection.commit()
+    return cursor.rowcount > 0
+
+def get_event_by_id(connection, event_id, user_id):
+    """Get a specific event by ID"""
+    cursor = connection.cursor()
+    cursor.execute('''
+        SELECT id, user_id, title, description, start_time, end_time, 
+               location, attendees, platform, duration_minutes, is_all_day
+        FROM events 
+        WHERE id = ? AND user_id = ?
+    ''', (event_id, user_id))
+    return cursor.fetchone()
+
+def parse_duration_to_minutes(duration_str):
+    """Parse duration string to minutes"""
+    if not duration_str:
+        return 60
+    
+    duration_str = str(duration_str).lower().strip()
+    
+    if duration_str == 'all day':
+        return 1440  # 24 hours
+    
+    import re
+    hour_match = re.search(r'(\d+)h', duration_str)
+    minute_match = re.search(r'(\d+)m', duration_str)
+    
+    total_minutes = 0
+    if hour_match or minute_match:
+        if hour_match:
+            total_minutes += int(hour_match.group(1)) * 60
+        if minute_match:
+            total_minutes += int(minute_match.group(1))
+    else:
+        try:
+            number = int(duration_str)
+            if number < 10:
+                total_minutes = number * 60  # Hours
+            else:
+                total_minutes = number  # Minutes
+        except ValueError:
+            total_minutes = 60  # Default 1 hour
+    
+    return total_minutes
+
+def minutes_to_duration_string(minutes):
+    """Convert minutes to duration string"""
+    if minutes >= 1440:
+        return "All Day"
+    
+    hours = minutes // 60
+    mins = minutes % 60
+    
+    if hours > 0 and mins > 0:
+        return f"{hours}h {mins}m"
+    elif hours > 0:
+        return f"{hours}h"
+    else:
+        return f"{mins}m"

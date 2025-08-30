@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
-import os
-from datetime import datetime, timedelta  # Make sure timedelta is imported
-import json
-from .models import create_connection, create_calendar_tables, CalendarEvent, User
+import os, json
+from datetime import datetime, timedelta
+from .models import create_connection, create_calendar_tables, get_user_events, create_user, find_user_by_email
+from .models import create_calendar_event, get_event_by_id, update_event, log_voice_command
 from .services.ai_parser import AICommandParser
-from .services.voice_recognition import VoiceRecognitionService
+from .services.voice_recognition import VoiceRecognitionService, parse_duration_to_minutes, minutes_to_duration_string, execute_voice_command
 from .services.calendar_sync import GoogleCalendarService, OutlookCalendarService
 
 calendar_bp = Blueprint('calendar', __name__)
@@ -94,34 +94,86 @@ def voice_command():
 def sync_emails():
     """Sync and parse scheduling emails"""
     if 'user_id' not in session:
-        return jsonify({'error': 'Not logged in'}), 401
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': 'Not logged in'}), 401
+        return redirect(url_for('calendar.login'))
     
-    # This would integrate with email APIs
-    # For demo purposes, we'll accept manual email input
     email_subject = request.form.get('subject')
     email_body = request.form.get('body')
     
     if email_subject and email_body:
-        parsed_request = ai_parser.parse_email_scheduling_request(email_subject, email_body)
-        
-        if parsed_request.get('confidence', 0) > 0.7:
-            # High confidence - create event
-            if parsed_request.get('action') == 'create':
+        try:
+            parsed_request = ai_parser.parse_email_scheduling_request(email_subject, email_body)
+            
+            confidence = parsed_request.get('confidence', 0)
+            action = parsed_request.get('action', 'unknown')
+            
+            if confidence > 0.7 and action == 'create':
+                # High confidence - create event
                 event_data = {
-                    'title': parsed_request.get('event_title'),
-                    'description': f"Created from email: {email_subject}",
-                    'start_time': f"{parsed_request.get('date')} {parsed_request.get('start_time')}",
-                    'end_time': f"{parsed_request.get('date')} {parsed_request.get('end_time')}",
-                    'location': parsed_request.get('location'),
+                    'title': parsed_request.get('event_title', email_subject),
+                    'description': f"Created from email: {email_subject}\n\n{email_body[:200]}...",
+                    'start_time': f"{parsed_request.get('date')} {parsed_request.get('start_time', '09:00')}",
+                    'end_time': f"{parsed_request.get('date')} {parsed_request.get('end_time', '10:00')}",
+                    'location': parsed_request.get('location', ''),
                     'attendees': parsed_request.get('attendees', [])
                 }
                 
-                create_calendar_event(connection, session['user_id'], event_data)
+                event_id = create_calendar_event(connection, session['user_id'], event_data)
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({
+                        'success': True,
+                        'message': f'Event "{event_data["title"]}" created from email!',
+                        'event_id': event_id,
+                        'confidence': confidence
+                    })
+                
                 flash('Event created from email!', 'success')
+                
+            elif confidence > 0.5:
+                # Medium confidence - inform user
+                message = f'Email parsed with {confidence:.0%} confidence. Action: {action}. Please review and create manually if needed.'
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({
+                        'success': False,
+                        'message': message,
+                        'parsed_data': parsed_request
+                    })
+                
+                flash(message, 'warning')
+                
             else:
-                flash(f'Email parsed - Action: {parsed_request.get("action")}', 'info')
-        else:
-            flash('Could not understand email scheduling request', 'warning')
+                # Low confidence
+                message = 'Could not understand email scheduling request. Please create event manually.'
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({
+                        'success': False,
+                        'message': message,
+                        'confidence': confidence
+                    })
+                
+                flash(message, 'error')
+                
+        except Exception as e:
+            error_msg = f'Error parsing email: {str(e)}'
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': error_msg}), 500
+            
+            flash(error_msg, 'error')
+    else:
+        error_msg = 'Please provide both email subject and body.'
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'error': error_msg}), 400
+        
+        flash(error_msg, 'error')
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': False, 'message': 'No action taken'})
     
     return redirect(url_for('calendar.dashboard'))
 
@@ -141,72 +193,62 @@ def suggest_meeting_times():
     
     return jsonify(suggestions)
 
+@calendar_bp.route('/calendar_view/<int:year>/<int:month>')
+def calendar_view_month(year, month):
+    """Calendar view for specific month"""
+    if 'user_id' not in session:
+        return redirect(url_for('calendar.login'))
+    
+    try:
+        # Create date for the specified month
+        current_month = datetime(year, month, 1).date()
+        
+        # Calculate calendar boundaries
+        start_of_month = current_month
+        end_of_month = (start_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+        
+        # Get the first day of the calendar grid (previous month's days)
+        start_weekday = start_of_month.weekday()
+        # Adjust for Sunday start (0=Monday in Python, we want 0=Sunday)
+        start_weekday = (start_weekday + 1) % 7
+        start_of_calendar = start_of_month - timedelta(days=start_weekday)
+        
+        # Get events for the entire calendar view (6 weeks)
+        end_of_calendar = start_of_calendar + timedelta(days=41)
+        events = get_user_events(session['user_id'], start_of_calendar, end_of_calendar)
+        
+        # Generate 42 days for the calendar grid
+        calendar_days = []
+        for i in range(42):
+            day = start_of_calendar + timedelta(days=i)
+            calendar_days.append({
+                'date': day,
+                'date_string': day.strftime('%Y-%m-%d'),
+                'day_number': day.day,
+                'is_current_month': day.month == current_month.month,
+                'is_today': day == datetime.now().date()
+            })
+        
+        return render_template('calendar_view.html', 
+                             events=events, 
+                             current_month=current_month,
+                             calendar_days=calendar_days,
+                             timedelta=timedelta)
+    
+    except ValueError:
+        flash('Invalid month/year specified', 'error')
+        return redirect(url_for('calendar.calendar_view'))
+
+# Update the existing calendar_view route
 @calendar_bp.route('/calendar_view')
 def calendar_view():
-    """Calendar view page"""
+    """Calendar view page - current month"""
     if 'user_id' not in session:
         return redirect(url_for('calendar.login'))
     
-    # Get events for the current month
+    # Redirect to current month view
     today = datetime.now().date()
-    start_of_month = today.replace(day=1)
-    end_of_month = (start_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-    
-    events = get_user_events(session['user_id'], start_of_month, end_of_month)
-    
-    # Pass timedelta to template
-    return render_template('calendar_view.html', 
-                         events=events, 
-                         current_month=today,
-                         timedelta=timedelta)
-
-@calendar_bp.route('/create_event', methods=['GET', 'POST'])
-def create_event():
-    """Manual event creation"""
-    if 'user_id' not in session:
-        if request.is_json or request.headers.get('Content-Type') == 'application/json':
-            return jsonify({'error': 'Not logged in'}), 401
-        return redirect(url_for('calendar.login'))
-    
-    if request.method == 'POST':
-        try:
-            # Handle both form data and JSON data
-            if request.is_json:
-                data = request.get_json()
-            else:
-                data = request.form
-            
-            event_data = {
-                'title': data.get('title'),
-                'description': data.get('description'),
-                'start_time': data.get('start_time'),
-                'end_time': data.get('end_time'),
-                'location': data.get('location'),
-                'attendees': data.get('attendees', '').split(',') if data.get('attendees') else []
-            }
-            
-            event_id = create_calendar_event(connection, session['user_id'], event_data)
-            
-            # Return JSON for AJAX requests
-            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({
-                    'success': True, 
-                    'message': 'Event created successfully!',
-                    'event_id': event_id,
-                    'event': event_data
-                })
-            
-            flash('Event created successfully!', 'success')
-            return redirect(url_for('calendar.dashboard'))
-            
-        except Exception as e:
-            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'error': f'Error creating event: {str(e)}'}), 500
-            
-            flash(f'Error creating event: {str(e)}', 'error')
-            return redirect(url_for('calendar.dashboard'))
-    
-    return render_template('create_event.html')
+    return redirect(url_for('calendar.calendar_view_month', year=today.year, month=today.month))
 
 @calendar_bp.route('/api/get_event/<int:event_id>')
 def get_event(event_id):
@@ -217,18 +259,26 @@ def get_event(event_id):
     try:
         event = get_event_by_id(connection, event_id, session['user_id'])
         if event:
+            # Determine platform from location/platform data
+            platform, clean_location = parse_platform_and_location(event[6], event[8] if len(event) > 8 else '')
+            
             return jsonify({
                 'id': event[0],
                 'title': event[2],
                 'description': event[3],
                 'start_time': event[4],
                 'end_time': event[5],
-                'location': event[6],
-                'attendees': event[7] if len(event) > 7 else ''
+                'location': clean_location,
+                'attendees': event[7] if len(event) > 7 else '',
+                'platform': platform,
+                'duration': minutes_to_duration_string(event[9] if len(event) > 9 else 60),
+                'duration_minutes': event[9] if len(event) > 9 else 60,
+                'is_all_day': bool(event[10]) if len(event) > 10 else False
             })
         else:
             return jsonify({'error': 'Event not found'}), 404
     except Exception as e:
+        print(f"Error getting event: {e}")
         return jsonify({'error': str(e)}), 500
 
 @calendar_bp.route('/edit_event/<int:event_id>', methods=['POST'])
@@ -253,217 +303,234 @@ def edit_event(event_id):
         duration = data.get('duration', '1h')
         location = data.get('location', '')
         attendees = data.get('attendees', '')
+        platform = data.get('platform', '')
         
         # Parse duration and calculate end time
-        duration_info = parse_duration_string(duration)
+        duration_minutes = parse_duration_to_minutes(duration)
         start_datetime = f"{date} {start_time}"
-        end_datetime = calculate_end_datetime(start_datetime, duration_info)
+        
+        if duration == 'All Day' or duration_minutes >= 1440:
+            end_datetime = f"{date} 23:59"
+            is_all_day = True
+        else:
+            from datetime import datetime, timedelta
+            start = datetime.strptime(start_datetime, '%Y-%m-%d %H:%M')
+            end = start + timedelta(minutes=duration_minutes)
+            end_datetime = end.strftime('%Y-%m-%d %H:%M')
+            is_all_day = False
+        
+        # Combine platform and location properly
+        final_location, final_platform = combine_platform_location(platform, location)
         
         # Update event in database
-        update_event(connection, event_id, session['user_id'], title, description, 
-                    start_datetime, end_datetime, location, attendees)
+        success = update_event(connection, event_id, session['user_id'], title, description, 
+                             start_datetime, end_datetime, final_location, attendees, 
+                             final_platform, duration_minutes)
         
-        # Return JSON for AJAX requests
-        if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({
-                'success': True, 
-                'message': 'Event updated successfully!',
-                'event_id': event_id
-            })
-        
-        flash('Event updated successfully!', 'success')
-        return redirect(url_for('calendar.calendar_view'))
+        if success:
+            # Return JSON for AJAX requests
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': True, 
+                    'message': 'Event updated successfully!',
+                    'event_id': event_id
+                })
+            
+            flash('Event updated successfully!', 'success')
+            return redirect(url_for('calendar.calendar_view'))
+        else:
+            raise Exception("Event not found or permission denied")
         
     except Exception as e:
+        print(f"Error updating event: {e}")
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'error': f'Error updating event: {str(e)}'}), 500
         
         flash(f'Error updating event: {str(e)}', 'error')
         return redirect(url_for('calendar.calendar_view'))
 
-# Add route to get today's events for real-time updates
-@calendar_bp.route('/api/today_events')
-def get_today_events():
-    """Get today's events for dashboard updates"""
+@calendar_bp.route('/create_event', methods=['GET', 'POST'])
+def create_event():
+    """Manual event creation"""
     if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
+        if request.is_json or request.headers.get('Content-Type') == 'application/json':
+            return jsonify({'error': 'Not logged in'}), 401
+        return redirect(url_for('calendar.login'))
     
-    try:
-        today = datetime.now().date()
-        events = get_user_events(session['user_id'], today, today + timedelta(days=1))
-        
-        # Format events for JSON response
-        formatted_events = []
-        for event in events:
-            formatted_events.append({
-                'id': event[0],
-                'title': event[2],
-                'description': event[3],
-                'start_time': event[4],
-                'end_time': event[5],
-                'location': event[6],
-                'time_display': event[4].split(' ')[1][:5] if event[4] and ' ' in event[4] else 'TBD'
-            })
-        
-        return jsonify({'events': formatted_events})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    if request.method == 'POST':
+        try:
+            # Handle both form data and JSON data
+            if request.is_json:
+                data = request.get_json()
+            else:
+                data = request.form
+            
+            # Parse duration
+            duration = data.get('duration', '1h')
+            duration_minutes = parse_duration_to_minutes(duration)
+            
+            # Combine platform and location
+            platform = data.get('platform', '')
+            location = data.get('location', '')
+            final_location, final_platform = combine_platform_location(platform, location)
+            
+            event_data = {
+                'title': data.get('title'),
+                'description': data.get('description', ''),
+                'start_time': data.get('start_time'),
+                'end_time': data.get('end_time'),
+                'location': final_location,
+                'platform': final_platform,
+                'attendees': data.get('attendees', ''),
+                'duration_minutes': duration_minutes,
+                'is_all_day': data.get('is_all_day', 'false').lower() == 'true'
+            }
+            
+            event_id = create_calendar_event(connection, session['user_id'], event_data)
+            
+            # Return JSON for AJAX requests
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({
+                    'success': True, 
+                    'message': 'Event created successfully!',
+                    'event_id': event_id,
+                    'event': event_data
+                })
+            
+            flash('Event created successfully!', 'success')
+            return redirect(url_for('calendar.dashboard'))
+            
+        except Exception as e:
+            print(f"Error creating event: {e}")
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': f'Error creating event: {str(e)}'}), 500
+            
+            flash(f'Error creating event: {str(e)}', 'error')
+            return redirect(url_for('calendar.dashboard'))
+    
+    return render_template('create_event.html')
 
 @calendar_bp.route('/auth/google')
 def auth_google():
     """Initialize Google Calendar OAuth"""
-    # Implement Google OAuth flow
-    flash('Google Calendar integration coming soon!', 'info')
+    try:
+        google_service = GoogleCalendarService()
+        authorization_url = google_service.get_authorization_url()
+        return redirect(authorization_url)
+    except Exception as e:
+        flash(f'Error connecting to Google Calendar: {str(e)}', 'error')
+        return redirect(url_for('calendar.dashboard'))
+
+@calendar_bp.route('/auth/google/callback')
+def google_callback():
+    """Handle Google OAuth callback"""
+    try:
+        code = request.args.get('code')
+        state = request.args.get('state')
+        
+        if not code:
+            raise Exception('No authorization code received')
+        
+        google_service = GoogleCalendarService()
+        google_service.exchange_code_for_token(code, state)
+        
+        # Get and import events
+        events = google_service.get_events()
+        imported_count = 0
+        
+        for event_data in events:
+            try:
+                create_calendar_event(connection, session['user_id'], event_data)
+                imported_count += 1
+            except Exception as e:
+                print(f"Error importing event: {e}")
+        
+        flash(f'Successfully imported {imported_count} events from Google Calendar!', 'success')
+        
+    except Exception as e:
+        flash(f'Error importing Google Calendar: {str(e)}', 'error')
+    
     return redirect(url_for('calendar.dashboard'))
 
 @calendar_bp.route('/auth/outlook')
 def auth_outlook():
     """Initialize Outlook Calendar OAuth"""
-    # Implement Outlook OAuth flow
-    flash('Outlook Calendar integration coming soon!', 'info')
+    try:
+        outlook_service = OutlookCalendarService()
+        authorization_url = outlook_service.get_authorization_url()
+        return redirect(authorization_url)
+    except Exception as e:
+        flash(f'Error connecting to Outlook Calendar: {str(e)}', 'error')
+        return redirect(url_for('calendar.dashboard'))
+
+@calendar_bp.route('/auth/outlook/callback')
+def outlook_callback():
+    """Handle Outlook OAuth callback"""
+    try:
+        code = request.args.get('code')
+        
+        if not code:
+            raise Exception('No authorization code received')
+        
+        outlook_service = OutlookCalendarService()
+        outlook_service.exchange_code_for_token(code)
+        
+        # Get and import events
+        events = outlook_service.get_events()
+        imported_count = 0
+        
+        for event_data in events:
+            try:
+                create_calendar_event(connection, session['user_id'], event_data)
+                imported_count += 1
+            except Exception as e:
+                print(f"Error importing event: {e}")
+        
+        flash(f'Successfully imported {imported_count} events from Outlook Calendar!', 'success')
+        
+    except Exception as e:
+        flash(f'Error importing Outlook Calendar: {str(e)}', 'error')
+    
     return redirect(url_for('calendar.dashboard'))
 
-def parse_duration_string(duration_str):
-    """Parse duration string into minutes"""
-    if not duration_str or duration_str.lower() == 'all day':
-        return {'minutes': 0, 'is_all_day': True }
+def parse_platform_and_location(location_field, platform_field):
+    """Parse platform and location from stored data"""
+    platforms = ['Microsoft Teams', 'Zoom', 'Google Meet', 'Phone Call']
     
-    duration_str = duration_str.lower().strip()
-    total_minutes = 0
+    # If platform field exists, use it
+    if platform_field:
+        if platform_field == 'In Person':
+            return 'In Person', location_field
+        elif platform_field in platforms:
+            return platform_field, location_field
+        else:
+            return 'Other', platform_field + (' - ' + location_field if location_field else '')
     
-    # Parse "1h 30m" format
-    import re
-    hour_match = re.search(r'(\d+)h', duration_str)
-    minute_match = re.search(r'(\d+)m', duration_str)
+    # Check if location contains platform info
+    if location_field:
+        location_lower = location_field.lower()
+        if 'teams' in location_lower or 'microsoft teams' in location_lower:
+            return 'Microsoft Teams', location_field
+        elif 'zoom' in location_lower:
+            return 'Zoom', location_field
+        elif 'google meet' in location_lower or 'meet.google' in location_lower:
+            return 'Google Meet', location_field
+        elif any(word in location_lower for word in ['phone', 'call', 'dial']):
+            return 'Phone Call', location_field
+        elif any(word in location_lower for word in ['http', 'www', '.com', '.org']):
+            return 'Other', location_field
+        else:
+            return 'In Person', location_field
     
-    if hour_match or minute_match:
-        if hour_match:
-            total_minutes += int(hour_match.group(1)) * 60
-        if minute_match:
-            total_minutes += int(minute_match.group(1))
+    return 'In Person', ''
+
+def combine_platform_location(platform, location):
+    """Combine platform and location for storage"""
+    if platform == 'In Person':
+        return location, platform
+    elif platform in ['Microsoft Teams', 'Zoom', 'Google Meet', 'Phone Call']:
+        return location, platform
+    elif platform == 'Other':
+        return location, 'Other'
     else:
-        # Parse plain numbers
-        try:
-            number = int(duration_str)
-            if number < 10:
-                total_minutes = number * 60  # Hours
-            else:
-                total_minutes = number  # Minutes
-        except ValueError:
-            total_minutes = 60  # Default 1 hour
-    
-    return {'minutes': total_minutes, 'is_all_day': False}
-
-def calculate_end_datetime(start_datetime, duration_info):
-    """Calculate end datetime based on duration"""
-    from datetime import datetime, timedelta
-    import pytz
-    
-    # Assuming start_datetime is in the format "YYYY-MM-DD HH:MM"
-    naive_start = datetime.strptime(start_datetime, "%Y-%m-%d %H:%M")
-    
-    # Localize to current timezone
-    local_tz = pytz.timezone("UTC")  # Change this to your desired timezone
-    localized_start = local_tz.localize(naive_start)
-    
-    if duration_info.get('is_all_day'):
-        # For all-day events, we set the time to 00:00 and add 1 day for the end time
-        end_datetime = localized_start.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
-    else:
-        # For timed events, just add the duration in minutes
-        end_datetime = localized_start + timedelta(minutes=duration_info.get('minutes', 60))
-    
-    # Convert back to naive datetime for storage
-    return end_datetime.astimezone(pytz.utc).replace(tzinfo=None)
-
-# Helper functions
-def get_user_events(user_id, start_date, end_date):
-    """Get user events between dates"""
-    cursor = connection.cursor()
-    query = """
-    SELECT * FROM calendar_events 
-    WHERE user_id = ? AND date(start_time) BETWEEN ? AND ?
-    ORDER BY start_time
-    """
-    cursor.execute(query, (user_id, start_date, end_date))
-    return cursor.fetchall()
-
-def create_calendar_event(connection, user_id, event_data):
-    """Create a new calendar event"""
-    cursor = connection.cursor()
-    query = """
-    INSERT INTO calendar_events (user_id, title, description, start_time, end_time, location, attendees)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-    """
-    attendees_json = json.dumps(event_data.get('attendees', []))
-    cursor.execute(query, (
-        user_id,
-        event_data.get('title'),
-        event_data.get('description'),
-        event_data.get('start_time'),
-        event_data.get('end_time'),
-        event_data.get('location'),
-        attendees_json
-    ))
-    connection.commit()
-    return cursor.lastrowid
-
-def find_user_by_email(connection, email):
-    """Find user by email"""
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
-    return cursor.fetchone()
-
-def create_user(connection, name, email):
-    """Create new user"""
-    cursor = connection.cursor()
-    cursor.execute("INSERT INTO users (name, email) VALUES (?, ?)", (name, email))
-    connection.commit()
-    return cursor.lastrowid
-
-def log_voice_command(connection, user_id, command_text, parsed_command):
-    """Log voice command"""
-    cursor = connection.cursor()
-    cursor.execute("""
-    INSERT INTO voice_commands (user_id, command_text, parsed_intent, action_taken)
-    VALUES (?, ?, ?, ?)
-    """, (user_id, command_text, json.dumps(parsed_command), 'processed'))
-    connection.commit()
-
-def execute_voice_command(parsed_command):
-    """Execute parsed voice command"""
-    intent = parsed_command.get('intent')
-    
-    if intent == 'create_event':
-        details = parsed_command.get('action_details', {})
-        # Create event logic here
-        return f"Created event: {details.get('event_title')}"
-    elif intent == 'check_schedule':
-        return "Checking your schedule..."
-    elif intent == 'cancel_event':
-        return "Event cancellation requested"
-    else:
-        return "Command not recognized"
-
-def get_event_by_id(connection, event_id, user_id):
-    """Get event by ID"""
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM calendar_events WHERE id = ? AND user_id = ?", (event_id, user_id))
-    return cursor.fetchone()
-
-def update_event(connection, event_id, user_id, title, description, start_time, end_time, location, attendees):
-    """Update an existing event"""
-    cursor = connection.cursor()
-    attendees_json = json.dumps(attendees.split(',')) if attendees else '[]'
-    cursor.execute("""
-    UPDATE calendar_events 
-    SET title = ?, description = ?, start_time = ?, end_time = ?, location = ?, attendees = ?
-    WHERE id = ? AND user_id = ?
-    """, (title, description, start_time, end_time, location, attendees_json, event_id, user_id))
-    connection.commit()
-
-def delete_event_by_id(connection, event_id, user_id):
-    """Delete event by ID"""
-    cursor = connection.cursor()
-    cursor.execute("DELETE FROM calendar_events WHERE id = ? AND user_id = ?", (event_id, user_id))
-    connection.commit()
+        return location, 'In Person'

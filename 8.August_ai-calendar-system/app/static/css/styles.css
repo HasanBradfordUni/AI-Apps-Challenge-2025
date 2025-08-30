@@ -208,15 +208,21 @@ header {
     background: crimson;
     color: goldenrod;
     border: 2px solid gray;
-    padding: 10px 20px;
+    padding: 8px 16px;
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.3s;
+    font-size: 14px;
 }
 
 .nav-btn:hover {
     background: blue;
-    color: rebeccapurple;
+    color: white;
+    transform: scale(1.05);
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
 }
 
 .calendar-grid {
@@ -804,4 +810,32 @@ header {
         padding: 12px 20px;
         font-size: 16px;
     }
+}
+
+/* Email Parser Styles */
+.email-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.email-input, .email-textarea {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #444;
+    color: goldenrod;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.email-input:focus, .email-textarea:focus {
+    outline: none;
+    border-color: goldenrod;
+}
+
+.email-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
 }

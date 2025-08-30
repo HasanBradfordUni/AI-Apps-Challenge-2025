@@ -329,6 +329,7 @@ function editEvent(eventId) {
         });
 }
 
+// Enhanced edit event modal with proper field population
 function showEditEventModal(event) {
     const startDate = event.start_time ? event.start_time.split(' ')[0] : '';
     const startTime = event.start_time ? event.start_time.split(' ')[1] : '';
@@ -351,15 +352,15 @@ function showEditEventModal(event) {
                     </div>
                     
                     <div class="form-row">
-                        <input type="text" name="duration" placeholder="Duration" class="form-input" value="1h">
+                        <input type="text" name="duration" placeholder="Duration" class="form-input" value="${event.duration || '1h'}">
                         <select name="platform" class="form-input">
                             <option value="">Select Platform</option>
-                            <option value="In Person">In Person</option>
-                            <option value="Microsoft Teams">Microsoft Teams</option>
-                            <option value="Zoom">Zoom</option>
-                            <option value="Google Meet">Google Meet</option>
-                            <option value="Phone Call">Phone Call</option>
-                            <option value="Other">Other</option>
+                            <option value="In Person" ${event.platform === 'In Person' ? 'selected' : ''}>In Person</option>
+                            <option value="Microsoft Teams" ${event.platform === 'Microsoft Teams' ? 'selected' : ''}>Microsoft Teams</option>
+                            <option value="Zoom" ${event.platform === 'Zoom' ? 'selected' : ''}>Zoom</option>
+                            <option value="Google Meet" ${event.platform === 'Google Meet' ? 'selected' : ''}>Google Meet</option>
+                            <option value="Phone Call" ${event.platform === 'Phone Call' ? 'selected' : ''}>Phone Call</option>
+                            <option value="Other" ${event.platform === 'Other' ? 'selected' : ''}>Other</option>
                         </select>
                     </div>
                     
@@ -400,6 +401,7 @@ function submitEditEvent(form) {
         'date': formData.get('date'),
         'start_time': formData.get('start_time'),
         'duration': formData.get('duration'),
+        'platform': formData.get('platform'),
         'location': formData.get('location'),
         'attendees': formData.get('attendees')
     };
@@ -412,7 +414,12 @@ function submitEditEvent(form) {
         },
         body: JSON.stringify(eventData)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
@@ -423,16 +430,20 @@ function submitEditEvent(form) {
             
             // Update UI in real-time
             updateTodaysSchedule();
-            updateCalendarDisplay();
+            setTimeout(() => {
+                if (window.location.pathname.includes('calendar_view')) {
+                    location.reload();
+                }
+            }, 1000);
         } else {
             showNotification(data.error || 'Failed to update event.', 'error');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Error updating event:', error);
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-        showNotification('Error updating event.', 'error');
+        showNotification('Error updating event. Please try again.', 'error');
     });
 }
 
@@ -486,6 +497,56 @@ function importOutlookCalendar() {
     showNotification('Connecting to Outlook Calendar...', 'info');
     window.location.href = '/auth/outlook';
 }
+
+// Calendar navigation
+function changeMonth(year, month) {
+    window.location.href = `/calendar_view/${year}/${month}`;
+}
+
+// Enhanced email parser with AJAX
+document.addEventListener('DOMContentLoaded', function() {
+    const emailForm = document.getElementById('emailParserForm');
+    if (emailForm) {
+        emailForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.textContent = 'Parsing...';
+            submitBtn.disabled = true;
+            
+            fetch('/email_sync', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    emailForm.reset();
+                    // Update today's schedule if event was created
+                    updateTodaysSchedule();
+                } else {
+                    showNotification(data.error || data.message, data.success ? 'success' : 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                showNotification('Error processing email.', 'error');
+            });
+        });
+    }
+});
 
 // Enhanced event click handling for calendar
 document.addEventListener('DOMContentLoaded', function() {

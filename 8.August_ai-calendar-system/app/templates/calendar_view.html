@@ -53,9 +53,12 @@
         <div class="calendar-container">
             <!-- Calendar Navigation -->
             <div class="calendar-nav">
-                <button onclick="changeMonth(-1)" class="nav-btn">← Previous</button>
+                {% set prev_month = current_month.replace(day=1) - timedelta(days=1) %}
+                {% set next_month = (current_month.replace(day=1) + timedelta(days=32)).replace(day=1) %}
+                
+                <button onclick="changeMonth('{{ prev_month.year }}', '{{ prev_month.month }}')" class="nav-btn">← Previous</button>
                 <h2 class="subHeading">{{ current_month.strftime('%B %Y') }}</h2>
-                <button onclick="changeMonth(1)" class="nav-btn">Next →</button>
+                <button onclick="changeMonth('{{ next_month.year }}', '{{ next_month.month }}')" class="nav-btn">Next →</button>
             </div>
 
             <!-- Calendar Grid -->
@@ -74,31 +77,27 @@
                 {% set start_of_month = today.replace(day=1) %}
                 {% set start_of_calendar = start_of_month - (start_of_month.weekday() + 1) * timedelta(days=1) %}
                 
-                {% for i in range(42) %}
-                    {% set current_date = start_of_calendar + timedelta(days=i) %}
-                    {% set is_current_month = current_date.month == today.month %}
-                    {% set is_today = current_date == today %}
-                    {% set date_string = current_date.strftime('%Y-%m-%d') %}
-                    
-                    <div class="calendar-day {{ 'other-month' if not is_current_month else '' }} {{ 'today' if is_today else '' }}" 
-                         data-date="{{ date_string }}" 
-                         onclick="selectDate('{{ date_string }}')">
-                        <div class="day-number">{{ current_date.day }}</div>
-                        <div class="day-events">
-                            {% for event in events %}
-                                {% if event[4][:10] == date_string %}
-                                    <div class="day-event" data-event-id="{{ event[0] }}" title="Click to edit">
-                                        {% if event[2]|length > 15 %}
-                                            {{ event[2][:15] }}...
-                                        {% else %}
-                                            {{ event[2] }}
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
+                {% if calendar_days %}
+                    {% for day in calendar_days %}
+                        <div class="calendar-day {{ 'other-month' if not day.is_current_month else '' }} {{ 'today' if day.is_today else '' }}" 
+                             data-date="{{ day.date_string }}">
+                            <div class="day-number">{{ day.day_number }}</div>
+                            <div class="day-events">
+                                {% for event in events %}
+                                    {% if event[4][:10] == day.date_string %}
+                                        <div class="day-event" data-event-id="{{ event[0] }}" title="Click to edit">
+                                            {% if event[2]|length > 15 %}
+                                                {{ event[2][:15] }}...
+                                            {% else %}
+                                                {{ event[2] }}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                {% endif %}
             </div>
 
             <!-- Create Event Form -->
