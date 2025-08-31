@@ -203,3 +203,61 @@ def minutes_to_duration_string(minutes):
         return f"{hours}h"
     else:
         return f"{mins}m"
+    
+def find_user_by_email(connection, email):
+    """Find a user by email"""
+    cursor = connection.cursor()
+    cursor.execute('SELECT id, name, email FROM users WHERE email = ?', (email,))
+    return cursor.fetchone()
+
+def create_user(connection, name, email):
+    """Create a new user"""
+    cursor = connection.cursor()
+    cursor.execute('INSERT INTO users (name, email) VALUES (?, ?)', (name, email))
+    connection.commit()
+    return cursor.lastrowid
+
+def delete_event_by_id(connection, event_id, user_id):
+    """Delete a specific event by ID"""
+    cursor = connection.cursor()
+    cursor.execute('DELETE FROM events WHERE id = ? AND user_id = ?', (event_id, user_id))
+    connection.commit()
+    return cursor.rowcount > 0
+
+def log_voice_command(connection, user_id, command_text, parsed_command=None):
+    """Log a voice command for auditing"""
+    cursor = connection.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS voice_commands (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            command_text TEXT,
+            parsed_command TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
+    parsed_json = json.dumps(parsed_command) if parsed_command else None
+    cursor.execute('INSERT INTO voice_commands (user_id, command_text, parsed_command) VALUES (?, ?, ?)', 
+                   (user_id, command_text, parsed_json))
+    connection.commit()
+    return cursor.lastrowid
+
+def get_user_events(connection, user_id, start_date=None, end_date=None):
+    """Get events for a user within an optional date range"""
+    cursor = connection.cursor()
+    query = 'SELECT id, title, description, start_time, end_time, location, attendees, platform, duration_minutes, is_all_day FROM events WHERE user_id = ?'
+    params = [user_id]
+    
+    if start_date:
+        query += ' AND start_time >= ?'
+        params.append(start_date)
+    if end_date:
+        query += ' AND end_time <= ?'
+        params.append(end_date)
+    
+    query += ' ORDER BY start_time ASC'
+    
+    cursor.execute(query, params)
+    return cursor.fetchall()

@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, jsonify
 import os, json
 from datetime import datetime, timedelta
-from .models import create_connection, create_calendar_tables, get_user_events, create_user, find_user_by_email
-from .models import create_calendar_event, get_event_by_id, update_event, log_voice_command
+from .models import (create_connection, create_calendar_tables, parse_duration_to_minutes, 
+                    minutes_to_duration_string, create_user, create_calendar_event, 
+                    get_event_by_id, update_event, get_user_events, find_user_by_email, 
+                    log_voice_command, delete_event_by_id)
 from .services.ai_parser import AICommandParser
-from .services.voice_recognition import VoiceRecognitionService, parse_duration_to_minutes, minutes_to_duration_string, execute_voice_command
+from .services.voice_recognition import VoiceRecognitionService
 from .services.calendar_sync import GoogleCalendarService, OutlookCalendarService
 
 calendar_bp = Blueprint('calendar', __name__)
@@ -26,7 +28,8 @@ def dashboard():
     
     # Get today's events
     today = datetime.now().date()
-    events = get_user_events(session['user_id'], today, today + timedelta(days=1))
+    tomorrow = today + timedelta(days=1)
+    events = get_user_events(connection, session['user_id'], today, tomorrow)  # Add connection parameter
     
     # Generate daily summary
     daily_summary = ai_parser.generate_daily_summary(events, str(today))
@@ -89,6 +92,50 @@ def voice_command():
             flash(f"Voice recognition failed: {command_text}", 'error')
     
     return render_template('voice_command.html')
+
+def execute_voice_command(parsed_command):
+    """Execute parsed voice command"""
+    action = parsed_command.get('action')
+    confidence = parsed_command.get('confidence', 0)
+    
+    if confidence < 0.5:
+        return "Low confidence in command, please try again."
+    
+    if action == 'create_event':
+        event_data = {
+            'title': parsed_command.get('event_title', 'New Event'),
+            'description': parsed_command.get('description', ''),
+            'start_time': f"{parsed_command.get('date')} {parsed_command.get('start_time', '09:00')}",
+            'end_time': f"{parsed_command.get('date')} {parsed_command.get('end_time', '10:00')}",
+            'location': parsed_command.get('location', ''),
+            'attendees': parsed_command.get('attendees', [])
+        }
+        event_id = create_calendar_event(connection, session['user_id'], event_data)
+        return f'Event "{event_data["title"]}" created with ID {event_id}.'
+    
+    elif action == 'delete_event':
+        event_id = parsed_command.get('event_id')
+        if event_id:
+            # Use the delete_event_by_id function instead
+            success = delete_event_by_id(connection, event_id, session['user_id'])
+            if success:
+                return f'Event ID {event_id} deleted.'
+            else:
+                return f'Event ID {event_id} not found or permission denied.'
+        else:
+            return 'No event ID provided for deletion.'
+    
+    elif action == 'list_events':
+        date = parsed_command.get('date', str(datetime.now().date()))
+        events = get_user_events(connection, session['user_id'], date, date)  # Add connection parameter
+        if events:
+            event_list = ', '.join([f"{e[2]} at {e[4]}" for e in events])
+            return f'Events on {date}: {event_list}.'
+        else:
+            return f'No events found on {date}.'
+    
+    else:
+        return 'Unknown command action.'
 
 @calendar_bp.route('/email_sync', methods=['POST'])
 def sync_emails():
@@ -187,7 +234,7 @@ def suggest_meeting_times():
     
     # Get existing events for the next 7 days
     today = datetime.now().date()
-    events = get_user_events(session['user_id'], today, today + timedelta(days=7))
+    events = get_user_events(connection, session['user_id'], today, today + timedelta(days=7))  # Add connection parameter
     
     suggestions = ai_parser.suggest_meeting_times(events, duration)
     
@@ -215,7 +262,7 @@ def calendar_view_month(year, month):
         
         # Get events for the entire calendar view (6 weeks)
         end_of_calendar = start_of_calendar + timedelta(days=41)
-        events = get_user_events(session['user_id'], start_of_calendar, end_of_calendar)
+        events = get_user_events(connection, session['user_id'], start_of_calendar, end_of_calendar)  # Add connection parameter
         
         # Generate 42 days for the calendar grid
         calendar_days = []
@@ -492,6 +539,58 @@ def outlook_callback():
         flash(f'Error importing Outlook Calendar: {str(e)}', 'error')
     
     return redirect(url_for('calendar.dashboard'))
+
+@calendar_bp.route('/delete_event/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    """Delete event"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        # Get event details before deletion for feedback
+        event = get_event_by_id(connection, event_id, session['user_id'])
+        if not event:
+            return jsonify({'error': 'Event not found'}), 404
+        
+        success = delete_event_by_id(connection, event_id, session['user_id'])
+        if success:
+            return jsonify({
+                'success': True, 
+                'message': f'Event "{event[2]}" deleted successfully!',
+                'event_id': event_id
+            })
+        else:
+            return jsonify({'error': 'Failed to delete event'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@calendar_bp.route('/api/today_events')
+def get_today_events():
+    """Get today's events for dashboard updates"""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        today = datetime.now().date()
+        tomorrow = today + timedelta(days=1)
+        events = get_user_events(connection, session['user_id'], today, tomorrow)
+        
+        # Format events for JSON response
+        formatted_events = []
+        for event in events:
+            formatted_events.append({
+                'id': event[0],
+                'title': event[2],
+                'description': event[3],
+                'start_time': event[4],
+                'end_time': event[5],
+                'location': event[6],
+                'time_display': event[4].split(' ')[1][:5] if event[4] and ' ' in event[4] else 'TBD'
+            })
+        
+        return jsonify({'events': formatted_events})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def parse_platform_and_location(location_field, platform_field):
     """Parse platform and location from stored data"""
