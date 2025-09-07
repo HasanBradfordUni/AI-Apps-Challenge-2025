@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Has AI - General Document Summarisation AI</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <body>
+    <header>
+      <h1>
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+        Has AI - General Document Summarisation AI
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+      </h1>
+      <hr />
+      <ul class="nav">
+        <li><a href="#upload-section">Upload Document</a></li>
+        <li><a href="#summary-section">Summary Settings</a></li>
+        <li><a href="#results-section">Results</a></li>
+        <li><a href="#comparison-section">Compare Summaries</a></li>
+        <li><a href="#sessions-section">Document Sessions</a></li>
+        <li><a href="#export-section">Export Options</a></li>
+      </ul>
+    </header>
+
+    <section class="mainBody">
+      <h1 class="mainHeading" id="upload-section">AI Document Summarisation</h1>
+      <h2 class="subHeading">
+        Transform lengthy documents into clear, digestible summaries. Upload PDF, DOCX, or TXT files and get AI-powered summaries tailored to your needs.
+      </h2>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Document Upload Section -->
+      <div class="section">
+        <h3>📄 Upload Document</h3>
+        <form method="POST" enctype="multipart/form-data" id="upload-form">
+          {{ form.hidden_tag() }}
+          
+          <div class="form-group">
+            <label for="document_file">{{ form.document_file.label }}</label>
+            {{ form.document_file(class="form-control", id="document_file") }}
+            <small>Supported formats: PDF, DOCX, TXT. Maximum file size: 100MB</small>
+          </div>
+
+          <div class="two-column" id="summary-section">
+            <div class="form-group">
+              <label for="summary_type">{{ form.summary_type.label }}</label>
+              {{ form.summary_type(class="form-control", id="summary_type") }}
+            </div>
+            
+            <div class="form-group">
+              <label for="summary_length">{{ form.summary_length.label }}</label>
+              {{ form.summary_length(class="form-control", id="summary_length") }}
+            </div>
+          </div>
+
+          <div class="two-column">
+            <div class="form-group">
+              <label for="summary_tone">{{ form.summary_tone.label }}</label>
+              {{ form.summary_tone(class="form-control", id="summary_tone") }}
+            </div>
+            
+            <div class="form-group">
+              <label for="focus_areas">{{ form.focus_areas.label }}</label>
+              {{ form.focus_areas(class="form-control", id="focus_areas") }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="custom_instructions">{{ form.custom_instructions.label }}</label>
+            {{ form.custom_instructions(class="form-control", id="custom_instructions", rows="3") }}
+          </div>
+
+          <div class="form-group">
+            {{ form.submit_file(class="button") }}
+            <button type="button" class="button" onclick="clearForm()">Clear Form</button>
+          </div>
+        </form>
+        
+        <!-- Document Preview Section -->
+        <div id="document-preview" style="display: none;">
+          <h4>📖 Document Preview</h4>
+          <div class="document-preview" id="document-text-preview">
+            Processing document...
+          </div>
+          <div class="stats-panel" id="document-stats">
+            <!-- Document statistics will appear here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Results Section -->
+      <div class="section" id="results-section">
+        <h3>🤖 AI Summary Results</h3>
+        
+        {% if summary_result %}
+        <div class="summary-display">
+          {{ summary_result|safe }}
+        </div>
+        
+        <div class="settings-panel">
+          <h4>Current Summary Settings</h4>
+          <p><strong>Type:</strong> {{ form.summary_type.data|title }}</p>
+          <p><strong>Length:</strong> {{ form.summary_length.data|title }}</p>
+          <p><strong>Tone:</strong> {{ form.summary_tone.data|title }}</p>
+        </div>
+        {% else %}
+        <div class="summary-display">
+          No summary available. Upload a document above to generate an AI summary.
+        </div>
+        {% endif %}
+
+        <!-- Summary Regeneration Options -->
+        <div class="settings-panel" id="regeneration-panel" style="display: none;">
+          <h4>🔄 Regenerate Summary</h4>
+          <div class="two-column">
+            <div class="form-group">
+              <label>New Summary Type:</label>
+              <select id="new-summary-type" class="form-control">
+                <option value="general">General Summary</option>
+                <option value="academic">Academic Summary</option>
+                <option value="business">Business Summary</option>
+                <option value="technical">Technical Summary</option>
+                <option value="legal">Legal Summary</option>
+                <option value="executive">Executive Summary</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>New Summary Length:</label>
+              <select id="new-summary-length" class="form-control">
+                <option value="brief">Brief</option>
+                <option value="medium">Medium</option>
+                <option value="long">Long</option>
+                <option value="bullet">Bullet Points</option>
+              </select>
+            </div>
+          </div>
+          
+          <button class="button" onclick="regenerateSummary()">Regenerate Summary</button>
+          <button class="button" onclick="analyzeDocument()">Analyze Document</button>
+        </div>
+      </div>
+
+      <!-- Comparison Section -->
+      <div class="section" id="comparison-section">
+        <h3>⚖️ Compare Different Summaries</h3>
+        <p>Compare how different summary settings affect the output for the same document.</p>
+        
+        <button class="button" onclick="showComparisonTool()" id="show-comparison-btn">
+          Show Comparison Tool
+        </button>
+        
+        <div id="comparison-tool" style="display: none;">
+          <div class="comparison-panel">
+            <h4>Summary Comparison</h4>
+            <div class="two-column">
+              <div>
+                <h5>Summary A</h5>
+                <div class="form-group">
+                  <select id="compare-type-a" class="form-control">
+                    <option value="general">General</option>
+                    <option value="academic">Academic</option>
+                    <option value="business">Business</option>
+                    <option value="executive">Executive</option>
+                  </select>
+                </div>
+                <div class="summary-display" id="summary-a">
+                  Summary A will appear here...
+                </div>
+              </div>
+              
+              <div>
+                <h5>Summary B</h5>
+                <div class="form-group">
+                  <select id="compare-type-b" class="form-control">
+                    <option value="academic">Academic</option>
+                    <option value="general">General</option>
+                    <option value="business">Business</option>
+                    <option value="executive">Executive</option>
+                  </select>
+                </div>
+                <div class="summary-display" id="summary-b">
+                  Summary B will appear here...
+                </div>
+              </div>
+            </div>
+            
+            <button class="button" onclick="compareSummaries()">Compare Summaries</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Sessions -->
+      <div class="section" id="sessions-section">
+        <h3>📚 Document Sessions</h3>
+        <div class="sessions-list" id="sessions-list">
+          <div>No documents processed yet. Upload a document to create your first session.</div>
+        </div>
+        
+        <!-- Session Statistics -->
+        <div class="stats-panel" id="session-stats" style="display: none;">
+          <h4>📊 Processing Statistics</h4>
+          <div id="stats-content">
+            <!-- Statistics will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Options -->
+      <div class="section" id="export-section">
+        <h3>💾 Export Options</h3>
+        <div style="margin: 15px 0;">
+          <button class="button" onclick="exportCurrentSummary('txt')" id="export-txt">
+            Export as TXT
+          </button>
+          <button class="button" onclick="exportCurrentSummary('json')" id="export-json">
+            Export as JSON
+          </button>
+          <button class="button" onclick="exportCurrentSummary('pdf')" id="export-pdf">
+            Export as PDF
+          </button>
+        </div>
+        
+        <div class="settings-panel">
+          <h4>Export Information</h4>
+          <p>Export your summaries in different formats:</p>
+          <ul style="text-align: left;">
+            <li><strong>TXT:</strong> Plain text format with summary and metadata</li>
+            <li><strong>JSON:</strong> Structured data format including all analysis</li>
+            <li><strong>PDF:</strong> Professional formatted document (requires reportlab)</li>
+          </ul>
+        </div>
+      </div>
+
+    </section>
+
+    <footer>
+      <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div>Has AI</div>
+              <div>Document Summarization App</div>
+              <div>Website made with Python, Flask & HTML</div>
+              <div>AI-powered document processing for everyone</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Features</h3>
+              <div class="footer-link-row">
+                <li><a href="#upload-section" class="footer-link">Document Upload</a></li>
+                <li><a href="#summary-section" class="footer-link">AI Summarization</a></li>
+              </div>
+              <div class="footer-link-row">
+                <li><a href="#comparison-section" class="footer-link">Summary Comparison</a></li>
+                <li><a href="#export-section" class="footer-link">Export Options</a></li>
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- JavaScript Files -->
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+  </body>
+</html>
