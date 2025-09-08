@@ -1,40 +1,4 @@
-/* styles.css */
-
-body {
-    background-color: #f4f4f4;
-    text-align: center;
-    color: #333;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
-
-header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background-color: #35424a;
-    color: white;
-    z-index: 1000;
-    padding: 10px 0;
-}
-
-.mainBody {
-    margin-top: 150px;
-    padding: 20px;
-}
-
-.mainHeading {
-    color: #35424a;
-    font-size: xx-large;
-    margin-bottom: 20px;
-}
-
-.subHeading {
-    color: #666;
-    font-size: larger;
-    margin-bottom: 30px;
-}
+/* styles.css - Non-conflicting styles only */
 
 .section {
     background-color: white;
@@ -74,27 +38,26 @@ header {
     box-sizing: border-box;
 }
 
-.button {
-    background-color: #35424a;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    cursor: pointer;
+/* File upload specific styles */
+.file-upload-area {
+    border: 2px dashed #ddd;
     border-radius: 5px;
-    margin: 5px;
-    font-size: 16px;
-    transition: background-color 0.3s;
+    padding: 20px;
+    text-align: center;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
 }
 
-.button:hover {
-    background-color: #45a049;
+.file-upload-area:hover {
+    border-color: #35424a;
 }
 
-.button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+.file-upload-area.dragover {
+    border-color: crimson;
+    background-color: #fff5f5;
 }
 
+/* Keep specialized displays */
 .summary-display {
     background-color: #f9f9f9;
     padding: 20px;
@@ -104,6 +67,8 @@ header {
     text-align: left;
     max-height: 400px;
     overflow-y: auto;
+    white-space: pre-wrap;
+    line-height: 1.6;
 }
 
 .document-preview {
@@ -115,6 +80,17 @@ header {
     max-height: 200px;
     overflow-y: auto;
     border: 1px solid #ddd;
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+.document-stats {
+    background-color: #e8f4f8;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    font-size: 0.9em;
+    color: #555;
 }
 
 .settings-panel {
@@ -141,6 +117,15 @@ header {
     border: 1px solid #ffa500;
 }
 
+.comparison-side {
+    flex: 1;
+    margin: 0 10px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
 .sessions-list {
     background-color: #f9f9f9;
     padding: 15px;
@@ -161,6 +146,28 @@ header {
     align-items: center;
 }
 
+.session-title {
+    font-weight: bold;
+    color: #35424a;
+}
+
+.session-date {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.session-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.session-actions button {
+    padding: 5px 10px;
+    font-size: 0.8em;
+    margin: 0;
+    width: auto;
+}
+
 .progress-bar {
     width: 100%;
     height: 20px;
@@ -176,54 +183,14 @@ header {
     transition: width 0.3s ease;
 }
 
-.logo {
-    border: 2px solid white;
-    border-radius: 50%;
-    vertical-align: middle;
-    margin: 0 20px;
+.progress-text {
+    text-align: center;
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
 }
 
-.nav {
-    list-style: none;
-    padding: 0;
-    margin: 10px 0;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.nav li {
-    margin: 0 15px;
-}
-
-.nav a {
-    color: white;
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 3px;
-    transition: background-color 0.3s;
-}
-
-.nav a:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-footer {
-    margin-top: 50px;
-    padding: 30px;
-    background-color: #35424a;
-    color: white;
-}
-
-.footer-link {
-    color: #ccc;
-    text-decoration: none;
-}
-
-.footer-link:hover {
-    color: white;
-}
-
+/* Alert styles (new, not conflicting) */
 .alert {
     padding: 15px;
     margin: 15px 0;
@@ -242,6 +209,19 @@ footer {
     color: #721c24;
 }
 
+.alert-info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+/* Layout utilities */
 .two-column {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -249,17 +229,191 @@ footer {
     margin: 20px 0;
 }
 
+.three-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+/* Form control override for better integration with hasAI.css */
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    color: #333;
+    box-sizing: border-box;
+}
+
+/* Export button styles */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.export-buttons button {
+    flex: 1;
+    max-width: 150px;
+}
+
+/* Summary type selector */
+.summary-type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.summary-type-option {
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color 0.3s ease;
+}
+
+.summary-type-option:hover {
+    border-color: #35424a;
+}
+
+.summary-type-option.selected {
+    border-color: crimson;
+    background-color: #fff5f5;
+}
+
+/* Responsive design */
 @media (max-width: 768px) {
-    .two-column {
+    .two-column,
+    .three-column {
         grid-template-columns: 1fr;
     }
 
-    .nav {
-        flex-direction: column;
-        align-items: center;
+    .section {
+        margin: 10px;
+        padding: 15px;
     }
 
-    .nav li {
-        margin: 5px 0;
+    .export-buttons {
+        flex-direction: column;
     }
+
+    .export-buttons button {
+        max-width: none;
+    }
+
+    .summary-type-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .session-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .session-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+/* Small text helpers */
+small {
+    color: #666;
+    font-size: 0.9em;
+}
+
+/* List styles for content areas */
+.settings-panel ul,
+.stats-panel ul {
+    text-align: left;
+    padding-left: 20px;
+}
+
+.settings-panel li,
+.stats-panel li {
+    margin: 5px 0;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #35424a;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 10px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltip styles */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #555;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.8em;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Export info list styling */
+.export-info {
+    list-style-type: square;
+    padding-left: 20px;
+    margin: 15px 0;
+    text-align: left;
+}
+
+.export-info li {
+    margin: 12px 0;
+    line-height: 1.5;
+    color: #333;
+}
+
+.export-info li strong {
+    color: #35424a;
+    font-weight: bold;
 }

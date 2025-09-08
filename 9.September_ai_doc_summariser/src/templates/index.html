@@ -35,10 +35,11 @@
         <li><a href="#sessions-section">Document Sessions</a></li>
         <li><a href="#export-section">Export Options</a></li>
       </ul>
+      <br />
     </header>
 
-    <section class="mainBody">
-      <h1 class="mainHeading" id="upload-section">AI Document Summarisation</h1>
+    <section class="mainBody"  id="upload-section">
+      <h1 class="mainHeading">AI Document Summarisation</h1>
       <h2 class="subHeading">
         Transform lengthy documents into clear, digestible summaries. Upload PDF, DOCX, or TXT files and get AI-powered summaries tailored to your needs.
       </h2>
@@ -55,7 +56,7 @@
       {% endwith %}
 
       <!-- Document Upload Section -->
-      <div class="section">
+      <div class="section" id="summary-section">
         <h3>📄 Upload Document</h3>
         <form method="POST" enctype="multipart/form-data" id="upload-form">
           {{ form.hidden_tag() }}
@@ -66,7 +67,7 @@
             <small>Supported formats: PDF, DOCX, TXT. Maximum file size: 100MB</small>
           </div>
 
-          <div class="two-column" id="summary-section">
+          <div class="two-column" >
             <div class="form-group">
               <label for="summary_type">{{ form.summary_type.label }}</label>
               {{ form.summary_type(class="form-control", id="summary_type") }}
@@ -90,7 +91,7 @@
             </div>
           </div>
 
-          <div class="form-group">
+          <div class="form-group" id="results-section">
             <label for="custom_instructions">{{ form.custom_instructions.label }}</label>
             {{ form.custom_instructions(class="form-control", id="custom_instructions", rows="3") }}
           </div>
@@ -114,7 +115,7 @@
       </div>
 
       <!-- Summary Results Section -->
-      <div class="section" id="results-section">
+      <div class="section" id="comparison-section">
         <h3>🤖 AI Summary Results</h3>
         
         {% if summary_result %}
@@ -167,7 +168,7 @@
       </div>
 
       <!-- Comparison Section -->
-      <div class="section" id="comparison-section">
+      <div class="section" id="sessions-section">
         <h3>⚖️ Compare Different Summaries</h3>
         <p>Compare how different summary settings affect the output for the same document.</p>
         
@@ -216,7 +217,7 @@
       </div>
 
       <!-- Document Sessions -->
-      <div class="section" id="sessions-section">
+      <div class="section" id="export-section">
         <h3>📚 Document Sessions</h3>
         <div class="sessions-list" id="sessions-list">
           <div>No documents processed yet. Upload a document to create your first session.</div>
@@ -232,7 +233,7 @@
       </div>
 
       <!-- Export Options -->
-      <div class="section" id="export-section">
+      <div class="section">
         <h3>💾 Export Options</h3>
         <div style="margin: 15px 0;">
           <button class="button" onclick="exportCurrentSummary('txt')" id="export-txt">
@@ -249,7 +250,7 @@
         <div class="settings-panel">
           <h4>Export Information</h4>
           <p>Export your summaries in different formats:</p>
-          <ul style="text-align: left;">
+          <ul style="text-align: left;" class="export-info">
             <li><strong>TXT:</strong> Plain text format with summary and metadata</li>
             <li><strong>JSON:</strong> Structured data format including all analysis</li>
             <li><strong>PDF:</strong> Professional formatted document (requires reportlab)</li>
@@ -259,29 +260,30 @@
 
     </section>
 
-    <footer>
+        <footer>
       <div class="footer">
         <div class="w-container">
           <div class="w-row">
             <div class="w-col w-col-4">
               <h3>About</h3>
+              <div></div>
               <div>Has AI</div>
-              <div>Document Summarization App</div>
-              <div>Website made with Python, Flask & HTML</div>
-              <div>AI-powered document processing for everyone</div>
+              <div>AI Speech-to-text App</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI Projects for all</div>
               <div>
                 Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
               </div>
             </div>
             <div class="w-col w-col-4">
-              <h3>Features</h3>
+              <h3>Useful Links</h3>
               <div class="footer-link-row">
-                <li><a href="#upload-section" class="footer-link">Document Upload</a></li>
-                <li><a href="#summary-section" class="footer-link">AI Summarization</a></li>
+                <li><a href="#upload-section" target="_blank" class="footer-link">Document Upload</a></li>
+                <li><a href="#summary-section" target="_blank" class="footer-link">AI Summarization</a></li>
               </div>
               <div class="footer-link-row">
-                <li><a href="#comparison-section" class="footer-link">Summary Comparison</a></li>
-                <li><a href="#export-section" class="footer-link">Export Options</a></li>
+                <li><a href="#comparison-section" target="_blank" class="footer-link">Summary Comparison</a></li>
+                <li><a href="#export-section" target="_blank" class="footer-link">Export Options</a></li>
               </div>
             </div>
             <div class="f-col">
@@ -323,10 +325,24 @@
                   >GitHub</a
                 >
               </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
     </footer>
 
     <!-- JavaScript Files -->
