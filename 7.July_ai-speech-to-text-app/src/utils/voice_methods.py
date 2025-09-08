@@ -9,7 +9,7 @@ import subprocess
 import queue
 
 class VoiceMethods:
-    def __init__(self):
+    def __init__(self, upload_folder=None, voice_profiles_folder=None):
         self.recognizer = sr.Recognizer()
         self.microphone = None
         self.is_recording = False
@@ -17,6 +17,15 @@ class VoiceMethods:
         self.voice_profiles = {}
         self.transcript_queue = queue.Queue()
         self.recording_thread = None
+        
+        # Use provided folder paths or defaults
+        self.upload_folder = upload_folder or "uploads"
+        self.voice_profiles_folder = voice_profiles_folder or "voice_profiles"
+        
+        # Ensure directories exist
+        os.makedirs(self.upload_folder, exist_ok=True)
+        os.makedirs(self.voice_profiles_folder, exist_ok=True)
+        
         self.load_voice_profiles()
         
         # Enhanced recognizer settings for better accuracy
@@ -42,17 +51,14 @@ class VoiceMethods:
     def load_voice_profiles(self):
         """Load voice profiles from file"""
         try:
-            voice_profiles_dir = "voice_profiles"
-            os.makedirs(voice_profiles_dir, exist_ok=True)
-            
-            profiles_file = os.path.join(voice_profiles_dir, "profiles.json")
+            profiles_file = os.path.join(self.voice_profiles_folder, "profiles.json")
             if os.path.exists(profiles_file):
                 with open(profiles_file, 'r', encoding='utf-8') as f:
                     self.voice_profiles = json.load(f)
-                print(f"Loaded {len(self.voice_profiles)} voice profiles")
+                print(f"Loaded {len(self.voice_profiles)} voice profiles from {profiles_file}")
             else:
                 self.voice_profiles = {}
-                print("No existing voice profiles found")
+                print(f"No existing voice profiles found at {profiles_file}")
         except Exception as e:
             print(f"Error loading voice profiles: {e}")
             self.voice_profiles = {}
@@ -60,13 +66,10 @@ class VoiceMethods:
     def save_voice_profiles(self):
         """Save voice profiles to file"""
         try:
-            voice_profiles_dir = "voice_profiles"
-            os.makedirs(voice_profiles_dir, exist_ok=True)
-            
-            profiles_file = os.path.join(voice_profiles_dir, "profiles.json")
+            profiles_file = os.path.join(self.voice_profiles_folder, "profiles.json")
             with open(profiles_file, 'w', encoding='utf-8') as f:
                 json.dump(self.voice_profiles, f, indent=2, ensure_ascii=False)
-            print(f"Saved {len(self.voice_profiles)} voice profiles")
+            print(f"Saved {len(self.voice_profiles)} voice profiles to {profiles_file}")
         except Exception as e:
             print(f"Error saving voice profiles: {e}")
 
@@ -462,10 +465,8 @@ class VoiceMethods:
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             
-            # Ensure uploads directory exists
-            uploads_dir = "uploads"
-            if not os.path.exists(uploads_dir):
-                os.makedirs(uploads_dir, exist_ok=True)
+            # Use the configured upload folder
+            uploads_dir = self.upload_folder
             
             # Generate filename
             if format_type == 'txt':

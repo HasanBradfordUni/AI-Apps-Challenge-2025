@@ -8,5 +8,12 @@
     "created_at": "2025-07-29T17:31:42.814227",
     "training_text": "The quick brown fox jumps over the lazy dog.",
     "samples_count": 3
+  },
+  "Python Programmer": {
+    "user_name": "Python Programmer",
+    "training_text": "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training.",
+    "created_at": "2025-09-07T18:04:04.530982",
+    "accuracy_improvement": 15,
+    "training_sessions": 1
   }
 }

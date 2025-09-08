@@ -10,16 +10,25 @@ from ai.geminiPrompt import generate_transcript_summary, generate_voice_command_
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
+
+# Get the correct folder paths
 folder_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 app.config['UPLOAD_FOLDER'] = os.path.join(folder_path, 'uploads')
 app.config['VOICE_PROFILES_FOLDER'] = os.path.join(folder_path, 'voice_profiles')
+
+print(f"App folder path: {folder_path}")
+print(f"Upload folder: {app.config['UPLOAD_FOLDER']}")
+print(f"Voice profiles folder: {app.config['VOICE_PROFILES_FOLDER']}")
 
 # Ensure upload directories exist
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['VOICE_PROFILES_FOLDER'], exist_ok=True)
 
-# Initialize voice methods
-voice_methods = VoiceMethods()
+# Initialize voice methods with correct folder paths
+voice_methods = VoiceMethods(
+    upload_folder=app.config['UPLOAD_FOLDER'],
+    voice_profiles_folder=app.config['VOICE_PROFILES_FOLDER']
+)
 
 # Global variables for real-time transcription
 transcription_active = False
