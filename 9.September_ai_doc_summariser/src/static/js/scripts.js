@@ -6,12 +6,16 @@ let currentSummary = null;
 let documentSessions = {};
 let processingInProgress = false;
 
+// Global variable to track current comparison session
+let currentComparisonSession = null;
+
 // Document ready initialization
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Document Summarizer initialized');
     loadSessions();
     setupFormValidation();
     setupFileUpload();
+    handleMainFormSubmission(); // Add this line
 });
 
 // Form handling functions
@@ -262,8 +266,28 @@ function loadSessions() {
     fetch('/api/get-sessions')
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            documentSessions = data.sessions;
+        if (data.sessions && data.sessions.length > 0) {
+            documentSessions = {};
+            
+            // Convert array to object and find most recent
+            let mostRecentSession = null;
+            let mostRecentTime = 0;
+            
+            data.sessions.forEach(session => {
+                documentSessions[session.id] = session;
+                
+                const sessionTime = new Date(session.timestamp).getTime();
+                if (sessionTime > mostRecentTime) {
+                    mostRecentTime = sessionTime;
+                    mostRecentSession = session;
+                }
+            });
+            
+            // Set the most recent session as current if none is set
+            if (!currentDocument && mostRecentSession) {
+                currentDocument = { session_id: mostRecentSession.id };
+            }
+            
             updateSessionsList();
             updateSessionStats();
         }
@@ -426,48 +450,155 @@ function deleteSession(sessionId) {
     });
 }
 
-// Export functions
-function exportCurrentSummary(format) {
-    if (!currentSummary || !currentDocument) {
-        alert('No summary available to export. Please upload and process a document first.');
+// Upload document specifically for comparison
+function uploadComparisonDocument() {
+    const fileInput = document.getElementById('comparison_file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a file to upload');
         return;
     }
     
-    const exportData = {
-        session_id: currentDocument.session_id,
-        format: format
+    if (!validateFile(file)) {
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('document_file', file);
+    
+    showProcessingIndicator();
+    
+    fetch('/api/upload-document', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProcessingIndicator();
+        
+        if (data.success) {
+            currentComparisonSession = data.session_id;
+            
+            // Show the comparison tool
+            document.getElementById('comparison-tool').style.display = 'block';
+            
+            showSuccessMessage(`Document uploaded successfully: ${data.filename}`);
+        } else {
+            showErrorMessage('Upload failed: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideProcessingIndicator();
+        console.error('Error:', error);
+        showErrorMessage('Network error occurred during upload');
+    });
+}
+
+// Generate comparison summaries
+function generateComparisonSummaries() {
+    if (!currentComparisonSession) {
+        alert('Please upload a document first');
+        return;
+    }
+    
+    const settings1 = {
+        type: document.getElementById('compare-type-a').value,
+        length: document.getElementById('compare-length-a').value,
+        tone: document.getElementById('compare-tone-a').value
     };
     
-    fetch('/api/export-summary', {
+    const settings2 = {
+        type: document.getElementById('compare-type-b').value,
+        length: document.getElementById('compare-length-b').value,
+        tone: document.getElementById('compare-tone-b').value
+    };
+    
+    showProcessingIndicator();
+    
+    fetch('/api/compare-summaries', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(exportData)
+        body: JSON.stringify({
+            session_id: currentComparisonSession,
+            settings1: settings1,
+            settings2: settings2
+        })
     })
-    .then(response => {
-        if (response.ok) {
-            return response.blob();
+    .then(response => response.json())
+    .then(data => {
+        hideProcessingIndicator();
+        
+        if (data.success) {
+            document.getElementById('summary-a').innerHTML = data.summary1;
+            document.getElementById('summary-b').innerHTML = data.summary2;
+            document.getElementById('comparison-results').style.display = 'block';
+            
+            showSuccessMessage('Comparison summaries generated successfully!');
         } else {
-            return response.json().then(err => Promise.reject(err));
+            showErrorMessage('Error generating summaries: ' + data.error);
         }
     })
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `summary_${currentDocument.session_id}.${format}`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        
-        showSuccessMessage(`Summary exported as ${format.toUpperCase()}`);
-    })
     .catch(error => {
-        console.error('Export error:', error);
-        showErrorMessage('Error exporting summary: ' + (error.error || error.message || 'Unknown error'));
+        hideProcessingIndicator();
+        console.error('Error:', error);
+        showErrorMessage('Network error occurred during comparison');
     });
+}
+
+// Fixed export function - this should work after document processing
+function exportCurrentSummary(format) {
+    // First check if there's a current session from the main form
+    let sessionToExport = null;
+    
+    // Check if we have a current document session from the main form
+    if (currentDocument && currentDocument.session_id) {
+        sessionToExport = currentDocument.session_id;
+    }
+    // Check if we have a comparison session
+    else if (currentComparisonSession) {
+        sessionToExport = currentComparisonSession;
+    }
+    // Check if there are any sessions available
+    else if (Object.keys(documentSessions).length > 0) {
+        // Use the most recent session
+        const sessionIds = Object.keys(documentSessions);
+        sessionToExport = sessionIds[sessionIds.length - 1];
+    }
+    
+    if (!sessionToExport) {
+        alert('No summary available to export. Please upload and process a document first.');
+        return;
+    }
+    
+    // Use direct URL approach for download
+    const exportUrl = `/api/export-summary/${sessionToExport}/${format}`;
+    
+    // Create temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = `summary_${sessionToExport}.${format}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showSuccessMessage(`Summary exported as ${format.toUpperCase()}`);
+}
+
+// Update the main form submission to set currentDocument properly
+function handleMainFormSubmission() {
+    const form = document.getElementById('upload-form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // Let the form submit normally, but track the result
+            setTimeout(() => {
+                // After form submission, check if there's a new session
+                loadSessions();
+            }, 2000);
+        });
+    }
 }
 
 // UI Helper functions

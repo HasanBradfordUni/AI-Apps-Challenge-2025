@@ -417,3 +417,28 @@ small {
     color: #35424a;
     font-weight: bold;
 }
+
+/* Style submit inputs to match buttons */
+input[type="submit"] {
+    background-color: crimson !important;
+    color: goldenrod !important;
+    border: 1px solid gray !important;
+    padding: 13px !important;
+    border-radius: 5px !important;
+    cursor: pointer !important;
+    font-size: inherit !important;
+    font-family: inherit !important;
+    margin: 5px !important;
+}
+
+input[type="submit"]:hover {
+    background-color: blue !important;
+    color: rebeccapurple !important;
+    animation-delay: 50ms !important;
+}
+
+input[type="submit"]:disabled {
+    background-color: #ccc !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}

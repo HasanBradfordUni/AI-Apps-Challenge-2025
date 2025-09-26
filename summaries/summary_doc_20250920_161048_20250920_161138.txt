@@ -1,0 +1,27 @@
+Document Summary - doc_20250920_161048
+Generated: 2025-09-20 16:11:38
+============================================================
+
+SUMMARY SETTINGS:
+Type: general
+Length: medium
+Tone: neutral
+
+============================================================
+
+DOCUMENT SUMMARY:
+This document is a README file providing instructions and information for running Hasan Akhtar's website, created as part of an Internet Technologies coursework. The file outlines the necessary steps to set up and access the website locally using XAMPP, a software package used for web development. The initial setup involves starting the XAMPP application, copying the website files into the 'htdocs' directory, and accessing the site through a specific URL on the local server, which in this case is http://localhost:8083/Coursework/HTML/.
+
+A crucial step involves setting up the database. The instructions specify creating a new database named "smartlife" within phpMyAdmin and importing the SQL file "smartlife(4).sql" to populate the database with the necessary data. Without this database, the website's dynamic features would likely not function correctly. After these steps are completed, users can then browse the different pages of the website.
+
+The README also provides credentials for four different user accounts with varying roles. These include a Developer account (H.Akhtar), two Admin accounts (Hakhta26 and Haziz), and a Normal User account (YusufQ). Each account is listed with its username, email address, password, and assigned role within the website. These provided credentials are vital for testing different functionalities and permission levels within the website application.
+
+In summary, the document serves as a guide for setting up and accessing Hasan Akhtar's coursework website, emphasizing the importance of both file placement and database configuration using XAMPP. It further supplies login details for various user roles, suggesting the website incorporates user authentication and access control features, and is awaiting demonstration.
+
+
+============================================================
+
+DOCUMENT STATISTICS:
+Original word count: 95
+Summary word count: 255
+Compression ratio: 268.4%

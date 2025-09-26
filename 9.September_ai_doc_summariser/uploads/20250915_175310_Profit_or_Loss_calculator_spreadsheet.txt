@@ -1,0 +1,7 @@
+- Profit/Loss calculator (spreadsheet)
+
+Put beginning balance daily
+Put any deposits in (total for day)
+Put any withdrawals in (total for day)
+Put in final balance for day
+Work out total profit/loss for week then (5 day week)

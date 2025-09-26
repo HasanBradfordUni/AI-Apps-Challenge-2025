@@ -185,16 +185,16 @@ class DocumentProcessor:
         return sections
     
     def export_summary(self, document_text, summary, format_type, session_id, summary_settings=None):
-        """Export summary to file with enhanced metadata"""
+        """Export summary to file"""
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             
-            # Ensure summaries directory exists
-            summaries_dir = "summaries"
-            if not os.path.exists(summaries_dir):
-                os.makedirs(summaries_dir, exist_ok=True)
+            # Use the Flask app's configured summaries folder
+            summaries_dir = os.path.join(os.getcwd(), "summaries")
             
-            # Generate filename
+            # Make sure the directory exists
+            os.makedirs(summaries_dir, exist_ok=True)
+            
             if format_type == 'txt':
                 filename = f"summary_{session_id}_{timestamp}.txt"
                 filepath = os.path.join(summaries_dir, filename)
@@ -202,86 +202,35 @@ class DocumentProcessor:
                 with open(filepath, 'w', encoding='utf-8') as f:
                     f.write(f"Document Summary - {session_id}\n")
                     f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write("=" * 60 + "\n\n")
-                    
                     if summary_settings:
-                        f.write("SUMMARY SETTINGS:\n")
-                        f.write(f"Type: {summary_settings.get('type', 'N/A')}\n")
-                        f.write(f"Length: {summary_settings.get('length', 'N/A')}\n")
-                        f.write(f"Tone: {summary_settings.get('tone', 'N/A')}\n")
-                        f.write("\n" + "=" * 60 + "\n\n")
-                    
-                    f.write("DOCUMENT SUMMARY:\n")
+                        f.write(f"Summary Type: {summary_settings.get('type', 'N/A')}\n")
+                        f.write(f"Summary Length: {summary_settings.get('length', 'N/A')}\n")
+                        f.write(f"Summary Tone: {summary_settings.get('tone', 'N/A')}\n")
+                    f.write("=" * 50 + "\n\n")
+                    f.write("SUMMARY:\n")
                     f.write(summary if summary else "No summary available")
-                    f.write("\n\n" + "=" * 60 + "\n\n")
-                    
-                    # Add document statistics
-                    word_count = len(document_text.split()) if document_text else 0
-                    f.write("DOCUMENT STATISTICS:\n")
-                    f.write(f"Original word count: {word_count}\n")
-                    f.write(f"Summary word count: {len(summary.split()) if summary else 0}\n")
-                    f.write(f"Compression ratio: {round((len(summary.split()) / word_count * 100), 1) if word_count > 0 else 0}%\n")
+                    f.write("\n\n" + "=" * 50 + "\n\n")
+                    f.write("ORIGINAL DOCUMENT:\n")
+                    f.write(document_text if document_text else "No document text available")
             
             elif format_type == 'json':
                 filename = f"summary_{session_id}_{timestamp}.json"
                 filepath = os.path.join(summaries_dir, filename)
                 
-                # Analyze document
-                analysis = self.analyze_document_structure(document_text) if document_text else {}
-                
                 data = {
                     'session_id': session_id,
                     'timestamp': datetime.now().isoformat(),
                     'summary': summary if summary else "",
-                    'document_statistics': analysis,
-                    'summary_settings': summary_settings if summary_settings else {},
+                    'document_text': document_text if document_text else "",
+                    'summary_settings': summary_settings or {},
                     'export_format': format_type,
-                    'metadata': {
-                        'generator': 'Document Summarization AI',
-                        'version': '1.0',
-                        'export_date': datetime.now().isoformat()
-                    }
+                    'word_count': len(document_text.split()) if document_text else 0,
+                    'character_count': len(document_text) if document_text else 0
                 }
                 
                 with open(filepath, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=2, ensure_ascii=False)
-            
-            elif format_type == 'pdf':
-                filename = f"summary_{session_id}_{timestamp}.pdf"
-                filepath = os.path.join(summaries_dir, filename)
-                
-                # Create PDF using reportlab if available
-                try:
-                    from reportlab.lib.pagesizes import letter
-                    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-                    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-                    from reportlab.lib.units import inch
-                    
-                    doc = SimpleDocTemplate(filepath, pagesize=letter)
-                    styles = getSampleStyleSheet()
-                    story = []
-                    
-                    # Title
-                    title_style = ParagraphStyle(
-                        'CustomTitle',
-                        parent=styles['Heading1'],
-                        fontSize=16,
-                        spaceAfter=30,
-                    )
-                    story.append(Paragraph(f"Document Summary - {session_id}", title_style))
-                    story.append(Spacer(1, 12))
-                    
-                    # Summary content
-                    summary_style = styles['Normal']
-                    story.append(Paragraph("Summary:", styles['Heading2']))
-                    story.append(Paragraph(summary if summary else "No summary available", summary_style))
-                    
-                    doc.build(story)
-                    
-                except ImportError:
-                    # Fallback to text file if reportlab not available
-                    return self.export_summary(document_text, summary, 'txt', session_id, summary_settings)
-            
+        
             else:
                 raise Exception(f"Unsupported export format: {format_type}")
             

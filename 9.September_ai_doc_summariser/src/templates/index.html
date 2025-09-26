@@ -97,7 +97,7 @@
           </div>
 
           <div class="form-group">
-            {{ form.submit_file(class="button") }}
+            {{ form.submit_file() }}
             <button type="button" class="button" onclick="clearForm()">Clear Form</button>
           </div>
         </form>
@@ -168,50 +168,108 @@
       </div>
 
       <!-- Comparison Section -->
-      <div class="section" id="sessions-section">
+      <div class="section" id="comparison-section">
         <h3>⚖️ Compare Different Summaries</h3>
-        <p>Compare how different summary settings affect the output for the same document.</p>
+        <p>Upload a document and generate multiple summaries with different settings to compare approaches.</p>
         
-        <button class="button" onclick="showComparisonTool()" id="show-comparison-btn">
-          Show Comparison Tool
-        </button>
+        <!-- Comparison Document Upload -->
+        <div class="comparison-upload-area" id="comparison-upload">
+          <h4>📄 Upload Document for Comparison</h4>
+          <form id="comparison-form" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="comparison_file">Select Document</label>
+              <input type="file" id="comparison_file" name="comparison_file" class="form-control" accept=".pdf,.docx,.txt">
+              <small>Supported formats: PDF, DOCX, TXT. Maximum file size: 100MB</small>
+            </div>
+            <button type="button" class="button" onclick="uploadComparisonDocument()">Upload for Comparison</button>
+          </form>
+        </div>
         
+        <!-- Comparison Tool (shown after upload) -->
         <div id="comparison-tool" style="display: none;">
           <div class="comparison-panel">
-            <h4>Summary Comparison</h4>
+            <h4>🔄 Generate Comparison Summaries</h4>
             <div class="two-column">
-              <div>
-                <h5>Summary A</h5>
+              <div class="comparison-side">
+                <h5>Summary A Settings</h5>
                 <div class="form-group">
+                  <label for="compare-type-a">Summary Type</label>
                   <select id="compare-type-a" class="form-control">
-                    <option value="general">General</option>
-                    <option value="academic">Academic</option>
-                    <option value="business">Business</option>
-                    <option value="executive">Executive</option>
+                    <option value="general">General Summary</option>
+                    <option value="academic">Academic Analysis</option>
+                    <option value="executive">Executive Summary</option>
+                    <option value="technical">Technical Overview</option>
                   </select>
                 </div>
-                <div class="summary-display" id="summary-a">
-                  Summary A will appear here...
+                <div class="form-group">
+                  <label for="compare-length-a">Summary Length</label>
+                  <select id="compare-length-a" class="form-control">
+                    <option value="short">Short</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="long">Long</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="compare-tone-a">Tone</label>
+                  <select id="compare-tone-a" class="form-control">
+                    <option value="neutral" selected>Neutral</option>
+                    <option value="formal">Formal</option>
+                    <option value="casual">Casual</option>
+                  </select>
                 </div>
               </div>
               
-              <div>
-                <h5>Summary B</h5>
+              <div class="comparison-side">
+                <h5>Summary B Settings</h5>
                 <div class="form-group">
+                  <label for="compare-type-b">Summary Type</label>
                   <select id="compare-type-b" class="form-control">
-                    <option value="academic">Academic</option>
-                    <option value="general">General</option>
-                    <option value="business">Business</option>
-                    <option value="executive">Executive</option>
+                    <option value="general">General Summary</option>
+                    <option value="academic" selected>Academic Analysis</option>
+                    <option value="executive">Executive Summary</option>
+                    <option value="technical">Technical Overview</option>
                   </select>
                 </div>
-                <div class="summary-display" id="summary-b">
-                  Summary B will appear here...
+                <div class="form-group">
+                  <label for="compare-length-b">Summary Length</label>
+                  <select id="compare-length-b" class="form-control">
+                    <option value="short">Short</option>
+                    <option value="medium">Medium</option>
+                    <option value="long" selected>Long</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="compare-tone-b">Tone</label>
+                  <select id="compare-tone-b" class="form-control">
+                    <option value="neutral">Neutral</option>
+                    <option value="formal" selected>Formal</option>
+                    <option value="casual">Casual</option>
+                  </select>
                 </div>
               </div>
             </div>
             
-            <button class="button" onclick="compareSummaries()">Compare Summaries</button>
+            <div class="text-center">
+              <button class="button" onclick="generateComparisonSummaries()">Generate Both Summaries</button>
+            </div>
+            
+            <!-- Comparison Results -->
+            <div id="comparison-results" style="display: none;">
+              <div class="two-column">
+                <div class="comparison-side">
+                  <h5>Summary A</h5>
+                  <div class="summary-display" id="summary-a">
+                    Summary will appear here...
+                  </div>
+                </div>
+                <div class="comparison-side">
+                  <h5>Summary B</h5>
+                  <div class="summary-display" id="summary-b">
+                    Summary will appear here...
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

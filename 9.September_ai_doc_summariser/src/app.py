@@ -31,6 +31,7 @@ def index():
     """Main page with document upload and summarization"""
     form = DocumentSummaryForm()
     summary_result = ""
+    session_id = None
     
     if form.validate_on_submit():
         # Process uploaded document
@@ -73,7 +74,10 @@ def index():
             except Exception as e:
                 flash(f'Error processing document: {str(e)}', 'error')
     
-    return render_template('index.html', form=form, summary_result=summary_result)
+    return render_template('index.html', 
+                         form=form, 
+                         summary_result=summary_result,
+                         session_id=session_id)
 
 @app.route('/api/upload-document', methods=['POST'])
 def upload_document():
@@ -285,10 +289,14 @@ def export_summary():
 def export_summary_direct(session_id, export_format):
     """Direct export with URL parameters"""
     try:
+        print(f"Export request - Session ID: {session_id}, Format: {export_format}")
+        
         if session_id not in document_sessions:
+            print(f"Session {session_id} not found in {list(document_sessions.keys())}")
             return jsonify({'error': 'Session not found'}), 404
         
         session_data = document_sessions[session_id]
+        print(f"Session data found: {session_data.keys()}")
         
         file_path = doc_processor.export_summary(
             session_data['document_text'],
@@ -298,10 +306,16 @@ def export_summary_direct(session_id, export_format):
             session_data.get('summary_settings', {})
         )
         
+        print(f"Export file path: {file_path}")
+        print(f"File exists: {os.path.exists(file_path)}")
+        
         if not os.path.exists(file_path):
+            print(f"File not found at: {file_path}")
             return jsonify({'error': 'Export file was not created successfully'}), 500
         
+        print(f"File size: {os.path.getsize(file_path)} bytes")
         filename = os.path.basename(file_path)
+        print(f"Sending file: {filename}")
         
         return send_file(
             file_path, 
@@ -311,6 +325,9 @@ def export_summary_direct(session_id, export_format):
         )
     
     except Exception as e:
+        print(f"Export error details: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/get-sessions', methods=['GET'])
