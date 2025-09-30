@@ -61,9 +61,9 @@
         <form method="POST" enctype="multipart/form-data" id="upload-form">
           {{ form.hidden_tag() }}
           
-          <div class="form-group">
+          <div class="custom-file-upload">
             <label for="document_file">{{ form.document_file.label }}</label>
-            {{ form.document_file(class="form-control", id="document_file") }}
+            {{ form.document_file(class="file-input", id="document_file") }}
             <small>Supported formats: PDF, DOCX, TXT. Maximum file size: 100MB</small>
           </div>
 
@@ -176,9 +176,9 @@
         <div class="comparison-upload-area" id="comparison-upload">
           <h4>📄 Upload Document for Comparison</h4>
           <form id="comparison-form" enctype="multipart/form-data">
-            <div class="form-group">
+            <div class="custom-file-upload">
               <label for="comparison_file">Select Document</label>
-              <input type="file" id="comparison_file" name="comparison_file" class="form-control" accept=".pdf,.docx,.txt">
+              <input type="file" id="comparison_file" name="comparison_file" class="file-input" accept=".pdf,.docx,.txt">
               <small>Supported formats: PDF, DOCX, TXT. Maximum file size: 100MB</small>
             </div>
             <button type="button" class="button" onclick="uploadComparisonDocument()">Upload for Comparison</button>
@@ -309,8 +309,8 @@
           <h4>Export Information</h4>
           <p>Export your summaries in different formats:</p>
           <ul style="text-align: left;" class="export-info">
-            <li><strong>TXT:</strong> Plain text format with summary and metadata</li>
-            <li><strong>JSON:</strong> Structured data format including all analysis</li>
+            <li><strong>TXT:</strong> Plain text format with summary and metadata</li><br>
+            <li><strong>JSON:</strong> Structured data format including all analysis</li><br>
             <li><strong>PDF:</strong> Professional formatted document (requires reportlab)</li>
           </ul>
         </div>

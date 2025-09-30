@@ -429,9 +429,51 @@ input[type="submit"] {
     font-size: inherit !important;
     font-family: inherit !important;
     margin: 5px !important;
+    width: 75% !important;
+}
+
+input[type="file"],
+button {
+    background: crimson;
+    color: goldenrod;
+    border: none;
+    cursor: pointer;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.custom-file-upload {
+    position: relative;
+    padding: 10px;
+    cursor: pointer;
+    background-color: crimson;
+    color: goldenrod;
+    border-radius: 5px;
+    width: 90%;
+    margin: auto;
+}
+
+.custom-file-upload:hover {
+    background-color: blue !important;
+    color: rebeccapurple !important;
+    animation-delay: 50ms !important;
 }
 
 input[type="submit"]:hover {
+    background-color: blue !important;
+    color: rebeccapurple !important;
+    animation-delay: 50ms !important;
+}
+
+input[type="file"]:hover {
     background-color: blue !important;
     color: rebeccapurple !important;
     animation-delay: 50ms !important;
