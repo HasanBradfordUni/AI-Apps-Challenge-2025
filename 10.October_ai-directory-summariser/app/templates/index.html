@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Has AI - Docs Directory AI Summariser</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
+</head>
+<body>
+    <header>
+      <h1>
+        <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo" />
+        Directory AI Summariser
+        <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo" />
+      </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="{{ url_for('main.dashboard') }}" class="nav" id="currentPage">Dashboard</a></li>
+          <li><a href="{{ url_for('main.templates') }}" class="nav">Templates</a></li>
+          <li><a href="{{ url_for('main.logout') }}" class="nav">Logout ({{ session.username }})</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <section class="mainBody">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h1 class="mainHeading">📁 Analyze Directory</h1>
+
+        <div class="dashboard-container">
+            <!-- Main Analysis Form -->
+            <div class="dashboard-card">
+                <form action="{{ url_for('main.analyze_directory') }}" method="POST" class="email-form">
+                    <input type="text" name="directory_path" placeholder="Enter directory path (e.g., C:\Documents)" class="email-input" required>
+                    <button type="submit" class="submit-btn">Analyze Directory</button>
+                </form>
+            </div>
+
+            <!-- User Templates -->
+            {% if user_templates %}
+            <div class="dashboard-card">
+                <h3 class="subHeading">📎 Your Templates ({{ user_templates|length }})</h3>
+                <div class="quick-actions">
+                    {% for template in user_templates %}
+                    <div class="action-btn" style="background: rgba(0,100,0,0.8); cursor: default;">
+                        {{ template.category }} - {{ template.filename }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <a href="{{ url_for('main.templates') }}" class="submit-btn">Manage Templates</a>
+            </div>
+            {% endif %}
+
+            <!-- Current Analysis -->
+            {% if current_analysis %}
+            <div class="dashboard-card">
+                <h3 class="subHeading">📊 Latest Analysis</h3>
+                <p><strong>Path:</strong> {{ current_analysis.directory_path }}</p>
+                <p><strong>Files:</strong> {{ current_analysis.total_files }} | <strong>Size:</strong> {{ (current_analysis.total_size / 1024 / 1024) | round(1) }} MB</p>
+                <div class="quick-actions">
+                    <button onclick="window.location.href='{{ url_for(main.view_analysis) }}'" class="action-btn">View Results</button>
+                    <button onclick="window.location.href='{{ url_for(main.export_analysis, format=`json`) }}'" class="action-btn">Export</button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent Analyses -->
+            <div class="dashboard-card">
+                <h3 class="subHeading">📈 Recent Analyses</h3>
+                {% if recent_summaries %}
+                    {% for summary in recent_summaries[:3] %}
+                    <div class="event-item">
+                        <div class="event-details">
+                            <h4>{{ summary.directory_path.split('\\')[-1] or summary.directory_path.split('/')[-1] }}</h4>
+                            <p>{{ summary.total_files }} files • {{ (summary.total_size / 1024 / 1024) | round(1) }} MB</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No recent analyses.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <footer>
+    <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div></div>
+              <div>Has AI</div>
+              <div>Docs Directory AI Summariser</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI Projects for all</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Useful Links</h3>
+              <div class="footer-link-row">
+                <a href="{{ url_for('main.dashboard') }}" class="footer-link" target="_blank">Dashboard</a>
+                <a href="{{ url_for('main.view_analysis') }}" class="footer-link">Analysis Results</a>
+              </div>
+              <div class="footer-link-row">
+                <a href="{{ url_for('main.upload_templates') }}" class="footer-link">Template Matching</a>
+                <a href="{{ url_for('main.batch_analyze') }}" class="footer-link">Batch Analysis</a>
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

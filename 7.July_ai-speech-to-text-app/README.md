@@ -1,11 +1,11 @@
-# AI Speech-to-Text App (Including Voice Commands)  
+# AI Apps Challenge 2025  
 
 ### © Hasan Akhtar 2025, All Rights Reserved  
 
 <br>  
 <hr>  
 
-## AI Speech-to-Text App - July Project  
+## AI Speech-to-Text App (Including Voice Commands) - July Project  
 
 ### Project Overview  
 The **AI Speech-to-Text App** is a smart voice assistant–style application that enables **real-time transcription, AI summarisation**, and **interactive voice command functionality**. Users can speak naturally to the app, transcribe ongoing meetings, livestreams, or recorded audio (up to 1 hour), and receive a **clear AI-generated summary** of the conversation or media.

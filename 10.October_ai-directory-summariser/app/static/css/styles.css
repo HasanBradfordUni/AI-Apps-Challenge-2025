@@ -1,0 +1,841 @@
+/* AI Calendar System Styles */
+
+/* Base Styles */
+body {
+    background-color: black;
+    text-align: center;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header Styles */
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: goldenrod;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* Clock Styles */
+.clock {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 15px;
+    margin: 20px auto;
+    max-width: 200px;
+    border: 2px solid goldenrod;
+}
+
+.clock .time {
+    font-size: 24px;
+    font-weight: bold;
+    color: goldenrod;
+}
+
+.clock .date {
+    font-size: 14px;
+    color: darkkhaki;
+    margin-top: 5px;
+}
+
+/* Dashboard Styles */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.dashboard-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 25px;
+    border: 2px solid goldenrod;
+    backdrop-filter: blur(5px);
+}
+
+.dashboard-card.events-card {
+    grid-column: 1 / -1;
+}
+
+.summary-content {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid crimson;
+    line-height: 1.6;
+    color: darkkhaki;
+    text-align: left;
+}
+
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-btn {
+    background: crimson;
+    color: goldenrod;
+    border: 2px solid gray;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 16px;
+}
+
+.action-btn:hover {
+    background: blue;
+    color: rebeccapurple;
+    transform: scale(1.05);
+}
+
+/* Events List */
+.events-list {
+    max-height: 400px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.event-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    transition: background 0.3s;
+}
+
+.event-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.event-time {
+    font-weight: bold;
+    color: goldenrod;
+    margin-right: 20px;
+    min-width: 60px;
+    font-size: 18px;
+}
+
+.event-details h4 {
+    margin: 0 0 5px 0;
+    color: crimson;
+}
+
+.event-details p {
+    margin: 5px 0;
+    color: darkkhaki;
+    font-size: 14px;
+}
+
+.event-location {
+    color: rebeccapurple !important;
+}
+
+/* Form Styles */
+.email-form, .upload-form, .event-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.email-input, .form-input {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid goldenrod;
+    color: white;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.email-input::placeholder, .form-input::placeholder {
+    color: darkkhaki;
+}
+
+.email-textarea, .form-textarea {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid goldenrod;
+    color: white;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 16px;
+    resize: vertical;
+}
+
+.email-textarea::placeholder, .form-textarea::placeholder {
+    color: darkkhaki;
+}
+
+.submit-btn {
+    background: crimson;
+    color: goldenrod;
+    border: 2px solid gray;
+    padding: 13px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.submit-btn:hover {
+    background: blue;
+    color: rebeccapurple;
+}
+
+/* Calendar View Styles */
+.calendar-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.calendar-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 20px;
+}
+
+.nav-btn {
+    background: crimson;
+    color: goldenrod;
+    border: 2px solid gray;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.nav-btn:hover {
+    background: blue;
+    color: white;
+    transform: scale(1.05);
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: goldenrod;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.calendar-header {
+    background: crimson;
+    color: goldenrod;
+    padding: 15px 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.calendar-day {
+    background: rgba(0,0,0,0.8);
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.calendar-day:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.calendar-day.other-month {
+    background: rgba(0,0,0,0.5);
+    color: #666;
+}
+
+.calendar-day.today {
+    background: rgba(220,20,60,0.3);
+    border: 2px solid crimson;
+}
+
+.day-number {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: goldenrod;
+}
+
+.day-events {
+    font-size: 12px;
+}
+
+.day-event {
+    background: crimson;
+    color: goldenrod;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: grab;
+    transition: all 0.3s;
+}
+
+.day-event:hover {
+    background: blue;
+    transform: scale(1.05);
+}
+
+.day-event:active {
+    cursor: grabbing;
+}
+
+.create-event-section {
+    background: rgba(255,255,255,0.1);
+    padding: 25px;
+    border-radius: 10px;
+    border: 2px solid goldenrod;
+    margin-top: 20px;
+}
+
+/* Voice Command Styles */
+.voice-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.voice-card {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 25px;
+    border: 2px solid goldenrod;
+    backdrop-filter: blur(5px);
+}
+
+.voice-card.examples-card {
+    grid-column: 1 / -1;
+}
+
+.voice-btn {
+    background: crimson;
+    color: goldenrod;
+    border: 2px solid gray;
+    border-radius: 50px;
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin: 10px;
+}
+
+.voice-btn:hover {
+    background: blue;
+    color: rebeccapurple;
+    transform: scale(1.05);
+}
+
+.voice-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.file-input {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid goldenrod;
+    color: white;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.recording-status {
+    margin-top: 15px;
+    min-height: 20px;
+}
+
+.recording-indicator {
+    color: crimson;
+    font-weight: bold;
+    animation: pulse 1s infinite;
+}
+
+.recognized-text {
+    color: goldenrod;
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.success-message {
+    color: #4CAF50;
+    background: rgba(76,175,80,0.2);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.error-message {
+    color: #f44336;
+    background: rgba(244,67,54,0.2);
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.examples-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    text-align: left;
+}
+
+.example-item {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid crimson;
+}
+
+.example-item strong {
+    color: goldenrod;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.example-item p {
+    color: darkkhaki;
+    margin: 0;
+    font-size: 14px;
+}
+
+.tips-list {
+    text-align: left;
+    color: darkkhaki;
+    line-height: 1.6;
+}
+
+.tips-list li {
+    margin-bottom: 8px;
+}
+
+/* Flash Messages */
+.flash-message {
+    padding: 15px;
+    margin: 10px auto;
+    border-radius: 5px;
+    max-width: 800px;
+    font-weight: bold;
+}
+
+.flash-success {
+    background: rgba(76,175,80,0.2);
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.flash-error {
+    background: rgba(244,67,54,0.2);
+    color: #f44336;
+    border: 1px solid #f44336;
+}
+
+.flash-warning {
+    background: rgba(255,193,7,0.2);
+    color: #FFC107;
+    border: 1px solid #FFC107;
+}
+
+.flash-info {
+    background: rgba(33,150,243,0.2);
+    color: #2196F3;
+    border: 1px solid #2196F3;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background: black;
+    border: 2px solid goldenrod;
+    border-radius: 10px;
+    padding: 25px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: crimson;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    color: goldenrod;
+}
+
+.quick-event-form, .edit-event-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.cancel-btn {
+    background: transparent;
+    color: darkkhaki;
+    border: 2px solid darkkhaki;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.cancel-btn:hover {
+    background: darkkhaki;
+    color: black;
+}
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    border: 2px solid #c0392b;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+}
+
+/* Enhanced event display */
+.event-time-display {
+    font-size: 14px;
+    font-weight: bold;
+    color: goldenrod;
+}
+
+.day-event {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.day-event:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 5px rgba(220,20,60,0.5);
+}
+
+/* Import buttons */
+.import-section {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid goldenrod;
+    margin-bottom: 20px;
+    grid-column: 1 / -1;
+}
+
+.import-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.import-btn {
+    background: crimson;
+    color: goldenrod;
+    border: 2px solid gray;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.import-btn:hover {
+    background: blue;
+    color: rebeccapurple;
+    transform: scale(1.05);
+}
+
+/* Enhanced Notification Styles */
+.notification {
+    position: fixed;
+    top: 120px; /* Below the header */
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    z-index: 2000;
+    animation: slideInRight 0.3s ease-out;
+    max-width: 350px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.notification-success {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    border-left: 4px solid #2e7d32;
+}
+
+.notification-error {
+    background: linear-gradient(135deg, #f44336, #d32f2f);
+    border-left: 4px solid #c62828;
+}
+
+.notification-info {
+    background: linear-gradient(135deg, #2196F3, #1976d2);
+    border-left: 4px solid #1565c0;
+}
+
+.notification-warning {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    border-left: 4px solid #ef6c00;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Loading states */
+.submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    position: relative;
+}
+
+.submit-btn:disabled::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Enhanced event removal animation */
+.event-removing {
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.8);
+}
+
+/* Real-time update indicators */
+.updating {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.updated {
+    animation: highlightUpdate 1s ease-out;
+}
+
+@keyframes highlightUpdate {
+    0% {
+        background-color: rgba(76, 175, 80, 0.3);
+        transform: scale(1.02);
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+    }
+    
+    .voice-container {
+        grid-template-columns: 1fr;
+        padding: 0 10px;
+    }
+    
+    .calendar-container {
+        padding: 10px;
+    }
+    
+    .calendar-grid {
+        font-size: 12px;
+    }
+    
+    .calendar-day {
+        min-height: 60px;
+        padding: 5px;
+    }
+    
+    .event-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .event-time {
+        margin-bottom: 10px;
+    }
+    
+    img.logo {
+        margin-left: 1cm;
+        margin-right: 1cm;
+        height: 30px;
+        width: 30px;
+    }
+    
+    .mainBody {
+        margin-top: 120px;
+    }
+    
+    .examples-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar-nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .import-buttons {
+        flex-direction: column;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .mainHeading {
+        font-size: x-large;
+    }
+    
+    .subHeading {
+        font-size: medium;
+    }
+    
+    img.logo {
+        margin-left: 0.5cm;
+        margin-right: 0.5cm;
+        height: 25px;
+        width: 25px;
+    }
+    
+    .dashboard-card, .voice-card {
+        padding: 15px;
+    }
+    
+    .voice-btn {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+}
+
+/* Email Parser Styles */
+.email-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.email-input, .email-textarea {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #444;
+    color: goldenrod;
+    padding: 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.email-input:focus, .email-textarea:focus {
+    outline: none;
+    border-color: goldenrod;
+}
+
+.email-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}

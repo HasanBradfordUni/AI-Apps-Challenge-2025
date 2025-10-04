@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Has AI - Template Management</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
+</head>
+<body>
+    <header>
+      <h1>
+        <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo" />
+        Template Management
+        <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo" />
+      </h1>
+      <hr />
+      <div>
+        <ul class="nav">
+          <li><a href="{{ url_for('main.dashboard') }}" class="nav">Dashboard</a></li>
+          <li><a href="{{ url_for('main.templates') }}" class="nav" id="currentPage">Templates</a></li>
+          <li><a href="{{ url_for('main.logout') }}" class="nav">Logout</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <section class="mainBody">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h1 class="mainHeading">🔍 Template Management</h1>
+
+        <div class="dashboard-container">
+            <!-- Upload Templates -->
+            <div class="dashboard-card">
+                <h3 class="subHeading">📎 Upload Templates</h3>
+                <form action="{{ url_for('main.upload_templates') }}" method="POST" enctype="multipart/form-data" class="email-form">
+                    <input type="text" name="category" placeholder="Category (e.g., Reports, Invoices)" class="email-input" required>
+                    <input type="file" name="template_files" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt,.txt,.md" class="file-input" required>
+                    <button type="submit" class="submit-btn">Upload Templates</button>
+                </form>
+            </div>
+
+            <!-- Existing Templates -->
+            <div class="dashboard-card">
+                <h3 class="subHeading">📋 Your Templates</h3>
+                {% if user_templates %}
+                    {% for template in user_templates %}
+                    <div class="event-item">
+                        <div class="event-details">
+                            <h4>{{ template.category }}</h4>
+                            <p>{{ template.filename }} • Uploaded: {{ template.created_at.strftime('%Y-%m-%d') }}</p>
+                        </div>
+                        <form action="{{ url_for('main.delete_template', template_id=template.id) }}" method="POST" style="display: inline;">
+                            <button type="submit" class="action-btn" style="background: #f44336;" onclick="return confirm('Delete this template?')">Delete</button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No templates uploaded yet.</p>
+                {% endif %}
+            </div>
+
+            <!-- Template Matching -->
+            {% if current_analysis and user_templates %}
+            <div class="dashboard-card">
+                <h3 class="subHeading">🎯 Find Matches</h3>
+                <p>Current analysis: <strong>{{ current_analysis.directory_path }}</strong></p>
+                <form action="{{ url_for('main.template_matching') }}" method="POST" class="email-form">
+                    <button type="submit" class="submit-btn">Find Similar Files</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <footer>
+        <hr />
+        <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-# AI Apps Challenge 2025
+# AI Apps Challenge 2025  
 
 ### © Hasan Akhtar 2025, All Rights Reserved
 
