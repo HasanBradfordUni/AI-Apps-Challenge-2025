@@ -144,7 +144,17 @@ def get_user_templates(connection, user_id):
             WHERE user_id = ? 
             ORDER BY created_at DESC
         ''', (user_id,))
-        return cursor.fetchall()
+        
+        # Convert tuples to dictionaries for easier template access
+        templates = []
+        for row in cursor.fetchall():
+            templates.append({
+                'id': row[0],
+                'category': row[1], 
+                'filename': row[2],
+                'created_at': row[3]
+            })
+        return templates
         
     except sqlite3.Error as e:
         print(f"Database error getting templates: {e}")
@@ -297,6 +307,7 @@ def get_analysis_with_matches(connection, analysis_id, user_id):
         matches = cursor.fetchall()
         
         return {
+            'id': analysis_id,
             'directory_path': analysis[0],
             'total_files': analysis[1],
             'total_size': analysis[2],

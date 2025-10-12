@@ -12,7 +12,7 @@
 <div class="dashboard-container">
     <div class="dashboard-card" style="max-width: 400px; margin: 0 auto;">
         <h3 class="subHeading">🔐 Login / Register</h3>
-        <form action="{{ url_for('main.login') }}" method="POST" class="email-form">
+        <form action="{{ url_for('login') }}" method="POST" class="email-form">
             <input type="text" name="username" placeholder="Username" class="email-input" required>
             <input type="email" name="email" placeholder="Email Address" class="email-input" required>
             <button type="submit" class="submit-btn">Login / Create Account</button>

@@ -30,21 +30,6 @@
         {% endfor %}
     </div>
 
-    <!-- Template Matches -->
-    {% if template_matches %}
-    <div class="dashboard-card">
-        <h3 class="subHeading">🎯 Template Matches</h3>
-        {% for match in template_matches %}
-        <div class="event-item">
-            <div class="event-details">
-                <h4>{{ match.category }}</h4>
-                <p>{{ match.match_count }} similar files found</p>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <!-- AI Insights -->
     {% if analysis.ai_insights %}
     <div class="dashboard-card">
@@ -56,8 +41,8 @@
     <!-- Actions -->
     <div class="dashboard-card">
         <div class="quick-actions">
-            <button onclick=`window.location.href='{{ url_for(main.dashboard) }}'` class="action-btn">🏠 Dashboard</button>
-            <button onclick=`window.location.href='{{ url_for(main.export_analysis, format="json") }}'` class="action-btn">📄 Export</button>
+            <button onclick="window.location.href=`{{ url_for('dashboard') }}`" class="action-btn">🏠 Dashboard</button>
+            <button onclick="window.location.href=`{{ url_for('export_analysis', format='json') }}`" class="action-btn">📄 Export</button>
         </div>
     </div>
 </div>

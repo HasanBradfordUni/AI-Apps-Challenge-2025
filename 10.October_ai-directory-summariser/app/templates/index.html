@@ -8,7 +8,7 @@
 <div class="dashboard-container">
     <!-- Main Analysis Form -->
     <div class="dashboard-card">
-        <form action="{{ url_for('main.analyze_directory') }}" method="POST" class="email-form">
+        <form action="{{ url_for('analyze_directory') }}" method="POST" class="email-form">
             <input type="text" name="directory_path" placeholder="Enter directory path (e.g., C:\Documents)" class="email-input" required>
             <button type="submit" class="submit-btn">Analyze Directory</button>
         </form>
@@ -25,7 +25,7 @@
             </div>
             {% endfor %}
         </div>
-        <a href="{{ url_for('main.templates') }}" class="submit-btn">Manage Templates</a>
+        <a href="{{ url_for('templates') }}" class="submit-btn">Manage Templates</a>
     </div>
     {% endif %}
 
@@ -36,8 +36,8 @@
         <p><strong>Path:</strong> {{ current_analysis.directory_path }}</p>
         <p><strong>Files:</strong> {{ current_analysis.total_files }} | <strong>Size:</strong> {{ (current_analysis.total_size / 1024 / 1024) | round(1) }} MB</p>
         <div class="quick-actions">
-            <button onclick=`window.location.href='{{ url_for(main.view_analysis) }}'` class="action-btn">View Results</button>
-            <button onclick=`window.location.href='{{ url_for(main.export_analysis, format="json") }}'` class="action-btn">Export</button>
+            <button onclick="window.location.href=`{{ url_for('view_analysis') }}`" class="action-btn">View Results</button>
+            <button onclick="window.location.href=`{{ url_for('export_analysis', format='json') }}`" class="action-btn">Export</button>
         </div>
     </div>
     {% endif %}
@@ -49,8 +49,11 @@
             {% for summary in recent_summaries[:3] %}
             <div class="event-item">
                 <div class="event-details">
-                    <h4>{{ summary.directory_path.split('\\')[-1] or summary.directory_path.split('/')[-1] }}</h4>
-                    <p>{{ summary.total_files }} files • {{ (summary.total_size / 1024 / 1024) | round(1) }} MB</p>
+                    {% if summary|length >= 4 %}
+                        <h4>{{ summary[0].split('\\')[-1] or summary[0].split('/')[-1] }}</h4>
+                        <p>{{ summary[1] }} files • {{ (summary[2] / 1024 / 1024) | round(1) }} MB</p>
+                        <p class="event-location">{{ summary[3][:10] if summary[3] }}</p>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}

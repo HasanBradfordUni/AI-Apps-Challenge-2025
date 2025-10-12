@@ -11,7 +11,7 @@
     <!-- Upload Templates -->
     <div class="dashboard-card">
         <h3 class="subHeading">📎 Upload Templates</h3>
-        <form action="{{ url_for('main.upload_templates') }}" method="POST" enctype="multipart/form-data" class="email-form">
+        <form action="{{ url_for('upload_templates') }}" method="POST" enctype="multipart/form-data" class="email-form">
             <input type="text" name="category" placeholder="Category (e.g., Reports, Invoices)" class="email-input" required>
             <input type="file" name="template_files" multiple accept=".pdf,.docx,.doc,.xlsx,.xls,.pptx,.ppt,.txt,.md" class="file-input" required>
             <button type="submit" class="submit-btn">Upload Templates</button>
@@ -26,9 +26,12 @@
             <div class="event-item">
                 <div class="event-details">
                     <h4>{{ template.category }}</h4>
-                    <p>{{ template.filename }} • Uploaded: {{ template.created_at.strftime('%Y-%m-%d') }}</p>
+                    <p>{{ template.filename }}</p>
+                    {% if template.created_at %}
+                        <p class="event-location">Uploaded: {{ template.created_at[:10] }}</p>
+                    {% endif %}
                 </div>
-                <form action="{{ url_for('main.delete_template', template_id=template.id) }}" method="POST" style="display: inline;">
+                <form action="{{ url_for('delete_template', template_id=template.id) }}" method="POST" style="display: inline;">
                     <button type="submit" class="action-btn" style="background: #f44336;" onclick="return confirm('Delete this template?')">Delete</button>
                 </form>
             </div>
@@ -37,16 +40,5 @@
             <p>No templates uploaded yet.</p>
         {% endif %}
     </div>
-
-    <!-- Template Matching -->
-    {% if current_analysis and user_templates %}
-    <div class="dashboard-card">
-        <h3 class="subHeading">🎯 Find Matches</h3>
-        <p>Current analysis: <strong>{{ current_analysis.directory_path }}</strong></p>
-        <form action="{{ url_for('main.template_matching') }}" method="POST" class="email-form">
-            <button type="submit" class="submit-btn">Find Similar Files</button>
-        </form>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}
