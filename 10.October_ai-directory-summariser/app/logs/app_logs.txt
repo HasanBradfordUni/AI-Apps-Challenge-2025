@@ -394,3 +394,111 @@ User 1 viewed analysis results for analysis ID: 4
 [2025-10-29 23:12:42] Output:
 Analysis exported by user 1: Format json, Analysis ID: 4, File: directory_analysis_20251029_231242.json
 
+[2025-10-30 21:18:34] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-30 21:18:34] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-30 21:18:34] Output:
+All services initialized successfully
+
+[2025-10-30 21:18:34] Output:
+Flask route registration completed successfully
+
+[2025-10-30 21:22:38] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-30 21:22:38] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-30 21:22:38] Output:
+All services initialized successfully
+
+[2025-10-30 21:22:38] Output:
+Flask route registration completed successfully
+
+[2025-10-30 21:23:16] User Input:
+Login attempt: Username: AkhHas2005, Email: akhtarhasan2005@gmail.com
+
+[2025-10-30 21:23:16] Output:
+Successful login for user 1 - AkhHas2005
+
+[2025-10-30 21:23:16] Output:
+User 1 accessed dashboard
+
+[2025-10-30 21:23:16] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-30 21:23:22] Output:
+Analysis exported by user 1: Format json, Analysis ID: 4, File: directory_analysis_20251030_212322.json
+
+[2025-10-30 21:23:23] Output:
+User 1 viewed analysis results for analysis ID: 4
+
+[2025-10-30 21:23:23] Error:
+Error loading analysis view for user 1: Encountered unknown tag 'else'. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+
+[2025-10-30 21:23:23] Output:
+User 1 accessed dashboard
+
+[2025-10-30 21:23:23] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-30 21:23:30] Output:
+User 1 viewed analysis results for analysis ID: 4
+
+[2025-10-30 21:23:30] Error:
+Error loading analysis view for user 1: Encountered unknown tag 'else'. Jinja was looking for the following tags: 'endblock'. The innermost block that needs to be closed is 'block'.
+
+[2025-10-30 21:23:30] Output:
+User 1 accessed dashboard
+
+[2025-10-30 21:23:30] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-30 21:46:49] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-30 21:46:49] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-30 21:46:49] Output:
+All services initialized successfully
+
+[2025-10-30 21:46:49] Output:
+Flask route registration completed successfully
+
+[2025-10-30 21:47:09] Output:
+User 1 accessed dashboard
+
+[2025-10-30 21:47:09] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-30 21:47:12] Output:
+User 1 viewed analysis results for analysis ID: 4
+
+[2025-10-30 21:48:05] Output:
+User 1 accessed dashboard
+
+[2025-10-30 21:48:05] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-30 21:49:49] Output:
+User 1 viewed analysis results for analysis ID: 4
+
+[2025-10-30 22:04:56] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-30 22:04:56] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-30 22:04:56] Output:
+All services initialized successfully
+
+[2025-10-30 22:04:56] Output:
+Flask route registration completed successfully
+
+[2025-10-30 22:09:09] Output:
+User 1 viewed analysis results for analysis ID: 4
+

@@ -143,3 +143,27 @@ Total characters: 62349
 [2025-10-29 23:12:15] Output:
 Average words per file: 428.5
 
+[2025-10-30 21:18:34] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-30 21:18:34] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-30 21:22:38] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-30 21:22:38] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-30 21:46:49] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-30 21:46:49] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-30 22:04:56] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-30 22:04:56] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+

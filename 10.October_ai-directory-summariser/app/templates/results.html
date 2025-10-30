@@ -13,8 +13,7 @@
     <div class="long-dashboard-card">
         <h3 class="subHeading">🤖 AI Insights</h3>
         {% if analysis.ai_insights %}
-            <div class="summary-content">{{ analysis.ai_insights }}</div>
-        {% endif %}
+            <div class="summary-content markdown-content">{{ analysis.ai_insights | markdown }}</div>        
         {% else %}
             <div class="summary-content">No AI insights were generated for this analysis.</div>
         {% endif %}

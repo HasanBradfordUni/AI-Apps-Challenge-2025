@@ -2,6 +2,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import os, json, shutil
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import markdown
+from markupsafe import Markup
 
 # Import database functions
 from .models import (create_connection, create_tables, create_or_get_user, save_user_template, 
@@ -29,6 +31,15 @@ except ImportError:
         def addToErrorLogs(self, msg): print(f"[ERROR] {msg}")
         def addToInputLogs(self, prompt, msg): print(f"[INPUT] {prompt}: {msg}")
     general_logger = DummyLogger
+
+def register_filters(app):
+    @app.template_filter('markdown')
+    def markdown_filter(text):
+        if text:
+            # Convert markdown to HTML
+            html = markdown.markdown(text, extensions=['fenced_code', 'tables', 'nl2br'])
+            return Markup(html)
+        return ''
 
 def register_routes(app):
     """Register all routes with the Flask app"""
@@ -674,4 +685,7 @@ def register_routes(app):
         available_logs.sort(key=lambda x: x['modified'], reverse=True)
         return available_logs
 
+    # Register the markdown filter
+    register_filters(app)
+    
     logger.addToLogs("Flask route registration completed successfully")

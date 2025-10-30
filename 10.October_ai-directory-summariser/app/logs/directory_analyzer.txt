@@ -52,3 +52,15 @@ Analysis took: 0.03 seconds
 [2025-10-29 23:12:12] Output:
 Average file size: 240971.96 bytes
 
+[2025-10-30 21:18:34] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-30 21:22:38] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-30 21:46:49] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-30 22:04:56] Output:
+DirectoryAnalyzer initialized successfully
+
