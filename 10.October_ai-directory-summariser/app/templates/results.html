@@ -9,6 +9,17 @@
 <h2 class="subHeading">{{ analysis.directory_path }}</h2>
 
 <div class="dashboard-container">
+    <!-- AI Insights -->
+    <div class="long-dashboard-card">
+        <h3 class="subHeading">🤖 AI Insights</h3>
+        {% if analysis.ai_insights %}
+            <div class="summary-content">{{ analysis.ai_insights }}</div>
+        {% endif %}
+        {% else %}
+            <div class="summary-content">No AI insights were generated for this analysis.</div>
+        {% endif %}
+    </div>
+
     <!-- Overview -->
     <div class="dashboard-card">
         <h3 class="subHeading">📈 Overview</h3>
@@ -29,14 +40,6 @@
         </div>
         {% endfor %}
     </div>
-
-    <!-- AI Insights -->
-    {% if analysis.ai_insights %}
-    <div class="dashboard-card">
-        <h3 class="subHeading">🤖 AI Insights</h3>
-        <div class="summary-content">{{ analysis.ai_insights }}</div>
-    </div>
-    {% endif %}
 
     <!-- Actions -->
     <div class="dashboard-card">

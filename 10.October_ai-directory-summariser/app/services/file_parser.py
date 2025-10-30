@@ -4,6 +4,23 @@ import mimetypes
 from pathlib import Path
 import csv
 import io
+import datetime
+
+# Remove the autoLogger import section and replace with:
+try:
+    from ..utils.logger_setup import general_logger
+except ImportError:
+    # Fallback if logger is not available
+    print("Logger import failed for file parser, using DummyLogger")
+    class DummyLogger:
+        def __init__(self, filename): 
+            self.file = open(filename, 'a')
+            self.file.write("Logging started...\n"+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
+            self.file.close()
+        def addToLogs(self, msg): print(f"[LOG] {msg}")
+        def addToErrorLogs(self, msg): print(f"[ERROR] {msg}")
+        def addToInputLogs(self, prompt, msg): print(f"[INPUT] {prompt}: {msg}")
+    general_logger = DummyLogger
 
 # Optional imports for file parsing
 try:
@@ -32,19 +49,35 @@ except ImportError:
 
 class FileParser:
     def __init__(self):
+        # Initialize logger
+        log_file_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'file_parser.txt')
+        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+        self.logger = general_logger(log_file_path)
+        
         self.text_extensions = ['.txt', '.md', '.py', '.js', '.html', '.css', '.json', '.xml', '.csv']
         self.supported_for_content = ['.txt', '.md', '.py', '.js', '.html', '.css', '.json', '.xml']
+        
+        available_parsers = []
         if DOCX_AVAILABLE:
             self.supported_for_content.append('.docx')
+            available_parsers.append('DOCX')
         if PDF_AVAILABLE:
             self.supported_for_content.append('.pdf')
+            available_parsers.append('PDF')
         if EXCEL_AVAILABLE:
             self.supported_for_content.extend(['.xlsx', '.xls'])
+            available_parsers.append('Excel')
         if PPTX_AVAILABLE:
             self.supported_for_content.append('.pptx')
+            available_parsers.append('PowerPoint')
+        
+        self.logger.addToLogs(f"FileParser initialized with parsers: {', '.join(available_parsers) if available_parsers else 'basic text only'}")
+        self.logger.addToLogs(f"Supported extensions: {', '.join(self.supported_for_content)}")
     
     def analyze_directory_content(self, directory_path):
         """Analyze content of all files in directory"""
+        self.logger.addToLogs(f"Starting content analysis for: {directory_path}")
+        
         content_analysis = {
             'total_word_count': 0,
             'total_character_count': 0,
@@ -56,10 +89,17 @@ class FileParser:
             'unsupported_files': 0
         }
         
+        file_count = 0
+        
         for root, dirs, files in os.walk(directory_path):
             for file in files:
                 file_path = os.path.join(root, file)
                 self._analyze_file_content(file_path, content_analysis)
+                file_count += 1
+                
+                # Log progress every 50 files
+                if file_count % 50 == 0:
+                    self.logger.addToLogs(f"Content analysis progress: {file_count} files processed")
         
         # Calculate averages
         if content_analysis['supported_files'] > 0:
@@ -69,6 +109,16 @@ class FileParser:
             content_analysis['average_chars_per_file'] = (
                 content_analysis['total_character_count'] / content_analysis['supported_files']
             )
+            
+            self.logger.addToLogs(f"Content analysis complete: {content_analysis['supported_files']} supported files")
+            self.logger.addToLogs(f"Total words: {content_analysis['total_word_count']}")
+            self.logger.addToLogs(f"Total characters: {content_analysis['total_character_count']}")
+            self.logger.addToLogs(f"Average words per file: {content_analysis['average_words_per_file']:.1f}")
+        else:
+            self.logger.addToLogs("No supported files found for content analysis")
+        
+        if content_analysis['parsing_errors']:
+            self.logger.addToErrorLogs(f"Encountered {len(content_analysis['parsing_errors'])} parsing errors")
         
         # Sort largest files by content
         content_analysis['largest_files_by_content'] = sorted(
@@ -125,12 +175,18 @@ class FileParser:
                             'character_count': char_count,
                             'file_type': file_ext
                         })
+                    
+                    # Log significant content files
+                    if word_count > 1000:
+                        self.logger.addToLogs(f"Large content file found: {os.path.basename(file_path)} ({word_count} words)")
+                        
                 else:
                     content_analysis['unsupported_files'] += 1
             else:
                 content_analysis['unsupported_files'] += 1
                 
         except Exception as e:
+            self.logger.addToErrorLogs(f"Error analyzing file content {file_path}: {str(e)}")
             content_analysis['parsing_errors'].append({
                 'file_path': file_path,
                 'error': str(e)
@@ -142,16 +198,20 @@ class FileParser:
             if file_ext in ['.txt', '.md', '.py', '.js', '.html', '.css', '.json', '.xml', '.csv']:
                 return self._read_text_file(file_path)
             elif file_ext == '.docx' and DOCX_AVAILABLE:
+                self.logger.addToLogs(f"Reading DOCX file: {os.path.basename(file_path)}")
                 return self._read_docx_file(file_path)
             elif file_ext == '.pdf' and PDF_AVAILABLE:
+                self.logger.addToLogs(f"Reading PDF file: {os.path.basename(file_path)}")
                 return self._read_pdf_file(file_path)
             elif file_ext in ['.xlsx', '.xls'] and EXCEL_AVAILABLE:
+                self.logger.addToLogs(f"Reading Excel file: {os.path.basename(file_path)}")
                 return self._read_excel_file(file_path)
             elif file_ext == '.pptx' and PPTX_AVAILABLE:
+                self.logger.addToLogs(f"Reading PowerPoint file: {os.path.basename(file_path)}")
                 return self._read_pptx_file(file_path)
             
         except Exception as e:
-            print(f"Error reading {file_path}: {e}")
+            self.logger.addToErrorLogs(f"Error reading {file_path}: {str(e)}")
             return None
         
         return None

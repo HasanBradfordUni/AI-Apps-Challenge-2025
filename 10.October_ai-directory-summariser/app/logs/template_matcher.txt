@@ -1,0 +1,64 @@
+Logging started...
+2025-10-17 17:11:35
+Logging started...
+2025-10-17 17:25:01
+Logging started...
+2025-10-17 17:27:37
+Logging started...
+2025-10-17 17:34:12
+Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+Output:
+Max file size for content comparison: 10.0 MB
+Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+Output:
+Max file size for content comparison: 10.0 MB
+[2025-10-19 08:51:09] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-19 08:51:09] Output:
+Max file size for content comparison: 10.0 MB
+
+[2025-10-19 09:34:36] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-19 09:34:36] Output:
+Max file size for content comparison: 10.0 MB
+
+[2025-10-22 21:21:14] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-22 21:21:14] Output:
+Max file size for content comparison: 10.0 MB
+
+[2025-10-26 14:10:17] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-26 14:10:17] Output:
+Max file size for content comparison: 10.0 MB
+
+[2025-10-29 22:54:38] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-29 22:54:38] Output:
+Max file size for content comparison: 10.0 MB
+
+[2025-10-29 23:03:28] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-29 23:03:28] Output:
+Max file size for content comparison: 10.0 MB
+
+[2025-10-29 23:09:10] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-29 23:09:10] Output:
+Max file size for content comparison: 10.0 MB
+
+[2025-10-29 23:11:59] Output:
+TemplateMatcher initialized with similarity threshold: 0.6
+
+[2025-10-29 23:11:59] Output:
+Max file size for content comparison: 10.0 MB
+

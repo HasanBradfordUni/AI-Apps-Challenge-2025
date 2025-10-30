@@ -1,0 +1,54 @@
+Logging started...
+2025-10-17 17:11:35
+Logging started...
+2025-10-17 17:25:01
+Logging started...
+2025-10-17 17:27:37
+Logging started...
+2025-10-17 17:34:12
+Output:
+DirectoryAnalyzer initialized successfully
+Output:
+DirectoryAnalyzer initialized successfully
+[2025-10-19 08:51:09] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-19 09:34:36] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-22 21:21:14] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-26 14:10:17] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-29 22:54:37] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-29 23:03:28] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-29 23:09:10] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-29 23:11:59] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-29 23:12:12] Output:
+Starting directory analysis for: C:\Users\fifau\Documents\Uni Work related
+
+[2025-10-29 23:12:12] Output:
+Beginning directory walk for: C:\Users\fifau\Documents\Uni Work related
+
+[2025-10-29 23:12:12] Output:
+Analysis complete - Found 26 files, 4 directories
+
+[2025-10-29 23:12:12] Output:
+Total size: 6265271 bytes
+
+[2025-10-29 23:12:12] Output:
+Analysis took: 0.03 seconds
+
+[2025-10-29 23:12:12] Output:
+Average file size: 240971.96 bytes
+

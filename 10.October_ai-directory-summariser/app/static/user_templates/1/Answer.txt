@@ -1,0 +1,17 @@
+## Copilot
+You can use the pandas library to extract the day of the week and time interval from your date-time string. Here's a brief example of how you might do it:
+
+import pandas as pd
+
+# Assuming df is your DataFrame and 'date_column' is the name of your date-time column
+df['date_column'] = pd.to_datetime(df['date_column'], format='%a %d/%m/%y %H:%M-%H:%M')
+
+# Extract day of week as a numerical value (Monday=0, Sunday=6)
+df['day_of_week'] = df['date_column'].dt.dayofweek
+
+# Extract start hour and end hour from the time interval
+df['start_hour'] = df['date_column'].dt.hour
+df['end_hour'] = df['date_column'].dt.hour + 1  # Assuming the interval is always 1 hour
+
+This code converts your date-time string into a pandas datetime object, from which you can extract the day of the week and start/end hours as separate columns. You'll need to adjust the format parameter in pd.to_datetime() to match the exact format of your date-time strings.
+Remember to drop or convert any other non-numeric columns before fitting your model. Would you like more detailed help with this?

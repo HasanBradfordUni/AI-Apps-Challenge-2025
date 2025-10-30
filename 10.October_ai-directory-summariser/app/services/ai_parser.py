@@ -4,6 +4,23 @@ from google.genai import Client
 import google.auth
 import json
 import os
+import datetime
+
+# Remove the autoLogger import section and replace with:
+try:
+    from ..utils.logger_setup import general_logger
+except ImportError:
+    # Fallback if logger is not available
+    print("Logger import failed for ai parser, using DummyLogger")
+    class DummyLogger:
+        def __init__(self, filename): 
+            self.file = open(filename, 'a')
+            self.file.write("Logging started...\n"+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
+            self.file.close()
+        def addToLogs(self, msg): print(f"[LOG] {msg}")
+        def addToErrorLogs(self, msg): print(f"[ERROR] {msg}")
+        def addToInputLogs(self, prompt, msg): print(f"[INPUT] {prompt}: {msg}")
+    general_logger = DummyLogger
 
 # Initialize Google Auth and Client
 try:
@@ -17,21 +34,39 @@ except Exception as e:
 
 class AISummarizer:
     def __init__(self):
+        # Initialize logger
+        log_file_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'ai_parser.txt')
+        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+        self.logger = general_logger(log_file_path)
+        
         self.client = client
         self.model_name = "gemini-2.0-flash"
         self.ai_available = AI_AVAILABLE
+        
+        if self.ai_available:
+            self.logger.addToLogs("AISummarizer initialized with Google GenAI")
+        else:
+            self.logger.addToLogs("AISummarizer initialized without AI (fallback mode)")
     
     def generate_directory_insights(self, analysis_result, content_analysis):
         """Generate AI-powered insights about the directory"""
+        self.logger.addToLogs("Starting AI insights generation")
+        
         if not self.ai_available:
+            self.logger.addToLogs("AI not available, using fallback insights")
             return self._generate_fallback_insights(analysis_result, content_analysis)
+        
+        total_files = analysis_result.get('total_files', 0)
+        total_size = analysis_result.get('total_size', 0)
+        
+        self.logger.addToLogs(f"Generating insights for {total_files} files, {self._format_size(total_size)}")
         
         prompt = f"""
         Analyze this directory structure and content data to provide comprehensive insights:
         
         Directory Analysis:
-        - Total Files: {analysis_result.get('total_files', 0)}
-        - Total Size: {self._format_size(analysis_result.get('total_size', 0))}
+        - Total Files: {total_files}
+        - Total Size: {self._format_size(total_size)}
         - File Types: {json.dumps(analysis_result.get('file_type_categories', {}), indent=2)}
         - Average File Size: {self._format_size(analysis_result.get('average_file_size', 0))}
         
@@ -52,18 +87,27 @@ class AISummarizer:
         """
         
         try:
+            self.logger.addToLogs("Sending request to Google GenAI")
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=[prompt]
             )
-            return response.text.strip()
+            
+            insights = response.text.strip()
+            self.logger.addToLogs(f"AI insights generated successfully ({len(insights)} characters)")
+            return insights
+            
         except Exception as e:
-            print(f"Error generating AI insights: {e}")
+            self.logger.addToErrorLogs(f"Error generating AI insights: {str(e)}")
+            self.logger.addToLogs("Falling back to basic insights")
             return self._generate_fallback_insights(analysis_result, content_analysis)
     
     def generate_template_matching_summary(self, matching_results):
         """Generate summary of template matching results"""
+        self.logger.addToLogs(f"Generating template matching summary for {len(matching_results)} results")
+        
         if not self.ai_available:
+            self.logger.addToLogs("AI not available for template matching summary")
             return self._generate_fallback_template_summary(matching_results)
         
         prompt = f"""
@@ -82,13 +126,18 @@ class AISummarizer:
         """
         
         try:
+            self.logger.addToLogs("Generating template matching summary with AI")
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=[prompt]
             )
-            return response.text.strip()
+            
+            summary = response.text.strip()
+            self.logger.addToLogs("Template matching summary generated successfully")
+            return summary
+            
         except Exception as e:
-            print(f"Error generating template matching summary: {e}")
+            self.logger.addToErrorLogs(f"Error generating template matching summary: {str(e)}")
             return self._generate_fallback_template_summary(matching_results)
     
     def suggest_directory_organization(self, analysis_result, content_analysis):
@@ -170,23 +219,31 @@ class AISummarizer:
     
     def _generate_fallback_insights(self, analysis_result, content_analysis):
         """Generate basic insights without AI"""
+        self.logger.addToLogs("Generating fallback insights")
+        
         total_files = analysis_result.get('total_files', 0)
         total_size = analysis_result.get('total_size', 0)
         file_types = analysis_result.get('file_type_categories', {})
         average_file_size = analysis_result.get('average_file_size', 0)
         
-        # Basic text-based insights
         insights = [
-            f"Total number of files: {total_files}",
-            f"Total size of directory: {self._format_size(total_size)}",
+            f"Directory contains {total_files} files",
+            f"Total size: {self._format_size(total_size)}",
             f"Average file size: {self._format_size(average_file_size)}",
-            "File types and counts:",
         ]
         
-        for file_type, count in file_types.items():
-            insights.append(f"- {file_type}: {count} files")
+        if file_types:
+            dominant_type = max(file_types.items(), key=lambda x: x[1])
+            insights.append(f"Most common file type: {dominant_type[0]} ({dominant_type[1]} files)")
         
-        return "\n".join(insights)
+        content_files = content_analysis.get('supported_files', 0)
+        if content_files > 0:
+            total_words = content_analysis.get('total_word_count', 0)
+            insights.append(f"Text content: {total_words:,} words across {content_files} files")
+        
+        result = "\n".join(insights)
+        self.logger.addToLogs(f"Fallback insights generated ({len(result)} characters)")
+        return result
     
     def _generate_fallback_template_summary(self, matching_results):
         """Generate fallback summary for template matching"""

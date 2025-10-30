@@ -1,10 +1,39 @@
 // Directory AI Summariser JavaScript Functions
 
+// Enhanced logging for debugging
+const DEBUG = true; // Set to false in production
+
+function debugLog(message, data = null) {
+    if (DEBUG) {
+        console.log(`[DEBUG] ${new Date().toISOString()} - ${message}`);
+        if (data) {
+            console.log('[DEBUG] Data:', data);
+        }
+    }
+}
+
+function errorLog(message, error = null) {
+    console.error(`[ERROR] ${new Date().toISOString()} - ${message}`);
+    if (error) {
+        console.error('[ERROR] Details:', error);
+    }
+}
+
+function infoLog(message, data = null) {
+    console.info(`[INFO] ${new Date().toISOString()} - ${message}`);
+    if (data) {
+        console.info('[INFO] Data:', data);
+    }
+}
+
+// SINGLE DOMContentLoaded event listener
 document.addEventListener('DOMContentLoaded', function() {
+    debugLog('DOM Content Loaded - Starting Directory AI Summariser initialization');
+    
     // Initialize the application
     initializeApp();
     
-    // Form validation
+    // Form validation and submission handling (COMBINED)
     setupFormValidation();
     
     // File upload handling
@@ -15,48 +44,78 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Real-time feedback
     setupRealTimeFeedback();
+    
+    // Initialize tooltips
+    initializeTooltips();
+    
+    // Check for flash messages
+    checkForFlashMessages();
+    
+    debugLog('Directory AI Summariser initialization complete');
 });
 
 // Initialize application
 function initializeApp() {
-    console.log('Directory AI Summariser initialized');
+    debugLog('Initializing application components');
     
     // Auto-dismiss flash messages after 5 seconds
     const flashMessages = document.querySelectorAll('.flash-message');
-    flashMessages.forEach(message => {
+    debugLog(`Found ${flashMessages.length} flash messages`);
+    
+    flashMessages.forEach((message, index) => {
+        debugLog(`Setting up auto-dismiss for flash message ${index + 1}`);
         setTimeout(() => {
             message.style.transition = 'all 0.3s ease';
             message.style.opacity = '0';
             message.style.transform = 'translateY(-10px)';
-            setTimeout(() => message.remove(), 300);
+            setTimeout(() => {
+                message.remove();
+                debugLog(`Flash message ${index + 1} removed`);
+            }, 300);
         }, 5000);
     });
     
-    // Add loading states to buttons
-    const buttons = document.querySelectorAll('.submit-btn, .action-btn');
-    buttons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            if (this.type === 'submit') {
-                this.dataset.originalText = this.textContent;
-                this.textContent = 'Processing...';
-                this.disabled = true;
-            }
-        });
-    });
+    infoLog('Application initialization completed');
 }
 
-// Form validation setup
+// Form validation setup - ENHANCED WITH DIRECTORY ANALYSIS HANDLING
 function setupFormValidation() {
-    const forms = document.querySelectorAll('form');
+    debugLog('Setting up form validation');
     
-    forms.forEach(form => {
+    const forms = document.querySelectorAll('form');
+    debugLog(`Found ${forms.length} forms to validate`);
+    
+    forms.forEach((form, index) => {
+        debugLog(`Setting up validation for form ${index + 1}: ${form.action}`);
+        
+        // Check if already has event listener to prevent duplicates
+        if (form.dataset.listenerAdded === 'true') {
+            debugLog(`Form ${index + 1} already has event listener, skipping`);
+            return;
+        }
+        
+        // Mark as having listener
+        form.dataset.listenerAdded = 'true';
+        
         form.addEventListener('submit', function(e) {
-            const directoryInput = form.querySelector('input[name="directory_path"]');
-            const templateFiles = form.querySelector('input[name="template_files"]');
+            const formData = new FormData(this);
+            const formDataObj = Object.fromEntries(formData.entries());
             
-            // Validate directory path
-            if (directoryInput) {
-                const path = directoryInput.value.trim();
+            debugLog(`Form ${index + 1} submission attempt`, formDataObj);
+            
+            const directoryInput = this.querySelector('input[name="directory_path"]');
+            const templateFiles = this.querySelector('input[name="template_files"]');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            
+            // Directory Analysis Form Handling
+            if (this.action.includes('analyze_directory')) {
+                debugLog('Directory analysis form submission detected');
+                
+                const path = directoryInput ? directoryInput.value.trim() : '';
+                
+                debugLog(`Directory path value: "${path}"`);
+                debugLog(`Directory input element:`, directoryInput);
+                
                 if (!path) {
                     e.preventDefault();
                     showNotification('Please enter a directory path', 'error');
@@ -68,32 +127,129 @@ function setupFormValidation() {
                     showNotification('Please enter a valid directory path', 'error');
                     return false;
                 }
+                
+                // Show loading state for directory analysis
+                if (submitBtn) {
+                    submitBtn.dataset.originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Analyzing...';
+                    submitBtn.disabled = true;
+                }
+                
+                if (directoryInput) {
+                    directoryInput.readOnly = true;  // ✅ Use readOnly instead of disabled
+                    directoryInput.style.opacity = '0.6';
+                    directoryInput.style.pointerEvents = 'none';  // Prevent clicking
+                }
+                
+                // Show progress indicator
+                showProgressIndicator('Starting directory analysis...');
+                
+                // Setup progress messages
+                setupProgressMessages();
+                
+                debugLog('Directory analysis form submitted', { path: path });
+                infoLog('Directory analysis started', { path: path, timestamp: new Date().toISOString() });
+                
+                // Let the form submit normally
+                return true;
             }
             
-            // Validate template files
-            if (templateFiles && templateFiles.files.length === 0) {
-                e.preventDefault();
-                showNotification('Please select at least one template file', 'error');
-                return false;
+            // Template Upload Form Handling
+            else if (this.action.includes('upload_templates')) {
+                if (templateFiles && templateFiles.files.length === 0) {
+                    e.preventDefault();
+                    showNotification('Please select at least one template file', 'error');
+                    return false;
+                }
+                
+                if (submitBtn) {
+                    submitBtn.dataset.originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Uploading...';
+                    submitBtn.disabled = true;
+                }
+                
+                showProgressIndicator('Uploading and processing templates...');
+                debugLog('Template upload form submitted');
             }
+            
+            // General Form Validation
+            else {
+                if (submitBtn) {
+                    submitBtn.dataset.originalText = submitBtn.textContent;
+                    submitBtn.textContent = 'Processing...';
+                    submitBtn.disabled = true;
+                }
+            }
+            
+            infoLog(`Form ${index + 1} validation passed, submitting`);
         });
     });
 }
 
+// Setup progress messages for directory analysis
+function setupProgressMessages() {
+    let progressStep = 0;
+    const progressMessages = [
+        'Scanning directory structure...',
+        'Analyzing file contents...',
+        'Generating AI insights...',
+        'Saving results...'
+    ];
+    
+    const progressInterval = setInterval(() => {
+        if (progressStep < progressMessages.length) {
+            updateProgressMessage(progressMessages[progressStep]);
+            progressStep++;
+        } else {
+            clearInterval(progressInterval);
+        }
+    }, 2000);
+    
+    // Store interval ID for cleanup
+    window.analysisProgressInterval = progressInterval;
+}
+
+// Update progress message
+function updateProgressMessage(message) {
+    const progressIndicator = document.getElementById('progressIndicator');
+    if (progressIndicator) {
+        const messageElement = progressIndicator.querySelector('.progress-message');
+        if (messageElement) {
+            messageElement.textContent = message;
+            debugLog('Progress message updated:', message);
+        }
+    }
+}
+
 // Directory path validation
 function isValidDirectoryPath(path) {
+    debugLog(`Checking path validity: "${path}"`);
+    
     // Basic path validation
-    if (path.length < 3) return false;
+    if (path.length < 3) {
+        debugLog('Path too short');
+        return false;
+    }
     
     // Windows path validation
-    if (path.match(/^[A-Za-z]:\\/)) return true;
+    if (path.match(/^[A-Za-z]:\\/)) {
+        debugLog('Valid Windows path format detected');
+        return true;
+    }
     
     // Unix/Linux path validation
-    if (path.startsWith('/')) return true;
+    if (path.startsWith('/')) {
+        debugLog('Valid Unix/Linux path format detected');
+        return true;
+    }
     
     // Relative path validation
-    if (path.startsWith('./') || path.startsWith('../')) return true;
+    if (path.startsWith('./') || path.startsWith('../')) {
+        debugLog('Valid relative path format detected');
+        return true;
+    }
     
+    debugLog('No valid path format detected');
     return false;
 }
 
@@ -168,8 +324,6 @@ function setupDirectoryValidation() {
             timeout = setTimeout(() => {
                 if (isValidDirectoryPath(path)) {
                     input.classList.add('valid');
-                    // Optionally check if directory exists (if you want to add server-side validation)
-                    // checkDirectoryExists(path);
                 } else {
                     input.classList.add('invalid');
                 }
@@ -194,27 +348,76 @@ function setupDirectoryValidation() {
 
 // Real-time feedback setup
 function setupRealTimeFeedback() {
-    // Add progress indicators for long operations
-    const analyzeButtons = document.querySelectorAll('button[type="submit"]');
+    debugLog('Setting up real-time feedback systems');
     
-    analyzeButtons.forEach(button => {
-        const form = button.closest('form');
-        if (form && form.action.includes('analyze_directory')) {
-            form.addEventListener('submit', function() {
-                showProgressIndicator('Analyzing directory structure...');
-            });
-        }
-        
-        if (form && form.action.includes('upload_templates')) {
-            form.addEventListener('submit', function() {
-                showProgressIndicator('Uploading and processing templates...');
-            });
+    // Handle page navigation back
+    window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+            debugLog('Page restored from cache, resetting form state');
+            resetFormState();
         }
     });
 }
 
+// Reset form state
+function resetFormState() {
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const inputs = form.querySelectorAll('input');
+        
+        if (submitBtn && submitBtn.dataset.originalText) {
+            submitBtn.textContent = submitBtn.dataset.originalText;
+            submitBtn.disabled = false;
+        }
+        
+        inputs.forEach(input => {
+            input.disabled = false;
+            input.style.opacity = '1';
+        });
+    });
+    
+    // Clear progress indicator
+    const progressIndicator = document.getElementById('progressIndicator');
+    if (progressIndicator) {
+        progressIndicator.remove();
+    }
+    
+    // Clear progress interval
+    if (window.analysisProgressInterval) {
+        clearInterval(window.analysisProgressInterval);
+    }
+    
+    debugLog('Form state reset');
+}
+
+// Check for flash messages
+function checkForFlashMessages() {
+    setTimeout(() => {
+        const flashMessages = document.querySelectorAll('.flash-message, [class*="flash"], .alert');
+        debugLog('Found flash messages:', flashMessages.length);
+        
+        flashMessages.forEach((msg, index) => {
+            debugLog(`Flash message ${index + 1}:`, msg.textContent);
+        });
+        
+        if (flashMessages.length === 0) {
+            debugLog('No flash messages found');
+        }
+    }, 100);
+}
+
 // Progress indicator
 function showProgressIndicator(message) {
+    debugLog(`Showing progress indicator: ${message}`);
+    
+    // Remove existing progress indicator
+    const existing = document.getElementById('progressIndicator');
+    if (existing) {
+        debugLog('Removing existing progress indicator');
+        existing.remove();
+    }
+    
     const progressHTML = `
         <div id="progressIndicator" class="progress-overlay">
             <div class="progress-content">
@@ -222,12 +425,97 @@ function showProgressIndicator(message) {
                 <p class="progress-message">${message}</p>
                 <div class="progress-details">
                     <p>This may take a few moments depending on directory size...</p>
+                    <p id="progressTimer">Elapsed time: 0s</p>
                 </div>
             </div>
         </div>
     `;
     
     document.body.insertAdjacentHTML('beforeend', progressHTML);
+    
+    // Start timer
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const timerElement = document.getElementById('progressTimer');
+        if (timerElement) {
+            timerElement.textContent = `Elapsed time: ${elapsed}s`;
+        } else {
+            clearInterval(timer);
+        }
+    }, 1000);
+    
+    infoLog('Progress indicator displayed', { message: message });
+}
+
+// Show notification system
+function showNotification(message, type = 'info', duration = 5000) {
+    debugLog(`Showing notification: ${type} - ${message}`);
+    
+    // Remove existing notifications of the same type
+    const existing = document.querySelectorAll(`.notification-${type}`);
+    existing.forEach(notif => {
+        debugLog('Removing existing notification of same type');
+        notif.remove();
+    });
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-width: 400px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        ${type === 'success' ? 'background-color: #28a745;' : ''}
+        ${type === 'error' ? 'background-color: #dc3545;' : ''}
+        ${type === 'warning' ? 'background-color: #ffc107; color: #212529;' : ''}
+        ${type === 'info' ? 'background-color: #17a2b8;' : ''}
+    `;
+    
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${getNotificationIcon(type)}</span>
+            <span class="notification-message">${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-remove after duration
+    setTimeout(() => {
+        if (notification.parentElement) {
+            debugLog(`Auto-removing notification after ${duration}ms`);
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, duration);
+    
+    infoLog('Notification displayed', { type: type, message: message });
+}
+
+// Get notification icon based on type
+function getNotificationIcon(type) {
+    const icons = {
+        'success': '✅',
+        'error': '❌',
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
+    return icons[type] || 'ℹ️';
 }
 
 // Template matching functionality
@@ -269,6 +557,7 @@ function performTemplateMatching() {
 
 // Export functionality
 function exportAnalysis(format) {
+    debugLog(`Starting export in format: ${format}`);
     showNotification('Preparing export...', 'info');
     
     fetch(`/export_analysis/${format}`, {
@@ -278,21 +567,26 @@ function exportAnalysis(format) {
         }
     })
     .then(response => {
+        debugLog(`Export response received: ${response.status} ${response.statusText}`);
+        
         if (response.ok) {
             const filename = response.headers.get('Content-Disposition')
                 ?.split('filename=')[1]?.replace(/"/g, '') || 
                 `directory_analysis.${format}`;
             
+            debugLog(`Export successful, downloading file: ${filename}`);
+            
             return response.blob().then(blob => {
                 downloadFile(blob, filename);
                 showNotification('Export completed successfully', 'success');
+                infoLog('Export completed', { format: format, filename: filename });
             });
         } else {
-            throw new Error('Export failed');
+            throw new Error(`Export failed with status: ${response.status}`);
         }
     })
     .catch(error => {
-        console.error('Export error:', error);
+        errorLog('Export failed', error);
         showNotification('Export failed. Please try again.', 'error');
     });
 }
@@ -322,135 +616,6 @@ function confirmDeleteTemplate(templateId) {
     }
 }
 
-// Quick directory suggestions
-function suggestDirectories() {
-    const input = event.target;
-    const suggestions = [
-        'C:\\Users\\' + (window.navigator.userAgent.includes('Windows') ? 'Username' : 'user') + '\\Documents',
-        'C:\\Users\\' + (window.navigator.userAgent.includes('Windows') ? 'Username' : 'user') + '\\Desktop',
-        'C:\\Users\\' + (window.navigator.userAgent.includes('Windows') ? 'Username' : 'user') + '\\Downloads',
-        '/home/user/documents',
-        '/home/user/projects',
-        './projects',
-        '../data'
-    ];
-    
-    const dropdown = createSuggestionsDropdown(suggestions);
-    positionDropdown(dropdown, input);
-}
-
-// Create suggestions dropdown
-function createSuggestionsDropdown(suggestions) {
-    // Remove existing dropdown
-    const existing = document.getElementById('directoryDropdown');
-    if (existing) existing.remove();
-    
-    const dropdown = document.createElement('div');
-    dropdown.id = 'directoryDropdown';
-    dropdown.className = 'directory-suggestions';
-    
-    suggestions.forEach(suggestion => {
-        const item = document.createElement('div');
-        item.className = 'suggestion-item';
-        item.textContent = suggestion;
-        item.addEventListener('click', function() {
-            const input = document.querySelector('input[name="directory_path"]');
-            input.value = suggestion;
-            dropdown.remove();
-        });
-        dropdown.appendChild(item);
-    });
-    
-    document.body.appendChild(dropdown);
-    
-    // Close dropdown when clicking outside
-    setTimeout(() => {
-        document.addEventListener('click', function closeDropdown(e) {
-            if (!dropdown.contains(e.target)) {
-                dropdown.remove();
-                document.removeEventListener('click', closeDropdown);
-            }
-        });
-    }, 100);
-    
-    return dropdown;
-}
-
-// Position dropdown relative to input
-function positionDropdown(dropdown, input) {
-    const rect = input.getBoundingClientRect();
-    dropdown.style.position = 'absolute';
-    dropdown.style.top = (rect.bottom + window.scrollY) + 'px';
-    dropdown.style.left = rect.left + 'px';
-    dropdown.style.width = rect.width + 'px';
-}
-
-// Check directory existence (optional server-side validation)
-function checkDirectoryExists(path) {
-    fetch('/api/check_directory', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({ path: path })
-    })
-    .then(response => response.json())
-    .then(data => {
-        const input = document.querySelector('input[name="directory_path"]');
-        if (data.exists) {
-            input.classList.add('exists');
-            input.classList.remove('not-exists');
-        } else {
-            input.classList.add('not-exists');
-            input.classList.remove('exists');
-        }
-    })
-    .catch(error => {
-        console.error('Directory check error:', error);
-    });
-}
-
-// Show notification system
-function showNotification(message, type = 'info', duration = 5000) {
-    // Remove existing notifications of the same type
-    const existing = document.querySelectorAll(`.notification-${type}`);
-    existing.forEach(notif => notif.remove());
-    
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-icon">${getNotificationIcon(type)}</span>
-            <span class="notification-message">${message}</span>
-            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after duration
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.style.transition = 'all 0.3s ease';
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateX(100%)';
-            setTimeout(() => notification.remove(), 300);
-        }
-    }, duration);
-}
-
-// Get notification icon based on type
-function getNotificationIcon(type) {
-    const icons = {
-        'success': '✅',
-        'error': '❌',
-        'warning': '⚠️',
-        'info': 'ℹ️'
-    };
-    return icons[type] || 'ℹ️';
-}
-
 // Format file size helper
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';
@@ -471,18 +636,6 @@ function copyToClipboard(text) {
         showNotification('Failed to copy to clipboard', 'error');
     });
 }
-
-// Add copy buttons to analysis results
-document.addEventListener('DOMContentLoaded', function() {
-    const analysisContent = document.querySelectorAll('.summary-content, .ai-insights');
-    analysisContent.forEach(content => {
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy-btn';
-        copyBtn.innerHTML = '📋 Copy';
-        copyBtn.onclick = () => copyToClipboard(content.textContent);
-        content.parentNode.insertBefore(copyBtn, content.nextSibling);
-    });
-});
 
 // Initialize tooltips for better UX
 function initializeTooltips() {
@@ -510,11 +663,34 @@ function hideTooltip() {
     if (tooltip) tooltip.remove();
 }
 
-// Initialize tooltips on page load
-document.addEventListener('DOMContentLoaded', initializeTooltips);
-
 // Handle page unload to clean up
 window.addEventListener('beforeunload', function() {
+    debugLog('Page unload detected, cleaning up');
+    
     const progressIndicator = document.getElementById('progressIndicator');
-    if (progressIndicator) progressIndicator.remove();
+    if (progressIndicator) {
+        debugLog('Removing progress indicator on page unload');
+        progressIndicator.remove();
+    }
+    
+    // Clear any intervals
+    if (window.analysisProgressInterval) {
+        clearInterval(window.analysisProgressInterval);
+    }
+});
+
+// Global error handler
+window.addEventListener('error', function(e) {
+    errorLog('JavaScript error caught', {
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno,
+        error: e.error
+    });
+});
+
+// Handle unhandled promise rejections
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('[ERROR] Unhandled promise rejection:', e.reason);
 });

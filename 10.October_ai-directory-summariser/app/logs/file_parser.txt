@@ -1,0 +1,145 @@
+Logging started...
+2025-10-17 17:11:35
+Logging started...
+2025-10-17 17:25:01
+Logging started...
+2025-10-17 17:27:37
+Logging started...
+2025-10-17 17:34:12
+Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+[2025-10-19 08:51:09] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-19 08:51:09] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-19 09:34:36] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-19 09:34:36] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-22 21:21:14] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-22 21:21:14] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-26 14:10:17] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-26 14:10:17] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-29 22:54:38] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-29 22:54:38] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-29 23:03:28] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-29 23:03:28] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-29 23:09:10] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-29 23:09:10] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-29 23:11:59] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-29 23:11:59] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-29 23:12:12] Output:
+Starting content analysis for: C:\Users\fifau\Documents\Uni Work related
+
+[2025-10-29 23:12:12] Output:
+Reading PDF file: 2. CV - 2 Page Guideline CS (2024) - V1 (IP)-1.pdf
+
+[2025-10-29 23:12:13] Output:
+Large content file found: 2. CV - 2 Page Guideline CS (2024) - V1 (IP)-1.pdf (1331 words)
+
+[2025-10-29 23:12:13] Output:
+Reading PDF file: 2. CV - 2 Page Guideline CS (2024) - V1 (IP).pdf
+
+[2025-10-29 23:12:13] Output:
+Large content file found: 2. CV - 2 Page Guideline CS (2024) - V1 (IP).pdf (1331 words)
+
+[2025-10-29 23:12:13] Output:
+Reading DOCX file: Cloud & Platform.docx
+
+[2025-10-29 23:12:13] Output:
+Reading DOCX file: Data Science.docx
+
+[2025-10-29 23:12:14] Output:
+Large content file found: ELS Application Notes.txt (1561 words)
+
+[2025-10-29 23:12:14] Output:
+Reading DOCX file: Hasan Akhtar ELS Application Vid link.docx
+
+[2025-10-29 23:12:14] Output:
+Reading DOCX file: Power Platform.docx
+
+[2025-10-29 23:12:14] Output:
+Reading PDF file: Sample covering letter for an advertised job.pdf
+
+[2025-10-29 23:12:14] Output:
+Reading PDF file: Maths for computing coursework.pdf
+
+[2025-10-29 23:12:14] Output:
+Reading PDF file: Maths for computing coursework_20250526215538.pdf
+
+[2025-10-29 23:12:14] Output:
+Reading DOCX file: Creators Hub April Blog Notes.docx
+
+[2025-10-29 23:12:14] Output:
+Reading DOCX file: Creators Hub April Blog Notes_20250526215538.docx
+
+[2025-10-29 23:12:14] Output:
+Reading DOCX file: Ehtesham Shah TPP Technical Engineer Placement Year Cover Letter.docx
+
+[2025-10-29 23:12:14] Output:
+Reading DOCX file: Ehtesham Shah TPP Technical Engineer Placement Year Cover Letter_20250526215538.docx
+
+[2025-10-29 23:12:14] Output:
+Reading DOCX file: Hasan Akhtar Creators Hub April Blog draft.docx
+
+[2025-10-29 23:12:15] Output:
+Reading DOCX file: Hasan Akhtar Creators Hub April Blog draft_20250526215538.docx
+
+[2025-10-29 23:12:15] Output:
+Reading DOCX file: Maths for computing coursework.docx
+
+[2025-10-29 23:12:15] Output:
+Reading DOCX file: Maths for computing coursework_20250526215538.docx
+
+[2025-10-29 23:12:15] Output:
+Reading DOCX file: Placement Past experiences collection.docx
+
+[2025-10-29 23:12:15] Output:
+Reading DOCX file: Placement Past experiences collection_20250526215538.docx
+
+[2025-10-29 23:12:15] Output:
+Content analysis complete: 24 supported files
+
+[2025-10-29 23:12:15] Output:
+Total words: 10283
+
+[2025-10-29 23:12:15] Output:
+Total characters: 62349
+
+[2025-10-29 23:12:15] Output:
+Average words per file: 428.5
+

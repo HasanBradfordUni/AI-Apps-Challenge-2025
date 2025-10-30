@@ -1,21 +1,49 @@
 import os
 from pathlib import Path
 from difflib import SequenceMatcher
-import mimetypes
+import mimetypes, datetime
+
+# Remove the autoLogger import section and replace with:
+try:
+    from ..utils.logger_setup import general_logger
+except ImportError:
+    # Fallback if logger is not available
+    print("Logger import failed for template matcher, using DummyLogger")
+    class DummyLogger:
+        def __init__(self, filename): 
+            self.file = open(filename, 'a')
+            self.file.write("Logging started...\n"+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
+            self.file.close()
+        def addToLogs(self, msg): print(f"[LOG] {msg}")
+        def addToErrorLogs(self, msg): print(f"[ERROR] {msg}")
+        def addToInputLogs(self, prompt, msg): print(f"[INPUT] {prompt}: {msg}")
+    general_logger = DummyLogger
 
 class TemplateMatcher:
     def __init__(self):
+        # Initialize logger
+        log_file_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'template_matcher.txt')
+        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+        self.logger = general_logger(log_file_path)
+        
         self.similarity_threshold = 0.6
         self.max_file_size = 10 * 1024 * 1024  # 10MB limit for content comparison
+        
+        self.logger.addToLogs(f"TemplateMatcher initialized with similarity threshold: {self.similarity_threshold}")
+        self.logger.addToLogs(f"Max file size for content comparison: {self.max_file_size / 1024 / 1024:.1f} MB")
     
     def find_similar_files(self, directory_path, templates):
         """Find files similar to uploaded templates"""
+        self.logger.addToLogs(f"Starting template matching for {len(templates)} templates in {directory_path}")
+        
         matching_results = []
         
-        for template in templates:
+        for i, template in enumerate(templates):
             template_path = template['path']
             template_category = template['category']
             template_filename = template['filename']
+            
+            self.logger.addToLogs(f"Processing template {i+1}/{len(templates)}: {template_filename} (Category: {template_category})")
             
             # Get template characteristics
             template_info = self._analyze_template(template_path)
@@ -27,7 +55,8 @@ class TemplateMatcher:
                 template_category
             )
             
-            if matches:  # Only include categories with matches
+            if matches:
+                self.logger.addToLogs(f"Found {len(matches)} matches for template: {template_filename}")
                 matching_results.append({
                     'category': template_category,
                     'template_file': template_filename,
@@ -36,11 +65,16 @@ class TemplateMatcher:
                     'similarity_scores': [match['similarity'] for match in matches],
                     'match_details': matches
                 })
+            else:
+                self.logger.addToLogs(f"No matches found for template: {template_filename}")
         
+        self.logger.addToLogs(f"Template matching complete: {len(matching_results)} categories with matches")
         return matching_results
     
     def _analyze_template(self, template_path):
         """Analyze template file characteristics"""
+        self.logger.addToLogs(f"Analyzing template: {os.path.basename(template_path)}")
+        
         template_info = {
             'path': template_path,
             'filename': os.path.basename(template_path),
@@ -54,25 +88,37 @@ class TemplateMatcher:
             template_info['size'] = os.path.getsize(template_path)
             template_info['mime_type'] = mimetypes.guess_type(template_path)[0]
             
+            self.logger.addToLogs(f"Template info - Size: {template_info['size']} bytes, Type: {template_info['extension']}")
+            
             # Extract content for text-based files
             if template_info['size'] < self.max_file_size:
                 template_info['content'] = self._extract_file_content(template_path)
+                if template_info['content']:
+                    content_length = len(template_info['content']) if isinstance(template_info['content'], str) else len(template_info['content'])
+                    self.logger.addToLogs(f"Extracted {content_length} characters/bytes of content from template")
+            else:
+                self.logger.addToLogs(f"Template too large for content analysis: {template_info['size']} bytes")
         
         except Exception as e:
+            self.logger.addToErrorLogs(f"Error analyzing template {template_path}: {str(e)}")
             template_info['error'] = str(e)
         
         return template_info
     
     def _find_matches_in_directory(self, directory_path, template_info, category):
         """Find files in directory that match the template"""
+        self.logger.addToLogs(f"Searching for matches in directory for category: {category}")
+        
         matches = []
         template_ext = template_info['extension']
         template_content = template_info.get('content')
+        files_checked = 0
         
         for root, dirs, files in os.walk(directory_path):
             for file in files:
                 file_path = os.path.join(root, file)
                 file_ext = Path(file_path).suffix.lower()
+                files_checked += 1
                 
                 # Skip if different file type
                 if file_ext != template_ext:
@@ -93,10 +139,14 @@ class TemplateMatcher:
                             'category': category,
                             'file_size': os.path.getsize(file_path)
                         })
+                        
+                        self.logger.addToLogs(f"Match found: {os.path.basename(file_path)} (similarity: {similarity_score:.3f})")
                 
                 except Exception as e:
-                    # Skip files that can't be processed
+                    self.logger.addToErrorLogs(f"Error processing file {file_path}: {str(e)}")
                     continue
+        
+        self.logger.addToLogs(f"Checked {files_checked} files, found {len(matches)} matches above threshold")
         
         # Sort by similarity score (highest first)
         matches.sort(key=lambda x: x['similarity'], reverse=True)

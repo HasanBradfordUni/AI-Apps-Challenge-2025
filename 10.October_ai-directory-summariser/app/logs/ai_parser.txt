@@ -1,0 +1,48 @@
+Logging started...
+2025-10-17 17:11:35
+Logging started...
+2025-10-17 17:25:01
+Logging started...
+2025-10-17 17:27:37
+Logging started...
+2025-10-17 17:34:12
+Output:
+AISummarizer initialized with Google GenAI
+Output:
+AISummarizer initialized with Google GenAI
+[2025-10-19 08:51:09] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-19 09:34:36] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-22 21:21:14] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-26 14:10:17] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-29 22:54:38] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-29 23:03:28] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-29 23:09:10] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-29 23:11:59] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-29 23:12:15] Output:
+Starting AI insights generation
+
+[2025-10-29 23:12:15] Output:
+Generating insights for 26 files, 6.0 MB
+
+[2025-10-29 23:12:15] Output:
+Sending request to Google GenAI
+
+[2025-10-29 23:12:23] Output:
+AI insights generated successfully (3337 characters)
+

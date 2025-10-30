@@ -1,0 +1,396 @@
+Logging started...
+2025-10-17 17:11:35
+Logging started...
+2025-10-17 17:25:01
+Logging started...
+2025-10-17 17:27:37
+Output:
+Flask application starting - routes registration beginning
+Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+Output:
+All services initialized successfully
+Output:
+Flask route registration completed successfully
+Output:
+User 1 accessed logs page
+Output:
+Logs page loaded with 5 log files
+Output:
+User 1 accessed logs page
+Output:
+Logs page loaded with 5 log files
+Output:
+Flask application starting - routes registration beginning
+Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+Output:
+All services initialized successfully
+Output:
+Flask route registration completed successfully
+Output:
+User 1 accessed logs page
+Output:
+Logs page loaded with 5 log files
+User Input:
+Log search User: 1, Term: 'Flask', Type: output, File: app_logs.txt
+Output:
+Log search completed: 2 results found for 'Flask' in app_logs.txt
+Output:
+User 1 exporting logs: type=results, format=txt
+Output:
+Log search results exported: log_search_results_20251017_192106.txt
+[2025-10-19 08:51:08] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-19 08:51:09] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-19 08:51:09] Output:
+All services initialized successfully
+
+[2025-10-19 08:51:09] Output:
+Flask route registration completed successfully
+
+[2025-10-19 08:51:42] Output:
+User 1 accessed dashboard via root
+
+[2025-10-19 08:51:42] Output:
+User 1 accessed dashboard
+
+[2025-10-19 08:51:42] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-19 08:56:46] Output:
+User 1 accessed logs page
+
+[2025-10-19 08:56:46] Output:
+Logs page loaded with 5 log files
+
+[2025-10-19 08:57:12] User Input:
+Log search: User: 1, Term: 'a', Type: output, File: app_logs.txt
+
+[2025-10-19 08:57:12] Output:
+Log search completed: 26 results found for 'a' in app_logs.txt
+
+[2025-10-19 08:57:26] Output:
+User 1 exporting logs: type=results, format=txt
+
+[2025-10-19 08:57:26] Output:
+Log search results exported: log_search_results_20251019_085726.txt
+
+[2025-10-19 09:00:27] User Input:
+Log search: User: 1, Term: 'a', Type: error, File: file_parser.txt
+
+[2025-10-19 09:00:27] Output:
+Log search completed: 0 results found for 'a' in file_parser.txt
+
+[2025-10-19 09:00:39] User Input:
+Log search: User: 1, Term: 'e', Type: error, File: app_logs.txt
+
+[2025-10-19 09:00:39] Output:
+Log search completed: 0 results found for 'e' in app_logs.txt
+
+[2025-10-19 09:01:19] Output:
+User 1 accessed dashboard
+
+[2025-10-19 09:01:19] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-19 09:34:36] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-19 09:34:36] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-19 09:34:36] Output:
+All services initialized successfully
+
+[2025-10-19 09:34:36] Output:
+Flask route registration completed successfully
+
+[2025-10-19 09:34:38] User Input:
+Log search: User: 1, Term: 'a', Type: output, File: app_logs.txt
+
+[2025-10-19 09:34:38] Output:
+Log search completed: 37 results found for 'a' in app_logs.txt
+
+[2025-10-19 09:35:22] User Input:
+Log search: User: 1, Term: 'e', Type: error, File: app_logs.txt
+
+[2025-10-19 09:35:22] Output:
+Log search completed: 0 results found for 'e' in app_logs.txt
+
+[2025-10-19 09:35:30] User Input:
+Log search: User: 1, Term: 'e', Type: all, File: app_logs.txt
+
+[2025-10-19 09:35:30] Output:
+Log search completed: 133 results found for 'e' in app_logs.txt
+
+[2025-10-19 09:38:00] User Input:
+Log search: User: 1, Term: 'e', Type: all, File: app_logs.txt
+
+[2025-10-19 09:38:00] Output:
+Log search completed: 141 results found for 'e' in app_logs.txt
+
+[2025-10-22 21:21:14] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-22 21:21:14] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-22 21:21:14] Output:
+All services initialized successfully
+
+[2025-10-22 21:21:14] Output:
+Flask route registration completed successfully
+
+[2025-10-22 21:23:24] Output:
+User 1 accessed dashboard via root
+
+[2025-10-22 21:23:24] Output:
+User 1 accessed dashboard
+
+[2025-10-22 21:23:24] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-26 14:10:17] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-26 14:10:17] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-26 14:10:17] Output:
+All services initialized successfully
+
+[2025-10-26 14:10:17] Output:
+Flask route registration completed successfully
+
+[2025-10-26 14:10:25] Output:
+User 1 accessed dashboard via root
+
+[2025-10-26 14:10:25] Output:
+User 1 accessed dashboard
+
+[2025-10-26 14:10:25] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-29 22:54:37] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-29 22:54:37] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-29 22:54:38] Output:
+All services initialized successfully
+
+[2025-10-29 22:54:38] Output:
+Flask route registration completed successfully
+
+[2025-10-29 22:54:55] Output:
+Anonymous user redirected to login
+
+[2025-10-29 22:56:03] Output:
+Unauthorized access attempt to dashboard
+
+[2025-10-29 22:56:08] Output:
+Unauthorized access attempt to dashboard
+
+[2025-10-29 22:56:55] Output:
+Anonymous user redirected to login
+
+[2025-10-29 23:03:28] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-29 23:03:28] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-29 23:03:28] Output:
+All services initialized successfully
+
+[2025-10-29 23:03:28] Output:
+Flask route registration completed successfully
+
+[2025-10-29 23:03:43] User Input:
+Login attempt: Username: AkhHas2005, Email: akhtarhasan2005@gmail.com
+
+[2025-10-29 23:03:43] Output:
+Successful login for user 1 - AkhHas2005
+
+[2025-10-29 23:03:43] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:03:43] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-29 23:04:01] User Input:
+Directory analysis request: User: 1, Path: 
+
+[2025-10-29 23:04:01] Error:
+Analysis failed: No directory path provided
+
+[2025-10-29 23:04:01] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:04:01] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-29 23:05:05] User Input:
+Directory analysis request: User: 1, Path: 
+
+[2025-10-29 23:05:05] Error:
+Analysis failed: No directory path provided
+
+[2025-10-29 23:05:05] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:05:05] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-29 23:05:15] User Input:
+Directory analysis request: User: 1, Path: 
+
+[2025-10-29 23:05:15] Error:
+Analysis failed: No directory path provided
+
+[2025-10-29 23:05:15] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:05:15] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-29 23:05:30] User Input:
+Directory analysis request: User: 1, Path: 
+
+[2025-10-29 23:05:30] Error:
+Analysis failed: No directory path provided
+
+[2025-10-29 23:05:30] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:05:30] Output:
+Dashboard loaded for user 1: 1 templates, 3 recent analyses
+
+[2025-10-29 23:05:41] Output:
+User 1 accessed templates page
+
+[2025-10-29 23:05:41] Output:
+Templates page loaded for user 1: 1 templates
+
+[2025-10-29 23:05:59] User Input:
+Template upload: User: 1, Category: Copilot answers, Files: 1
+
+[2025-10-29 23:05:59] Output:
+Template uploaded: Answer.txt (1078 bytes)
+
+[2025-10-29 23:05:59] Output:
+Template upload successful for user 1: 1 files, 1078 total bytes in category 'Copilot answers'
+
+[2025-10-29 23:05:59] Output:
+User 1 accessed templates page
+
+[2025-10-29 23:05:59] Output:
+Templates page loaded for user 1: 2 templates
+
+[2025-10-29 23:06:03] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:06:03] Output:
+Dashboard loaded for user 1: 2 templates, 3 recent analyses
+
+[2025-10-29 23:06:18] User Input:
+Directory analysis request: User: 1, Path: 
+
+[2025-10-29 23:06:18] Error:
+Analysis failed: No directory path provided
+
+[2025-10-29 23:06:18] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:06:18] Output:
+Dashboard loaded for user 1: 2 templates, 3 recent analyses
+
+[2025-10-29 23:09:10] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-29 23:09:10] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-29 23:09:10] Output:
+All services initialized successfully
+
+[2025-10-29 23:09:10] Output:
+Flask route registration completed successfully
+
+[2025-10-29 23:09:13] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:09:13] Output:
+Dashboard loaded for user 1: 2 templates, 3 recent analyses
+
+[2025-10-29 23:09:21] User Input:
+Directory analysis request: User: 1, Path: 
+
+[2025-10-29 23:09:21] Error:
+Analysis failed: No directory path provided
+
+[2025-10-29 23:09:21] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:09:21] Output:
+Dashboard loaded for user 1: 2 templates, 3 recent analyses
+
+[2025-10-29 23:11:59] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-29 23:11:59] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-29 23:11:59] Output:
+All services initialized successfully
+
+[2025-10-29 23:11:59] Output:
+Flask route registration completed successfully
+
+[2025-10-29 23:12:02] Output:
+User 1 accessed dashboard
+
+[2025-10-29 23:12:02] Output:
+Dashboard loaded for user 1: 2 templates, 3 recent analyses
+
+[2025-10-29 23:12:12] User Input:
+Directory analysis request: User: 1, Path: C:\Users\fifau\Documents\Uni Work related
+
+[2025-10-29 23:12:12] Output:
+Starting directory structure analysis
+
+[2025-10-29 23:12:12] Output:
+Directory analysis complete - found 26 files, 6265271 bytes
+
+[2025-10-29 23:12:12] Output:
+Starting content analysis
+
+[2025-10-29 23:12:15] Output:
+Content analysis complete - 24 supported files
+
+[2025-10-29 23:12:15] Output:
+Generating AI insights
+
+[2025-10-29 23:12:23] Output:
+AI insights generated: 3337 characters
+
+[2025-10-29 23:12:23] Output:
+Saving analysis to database
+
+[2025-10-29 23:12:23] Output:
+Analysis saved with ID: 4
+
+[2025-10-29 23:12:23] Output:
+Analysis complete for user 1, path: C:\Users\fifau\Documents\Uni Work related
+
+[2025-10-29 23:12:23] Output:
+User 1 viewed analysis results for analysis ID: 4
+
+[2025-10-29 23:12:42] Output:
+Analysis exported by user 1: Format json, Analysis ID: 4, File: directory_analysis_20251029_231242.json
+

@@ -1,10 +1,31 @@
 import os
-import time
+import time, datetime
 from collections import defaultdict, Counter
 from pathlib import Path
 
+# Remove the autoLogger import section and replace with:
+try:
+    from ..utils.logger_setup import general_logger
+except ImportError:
+    # Fallback if logger is not available
+    print("Logger import failed for directory analyzer, using DummyLogger")
+    class DummyLogger:
+        def __init__(self, filename): 
+            self.file = open(filename, 'a')
+            self.file.write("Logging started...\n"+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"\n")
+            self.file.close()
+        def addToLogs(self, msg): print(f"[LOG] {msg}")
+        def addToErrorLogs(self, msg): print(f"[ERROR] {msg}")
+        def addToInputLogs(self, prompt, msg): print(f"[INPUT] {prompt}: {msg}")
+    general_logger = DummyLogger
+
 class DirectoryAnalyzer:
     def __init__(self):
+        # Initialize logger
+        log_file_path = os.path.join(os.path.dirname(__file__), '..', 'logs', 'directory_analyzer.txt')
+        os.makedirs(os.path.dirname(log_file_path), exist_ok=True)
+        self.logger = general_logger(log_file_path)
+        
         self.supported_extensions = {
             'documents': ['.pdf', '.doc', '.docx', '.txt', '.md', '.rtf', '.odt'],
             'spreadsheets': ['.xls', '.xlsx', '.csv', '.ods'],
@@ -15,9 +36,12 @@ class DirectoryAnalyzer:
             'archives': ['.zip', '.rar', '.7z', '.tar', '.gz'],
             'code': ['.py', '.js', '.html', '.css', '.java', '.cpp', '.c', '.php']
         }
+        
+        self.logger.addToLogs("DirectoryAnalyzer initialized successfully")
     
     def analyze_directory(self, directory_path):
         """Perform comprehensive directory analysis"""
+        self.logger.addToLogs(f"Starting directory analysis for: {directory_path}")
         start_time = time.time()
         
         analysis_result = {
@@ -35,16 +59,32 @@ class DirectoryAnalyzer:
         }
         
         try:
+            self.logger.addToLogs(f"Beginning directory walk for: {directory_path}")
+            file_count = 0
+            dir_count = 0
+            
             # Walk through directory
             for root, dirs, files in os.walk(directory_path):
                 analysis_result['total_directories'] += len(dirs)
+                dir_count += len(dirs)
                 
                 for file in files:
                     file_path = os.path.join(root, file)
                     self._analyze_file(file_path, analysis_result)
+                    file_count += 1
+                    
+                    # Log progress every 100 files
+                    if file_count % 100 == 0:
+                        self.logger.addToLogs(f"Processed {file_count} files so far...")
             
             # Post-processing
-            analysis_result['analysis_duration'] = time.time() - start_time
+            analysis_duration = time.time() - start_time
+            analysis_result['analysis_duration'] = analysis_duration
+            
+            self.logger.addToLogs(f"Analysis complete - Found {analysis_result['total_files']} files, {dir_count} directories")
+            self.logger.addToLogs(f"Total size: {analysis_result['total_size']} bytes")
+            self.logger.addToLogs(f"Analysis took: {analysis_duration:.2f} seconds")
+            
             analysis_result['largest_files'] = sorted(
                 analysis_result['largest_files'], 
                 key=lambda x: x['size'], 
@@ -59,10 +99,13 @@ class DirectoryAnalyzer:
             # Calculate average file size
             if analysis_result['total_files'] > 0:
                 analysis_result['average_file_size'] = analysis_result['total_size'] / analysis_result['total_files']
+                self.logger.addToLogs(f"Average file size: {analysis_result['average_file_size']:.2f} bytes")
             else:
                 analysis_result['average_file_size'] = 0
+                self.logger.addToLogs("No files found in directory")
             
         except Exception as e:
+            self.logger.addToErrorLogs(f"Error during directory analysis: {str(e)}")
             analysis_result['error'] = str(e)
         
         return analysis_result
@@ -84,7 +127,7 @@ class DirectoryAnalyzer:
             analysis_result['file_types'][file_ext] += 1
             
             # Track largest files
-            if len(analysis_result['largest_files']) < 100:  # Keep top 100 for processing
+            if len(analysis_result['largest_files']) < 100:
                 analysis_result['largest_files'].append({
                     'path': file_path,
                     'name': os.path.basename(file_path),
@@ -92,7 +135,6 @@ class DirectoryAnalyzer:
                     'extension': file_ext
                 })
             else:
-                # Replace smallest if current is larger
                 smallest = min(analysis_result['largest_files'], key=lambda x: x['size'])
                 if file_size > smallest['size']:
                     analysis_result['largest_files'].remove(smallest)
@@ -104,8 +146,7 @@ class DirectoryAnalyzer:
                     })
                     
         except (OSError, IOError) as e:
-            # Skip files that can't be accessed
-            pass
+            self.logger.addToErrorLogs(f"Could not access file {file_path}: {str(e)}")
     
     def _get_file_category(self, extension):
         """Categorize file by extension"""
@@ -116,6 +157,8 @@ class DirectoryAnalyzer:
     
     def get_quick_stats(self, directory_path):
         """Get quick directory statistics without full analysis"""
+        self.logger.addToLogs(f"Getting quick stats for: {directory_path}")
+        
         try:
             total_files = 0
             total_size = 0
@@ -130,6 +173,8 @@ class DirectoryAnalyzer:
                     except (OSError, IOError):
                         continue
             
+            self.logger.addToLogs(f"Quick stats complete: {total_files} files, {total_size} bytes")
+            
             return {
                 'total_files': total_files,
                 'total_size': total_size,
@@ -137,6 +182,7 @@ class DirectoryAnalyzer:
             }
             
         except Exception as e:
+            self.logger.addToErrorLogs(f"Error getting quick stats: {str(e)}")
             return {'error': str(e)}
     
     def analyze_subdirectories(self, directory_path, max_depth=2):
