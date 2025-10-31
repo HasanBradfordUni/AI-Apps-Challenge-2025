@@ -502,3 +502,309 @@ Flask route registration completed successfully
 [2025-10-30 22:09:09] Output:
 User 1 viewed analysis results for analysis ID: 4
 
+[2025-10-31 21:33:27] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-31 21:33:27] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-31 21:33:27] Output:
+All services initialized successfully
+
+[2025-10-31 21:33:27] Output:
+Flask route registration completed successfully
+
+[2025-10-31 21:39:05] Output:
+User 1 accessed dashboard via root
+
+[2025-10-31 21:39:05] Output:
+User 1 accessed dashboard
+
+[2025-10-31 21:39:05] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-31 21:40:58] Output:
+User 1 viewed analysis results for analysis ID: 4
+
+[2025-10-31 21:44:35] Output:
+User 1 accessed templates page
+
+[2025-10-31 21:44:35] Output:
+Templates page loaded for user 1: 2 templates
+
+[2025-10-31 21:44:41] Output:
+User 1 accessed dashboard
+
+[2025-10-31 21:44:41] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-31 21:51:50] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-31 21:51:50] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-31 21:51:50] Output:
+All services initialized successfully
+
+[2025-10-31 21:51:50] Output:
+Flask route registration completed successfully
+
+[2025-10-31 21:51:55] Output:
+User 1 accessed dashboard
+
+[2025-10-31 21:51:55] Output:
+Dashboard loaded for user 1: 2 templates, 4 recent analyses
+
+[2025-10-31 21:57:39] User Input:
+Directory analysis request: User: 1, Path: C:\Users\fifau\Downloads\AI Call Bot
+
+[2025-10-31 21:57:39] Output:
+Starting directory structure analysis
+
+[2025-10-31 21:57:39] Output:
+Directory analysis complete - found 51 files, 10091292 bytes
+
+[2025-10-31 21:57:39] Output:
+Starting content analysis
+
+[2025-10-31 21:57:40] Output:
+Content analysis complete - 9 supported files
+
+[2025-10-31 21:57:40] Output:
+Generating AI insights
+
+[2025-10-31 21:57:49] Output:
+AI insights generated: 3270 characters
+
+[2025-10-31 21:57:49] Output:
+Saving analysis to database
+
+[2025-10-31 21:57:49] Output:
+Analysis saved with ID: 5
+
+[2025-10-31 21:57:49] Output:
+Analysis complete for user 1, path: C:\Users\fifau\Downloads\AI Call Bot
+
+[2025-10-31 21:57:49] Output:
+User 1 viewed analysis results for analysis ID: 5
+
+[2025-10-31 22:04:04] Output:
+Analysis exported by user 1: Format json, Analysis ID: 5, File: directory_analysis_20251031_220404.json
+
+[2025-10-31 22:04:35] Output:
+User 1 accessed dashboard
+
+[2025-10-31 22:04:35] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2025-10-31 22:30:45] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-31 22:30:45] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-31 22:30:45] Output:
+All services initialized successfully
+
+[2025-10-31 22:30:45] Output:
+Flask route registration completed successfully
+
+[2025-10-31 22:32:41] User Input:
+Directory analysis request: User: 1, Path: C:\Users\fifau\OneDrive\Documents\Hasan work
+
+[2025-10-31 22:32:41] Output:
+Starting directory structure analysis
+
+[2025-10-31 22:32:42] Output:
+Directory analysis complete - found 518 files, 1192340762 bytes
+
+[2025-10-31 22:32:42] Output:
+Starting content analysis
+
+[2025-10-31 22:36:44] Output:
+Content analysis complete - 248 supported files
+
+[2025-10-31 22:36:44] Output:
+Generating AI insights
+
+[2025-10-31 22:36:59] Output:
+AI insights generated: 6565 characters
+
+[2025-10-31 22:36:59] Output:
+Saving analysis to database
+
+[2025-10-31 22:36:59] Output:
+Analysis saved with ID: 6
+
+[2025-10-31 22:36:59] Output:
+Analysis complete for user 1, path: C:\Users\fifau\OneDrive\Documents\Hasan work
+
+[2025-10-31 22:36:59] Output:
+User 1 viewed analysis results for analysis ID: 6
+
+[2025-10-31 22:37:00] Error:
+Error loading analysis view for user 1: 'dict object' has no attribute 'organization_metrics'
+
+[2025-10-31 22:37:00] Output:
+User 1 accessed dashboard
+
+[2025-10-31 22:37:00] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2025-10-31 22:38:02] Output:
+User 1 accessed logs page
+
+[2025-10-31 22:38:02] Output:
+Logs page loaded with 5 log files
+
+[2025-10-31 22:39:18] User Input:
+Log search: User: 1, Term: 'a', Type: error, File: directory_analyzer.txt
+
+[2025-10-31 22:39:18] Output:
+Log search completed: 1 results found for 'a' in directory_analyzer.txt
+
+[2025-10-31 22:40:03] User Input:
+Log search: User: 1, Term: 'a', Type: error, File: app_logs.txt
+
+[2025-10-31 22:40:03] Output:
+Log search completed: 9 results found for 'a' in app_logs.txt
+
+[2025-10-31 22:47:45] Output:
+User 1 accessed dashboard
+
+[2025-10-31 22:47:45] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2025-10-31 22:48:29] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-31 22:48:29] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-31 22:48:29] Output:
+All services initialized successfully
+
+[2025-10-31 22:48:29] Output:
+Flask route registration completed successfully
+
+[2025-10-31 22:48:35] Output:
+User 1 accessed dashboard
+
+[2025-10-31 22:48:35] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2025-10-31 22:48:39] User Input:
+Directory analysis request: User: 1, Path: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 22:48:39] Output:
+Starting directory structure analysis
+
+[2025-10-31 22:48:39] Output:
+Adding basic structure analysis for compatibility
+
+[2025-10-31 22:48:39] Output:
+Adding basic organization metrics for compatibility
+
+[2025-10-31 22:48:39] Output:
+Directory analysis complete - found 532 files, 504446510 bytes
+
+[2025-10-31 22:48:39] Output:
+Starting content analysis
+
+[2025-10-31 22:48:45] Output:
+Content analysis complete - 58 supported files
+
+[2025-10-31 22:48:45] Output:
+Generating AI insights
+
+[2025-10-31 22:49:01] Output:
+AI insights generated: 6582 characters
+
+[2025-10-31 22:49:01] Output:
+Saving analysis to database
+
+[2025-10-31 22:49:01] Output:
+Analysis saved with ID: 7
+
+[2025-10-31 22:49:01] Output:
+Analysis complete for user 1, path: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 22:49:01] Output:
+User 1 viewed analysis results for analysis ID: 6
+
+[2025-10-31 23:21:31] Output:
+Flask application starting - routes registration beginning
+
+[2025-10-31 23:21:31] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\10.October_ai-directory-summariser\app\static\directory_summariser.db
+
+[2025-10-31 23:21:31] Output:
+All services initialized successfully
+
+[2025-10-31 23:21:31] Output:
+Flask route registration completed successfully
+
+[2025-10-31 23:21:37] Output:
+User 1 accessed dashboard
+
+[2025-10-31 23:21:37] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2025-10-31 23:21:48] Output:
+User 1 viewed analysis results for analysis ID: 6
+
+[2025-10-31 23:21:52] Output:
+User 1 accessed dashboard
+
+[2025-10-31 23:21:52] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2025-10-31 23:23:03] User Input:
+Directory analysis request: User: 1, Path: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 23:23:03] Output:
+Starting comprehensive directory analysis
+
+[2025-10-31 23:23:03] Output:
+Adding basic structure analysis for compatibility
+
+[2025-10-31 23:23:03] Output:
+Adding basic organization metrics for compatibility
+
+[2025-10-31 23:23:03] Output:
+Directory analysis complete - found 532 files, 504446510 bytes
+
+[2025-10-31 23:23:03] Output:
+Starting content analysis
+
+[2025-10-31 23:23:04] Output:
+Content analysis complete - 58 supported files
+
+[2025-10-31 23:23:04] Output:
+Starting template analysis
+
+[2025-10-31 23:23:04] Output:
+Found 2 user templates, performing template matching
+
+[2025-10-31 23:23:04] Error:
+Template analysis failed: 'file_content'
+
+[2025-10-31 23:23:04] Output:
+Generating enhanced AI insights with template analysis
+
+[2025-10-31 23:23:22] Output:
+Enhanced AI insights generated: 8826 characters
+
+[2025-10-31 23:23:22] Output:
+Saving comprehensive analysis to database
+
+[2025-10-31 23:23:22] Output:
+Analysis saved with ID: 8
+
+[2025-10-31 23:23:22] Output:
+Comprehensive analysis complete for user 1, path: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 23:23:22] Output:
+User 1 viewed analysis results for analysis ID: 8
+

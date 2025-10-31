@@ -2,8 +2,6 @@
 
 {% block title %}Has AI - Analysis Results{% endblock %}
 
-{% block header_title %}Analysis Results{% endblock %}
-
 {% block content %}
 <h1 class="mainHeading">📊 Analysis Results</h1>
 <h2 class="subHeading">{{ analysis.directory_path }}</h2>
@@ -19,25 +17,200 @@
         {% endif %}
     </div>
 
-    <!-- Overview -->
+    <!-- NEW: Template Analysis Section -->
+    {% if analysis.template_statistics %}
+    <div class="long-dashboard-card">
+        <h3 class="subHeading">📋 Template Analysis</h3>
+        <div class="template-analysis">
+            <div class="template-stats-grid">
+                <div class="stat-card">
+                    <h4>📊 Template Coverage</h4>
+                    <div class="stat-value">{{ "%.1f"|format(analysis.template_statistics.template_coverage or 0) }}%</div>
+                    <div class="stat-description">of templates are being used</div>
+                </div>
+                <div class="stat-card">
+                    <h4>🎯 Total Matches</h4>
+                    <div class="stat-value">{{ analysis.template_statistics.total_matches or 0 }}</div>
+                    <div class="stat-description">template instances found</div>
+                </div>
+                <div class="stat-card">
+                    <h4>📚 Available Templates</h4>
+                    <div class="stat-value">{{ analysis.template_statistics.total_templates or 0 }}</div>
+                    <div class="stat-description">templates in your library</div>
+                </div>
+                <div class="stat-card">
+                    <h4>📂 Active Categories</h4>
+                    <div class="stat-value">{{ analysis.template_statistics.categories_with_matches or 0 }}</div>
+                    <div class="stat-description">categories with matches</div>
+                </div>
+            </div>
+
+            {% if analysis.template_statistics.category_breakdown %}
+            <div class="category-breakdown">
+                <h4>📂 Category Breakdown</h4>
+                <div class="category-grid">
+                    {% for category, data in analysis.template_statistics.category_breakdown.items() %}
+                    <div class="category-card">
+                        <div class="category-header">
+                            <h5>{{ category }}</h5>
+                            <span class="category-badge">{{ data.matches }} matches</span>
+                        </div>
+                        <div class="category-details">
+                            <p><strong>Templates:</strong> {{ data.templates }}</p>
+                            <p><strong>Avg Similarity:</strong> {{ "%.1f"|format((data.avg_similarity * 100) if data.avg_similarity else 0) }}%</p>
+                        </div>
+                        {% if data.template_details %}
+                        <div class="template-details">
+                            {% for template in data.template_details[:3] %}
+                            <div class="template-item">
+                                <span class="template-name">{{ template.name }}</span>
+                                <span class="template-matches">{{ template.matches }} matches</span>
+                            </div>
+                            {% endfor %}
+                            {% if data.template_details|length > 3 %}
+                            <div class="template-item more">... and {{ data.template_details|length - 3 }} more</div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if analysis.template_statistics.top_matched_templates %}
+            <div class="top-templates">
+                <h4>🏆 Most Used Templates</h4>
+                <div class="template-list">
+                    {% for template in analysis.template_statistics.top_matched_templates[:5] %}
+                    <div class="template-rank-item">
+                        <div class="rank-number">{{ loop.index }}</div>
+                        <div class="template-info">
+                            <div class="template-name">{{ template.name }}</div>
+                            <div class="template-category">{{ template.category }}</div>
+                        </div>
+                        <div class="template-metrics">
+                            <div class="matches">{{ template.matches }} matches</div>
+                            <div class="similarity">{{ "%.1f"|format((template.avg_similarity * 100) if template.avg_similarity else 0) }}% similarity</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if analysis.template_statistics.unused_templates %}
+            <div class="unused-templates">
+                <h4>⚠️ Unused Templates ({{ analysis.template_statistics.unused_templates|length }})</h4>
+                <div class="unused-list">
+                    {% for template in analysis.template_statistics.unused_templates[:10] %}
+                    <span class="unused-template">{{ template }}</span>
+                    {% endfor %}
+                    {% if analysis.template_statistics.unused_templates|length > 10 %}
+                    <span class="unused-template more">... and {{ analysis.template_statistics.unused_templates|length - 10 }} more</span>
+                    {% endif %}
+                </div>
+                <p class="unused-note">Consider reviewing these templates - they may be outdated or not applicable to this directory.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Directory Structure Overview -->
+    {% if analysis.directory_structure %}
+    <div class="long-dashboard-card">
+        <h3 class="subHeading">📁 Directory Structure</h3>
+        <div class="structure-overview">
+            <div class="structure-stats">
+                <div class="stat-item">
+                    <strong>Total Directories:</strong> 
+                    {{ analysis.directory_structure.total_directories or 'N/A' }}
+                </div>
+                <div class="stat-item">
+                    <strong>Maximum Depth:</strong> 
+                    {{ analysis.directory_structure.max_depth or 'N/A' }} levels
+                </div>
+                <div class="stat-item">
+                    <strong>Organization Score:</strong> 
+                    {% if analysis.organization_metrics and analysis.organization_metrics.organization_score %}
+                        <span class="org-score score-{{ 'high' if analysis.organization_metrics.organization_score >= 80 else 'medium' if analysis.organization_metrics.organization_score >= 60 else 'low' }}">
+                            {{ analysis.organization_metrics.organization_score }}/100
+                        </span>
+                    {% else %}
+                        <span class="org-score">N/A</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if analysis.directory_structure.directory_tree %}
+            <div class="directory-tree">
+                <h4>Directory Tree Structure:</h4>
+                <div class="tree-container">
+                    {{ render_directory_tree(analysis.directory_structure.directory_tree) }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Organization Analysis -->
+    {% if analysis.organization_metrics %}
+    <div class="dashboard-card">
+        <h3 class="subHeading">🎯 Organization Analysis</h3>
+        
+        {% if analysis.organization_metrics.common_patterns %}
+        <div class="patterns-section">
+            <h4>✅ Positive Patterns:</h4>
+            <ul>
+                {% for pattern in analysis.organization_metrics.common_patterns %}
+                <li>{{ pattern }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if analysis.organization_metrics.potential_issues %}
+        <div class="issues-section">
+            <h4>⚠️ Areas for Improvement:</h4>
+            <ul>
+                {% for issue in analysis.organization_metrics.potential_issues %}
+                <li>{{ issue }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        {% if not analysis.organization_metrics.common_patterns and not analysis.organization_metrics.potential_issues %}
+        <p>Organization analysis completed. No specific patterns or issues identified.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Traditional Overview -->
     <div class="dashboard-card">
         <h3 class="subHeading">📈 Overview</h3>
-        <p><strong>Files:</strong> {{ analysis.total_files }}</p>
-        <p><strong>Size:</strong> {{ (analysis.total_size / 1024 / 1024) | round(2) }} MB</p>
-        <p><strong>File Types:</strong> {{ analysis.file_type_categories | length }}</p>
+        <p><strong>Files:</strong> {{ analysis.total_files or 0 }}</p>
+        <p><strong>Size:</strong> {{ (analysis.total_size / 1024 / 1024) | round(2) if analysis.total_size else 0 }} MB</p>
+        <p><strong>File Types:</strong> {{ analysis.file_type_categories | length if analysis.file_type_categories else 0 }}</p>
     </div>
 
     <!-- File Types -->
     <div class="dashboard-card">
         <h3 class="subHeading">📂 File Types</h3>
-        {% for file_type, count in analysis.file_type_categories.items() %}
-        <div class="event-item">
-            <div class="event-details">
-                <h4>{{ file_type.upper() }}</h4>
-                <p>{{ count }} files</p>
+        {% if analysis.file_type_categories %}
+            {% for file_type, count in analysis.file_type_categories.items() %}
+            <div class="event-item">
+                <div class="event-details">
+                    <h4>{{ file_type.upper() }}</h4>
+                    <p>{{ count }} files</p>
+                </div>
             </div>
-        </div>
-        {% endfor %}
+            {% endfor %}
+        {% else %}
+            <p>No file type information available.</p>
+        {% endif %}
     </div>
 
     <!-- Actions -->
@@ -48,4 +221,261 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Existing styles... */
+.structure-overview {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.structure-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    border-left: 4px solid #3498db;
+}
+
+.org-score.score-high { color: #27ae60; font-weight: bold; }
+.org-score.score-medium { color: #f39c12; font-weight: bold; }
+.org-score.score-low { color: #e74c3c; font-weight: bold; }
+
+/* NEW: Template Analysis Styles */
+.template-analysis {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.template-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border-left: 4px solid #e74c3c;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stat-card h4 {
+    margin: 0 0 10px 0;
+    color: #555;
+    font-size: 14px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: bold;
+    color: #e74c3c;
+    margin: 10px 0;
+}
+
+.stat-description {
+    color: #777;
+    font-size: 12px;
+}
+
+.category-breakdown, .top-templates, .unused-templates {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.category-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.category-header h5 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.category-badge {
+    background: #3498db;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.category-details {
+    margin-bottom: 10px;
+}
+
+.category-details p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.template-details {
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.template-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    font-size: 13px;
+}
+
+.template-name {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.template-matches {
+    color: #7f8c8d;
+}
+
+.template-item.more {
+    font-style: italic;
+    color: #bdc3c7;
+}
+
+.template-list {
+    margin-top: 15px;
+}
+
+.template-rank-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    border-left: 4px solid #f39c12;
+}
+
+.rank-number {
+    background: #f39c12;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 15px;
+}
+
+.template-info {
+    flex: 1;
+}
+
+.template-info .template-name {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.template-info .template-category {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.template-metrics {
+    text-align: right;
+}
+
+.template-metrics .matches {
+    font-weight: bold;
+    color: #27ae60;
+}
+
+.template-metrics .similarity {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.unused-list {
+    margin-top: 10px;
+}
+
+.unused-template {
+    display: inline-block;
+    background: #ecf0f1;
+    color: #7f8c8d;
+    padding: 5px 10px;
+    margin: 3px;
+    border-radius: 15px;
+    font-size: 12px;
+}
+
+.unused-template.more {
+    background: #bdc3c7;
+    color: white;
+    font-style: italic;
+}
+
+.unused-note {
+    margin-top: 15px;
+    padding: 10px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 5px;
+    color: #856404;
+    font-size: 14px;
+}
+
+.directory-tree {
+    margin-top: 20px;
+}
+
+.tree-container {
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+}
+
+.patterns-section, .issues-section {
+    margin: 15px 0;
+}
+
+.patterns-section h4 { color: #27ae60; }
+.issues-section h4 { color: #e74c3c; }
+
+.patterns-section ul li { color: #27ae60; }
+.issues-section ul li { color: #e74c3c; }
+</style>
+
 {% endblock %}

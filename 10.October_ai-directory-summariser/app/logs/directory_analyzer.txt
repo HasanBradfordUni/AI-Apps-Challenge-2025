@@ -64,3 +64,102 @@ DirectoryAnalyzer initialized successfully
 [2025-10-30 22:04:56] Output:
 DirectoryAnalyzer initialized successfully
 
+[2025-10-31 21:33:27] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-31 21:51:50] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-31 21:57:39] Output:
+Starting directory analysis for: C:\Users\fifau\Downloads\AI Call Bot
+
+[2025-10-31 21:57:39] Output:
+Beginning directory walk for: C:\Users\fifau\Downloads\AI Call Bot
+
+[2025-10-31 21:57:39] Output:
+Analysis complete - Found 51 files, 3 directories
+
+[2025-10-31 21:57:39] Output:
+Total size: 10091292 bytes
+
+[2025-10-31 21:57:39] Output:
+Analysis took: 0.05 seconds
+
+[2025-10-31 21:57:39] Output:
+Average file size: 197868.47 bytes
+
+[2025-10-31 22:30:45] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-31 22:32:41] Output:
+Starting enhanced directory analysis for: C:\Users\fifau\OneDrive\Documents\Hasan work
+
+[2025-10-31 22:32:41] Output:
+Starting directory analysis for: C:\Users\fifau\OneDrive\Documents\Hasan work
+
+[2025-10-31 22:32:41] Output:
+Beginning directory walk for: C:\Users\fifau\OneDrive\Documents\Hasan work
+
+[2025-10-31 22:32:41] Error:
+Could not access file C:\Users\fifau\OneDrive\Documents\Hasan work\Freelance Business\Images\A simple and sleek design with a yellow lightbulb, computer, and code screen, utilizing green for growth, blue for trust, black for sophistication, and red, with the text Akhtar Hasan Software Solutions.png: [WinError 3] The system cannot find the path specified: 'C:\\Users\\fifau\\OneDrive\\Documents\\Hasan work\\Freelance Business\\Images\\A simple and sleek design with a yellow lightbulb, computer, and code screen, utilizing green for growth, blue for trust, black for sophistication, and red, with the text Akhtar Hasan Software Solutions.png'
+
+[2025-10-31 22:32:41] Output:
+Processed 100 files so far...
+
+[2025-10-31 22:32:41] Output:
+Processed 200 files so far...
+
+[2025-10-31 22:32:41] Output:
+Processed 300 files so far...
+
+[2025-10-31 22:32:41] Output:
+Processed 400 files so far...
+
+[2025-10-31 22:32:41] Output:
+Processed 500 files so far...
+
+[2025-10-31 22:32:41] Output:
+Analysis complete - Found 518 files, 64 directories
+
+[2025-10-31 22:32:41] Output:
+Total size: 1192340762 bytes
+
+[2025-10-31 22:32:41] Output:
+Analysis took: 0.71 seconds
+
+[2025-10-31 22:32:41] Output:
+Average file size: 2301816.14 bytes
+
+[2025-10-31 22:32:41] Output:
+Analyzing directory structure
+
+[2025-10-31 22:32:41] Output:
+Directory structure analysis complete: 65 directories, max depth: 5
+
+[2025-10-31 22:32:41] Output:
+Analyzing organization patterns
+
+[2025-10-31 22:32:42] Output:
+Organization analysis complete: score 55/100
+
+[2025-10-31 22:32:42] Output:
+Enhanced analysis complete: 518 files, 65 directories
+
+[2025-10-31 22:48:29] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-31 22:48:39] Output:
+Starting directory analysis for: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 22:48:39] Output:
+Analysis complete: 532 files processed
+
+[2025-10-31 23:21:31] Output:
+DirectoryAnalyzer initialized successfully
+
+[2025-10-31 23:23:03] Output:
+Starting directory analysis for: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 23:23:03] Output:
+Analysis complete: 532 files processed
+

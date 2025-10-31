@@ -167,3 +167,986 @@ FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
 [2025-10-30 22:04:56] Output:
 Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
 
+[2025-10-31 21:33:27] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-31 21:33:27] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-31 21:51:50] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-31 21:51:50] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-31 21:57:39] Output:
+Starting content analysis for: C:\Users\fifau\Downloads\AI Call Bot
+
+[2025-10-31 21:57:40] Output:
+Content analysis progress: 50 files processed
+
+[2025-10-31 21:57:40] Output:
+Content analysis complete: 9 supported files
+
+[2025-10-31 21:57:40] Output:
+Total words: 1934
+
+[2025-10-31 21:57:40] Output:
+Total characters: 21075
+
+[2025-10-31 21:57:40] Output:
+Average words per file: 214.9
+
+[2025-10-31 22:30:45] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-31 22:30:45] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-31 22:32:42] Output:
+Starting content analysis for: C:\Users\fifau\OneDrive\Documents\Hasan work
+
+[2025-10-31 22:32:42] Output:
+Reading PDF file: DOC-20221204-WA0000.pdf
+
+[2025-10-31 22:32:46] Output:
+Reading DOCX file: DSA Taxi Receipts - October and November 2024.docx
+
+[2025-10-31 22:32:47] Output:
+Reading DOCX file: DSA Taxi Receipts Feb 24.docx
+
+[2025-10-31 22:32:49] Output:
+Reading DOCX file: DSA Taxi Receipts Mar 24.docx
+
+[2025-10-31 22:32:50] Output:
+Reading DOCX file: Fc24 Packs.docx
+
+[2025-10-31 22:32:52] Output:
+Large content file found: Fc24 Packs.docx (13447 words)
+
+[2025-10-31 22:32:52] Output:
+Reading DOCX file: Hasan Akhtar Machine Learning.docx
+
+[2025-10-31 22:32:53] Output:
+Reading PDF file: multiplying_base_system_02_binary_001qp.1455811321.pdf
+
+[2025-10-31 22:32:55] Output:
+Reading PowerPoint file: Python Tutorial Intro slide.pptx
+
+[2025-10-31 22:32:56] Output:
+Large content file found: WhatsApp Chat with Dad.txt (6178 words)
+
+[2025-10-31 22:32:57] Output:
+Reading DOCX file: Akhtar Hasan Software Solutions - Freelance Business Process.docx
+
+[2025-10-31 22:33:00] Output:
+Large content file found: Akhtar Hasan Software Solutions - Freelance Business Process.docx (3114 words)
+
+[2025-10-31 22:33:01] Output:
+Reading Excel file: Market Research for Akhtar Hasan Software Solutions (Responses).xlsx
+
+[2025-10-31 22:33:01] Output:
+Reading Excel file: Market Research for Akhtar HasanSoftware Solutions (Microsoft form responses).xlsx
+
+[2025-10-31 22:33:02] Output:
+Reading DOCX file: Akhtar Hasan Software Solutions - Freelance Business Process.docx
+
+[2025-10-31 22:33:08] Output:
+Large content file found: Akhtar Hasan Software Solutions - Freelance Business Process.docx (22204 words)
+
+[2025-10-31 22:33:08] Output:
+Reading DOCX file: Akhtar Hasan Software Solutions - Website Case Studies.docx
+
+[2025-10-31 22:33:11] Output:
+Reading PowerPoint file: Freelance Business Showcase.pptx
+
+[2025-10-31 22:33:13] Output:
+Reading DOCX file: Freelance Contract - Rahat Nafees - To do list app.docx
+
+[2025-10-31 22:33:13] Output:
+Reading DOCX file: Freelance Contract Template.docx
+
+[2025-10-31 22:33:14] Output:
+Reading PDF file: Market Research for Akhtar Hasan Software Solutions.pdf
+
+[2025-10-31 22:33:16] Output:
+Large content file found: PayPal for web - Docs.txt (14669 words)
+
+[2025-10-31 22:33:16] Output:
+Reading DOCX file: Privacy Policy - Akhtar Hasan Software Solutions.docx
+
+[2025-10-31 22:33:16] Output:
+Reading PDF file: Privacy Policy - Akhtar Hasan Software Solutions.pdf
+
+[2025-10-31 22:33:18] Output:
+Reading DOCX file: Screenshots of the website homepage 24.4.25.docx
+
+[2025-10-31 22:33:19] Output:
+Reading PDF file: Screenshots of the website homepage 24.4.25.pdf
+
+[2025-10-31 22:33:21] Output:
+Reading DOCX file: Terms & Conditions - Akhtar Hasan Software Solutions.docx
+
+[2025-10-31 22:33:22] Output:
+Reading PDF file: Terms & Conditions - Akhtar Hasan Software Solutions.pdf
+
+[2025-10-31 22:33:23] Error:
+Error analyzing file content C:\Users\fifau\OneDrive\Documents\Hasan work\Freelance Business\Images\A simple and sleek design with a yellow lightbulb, computer, and code screen, utilizing green for growth, blue for trust, black for sophistication, and red, with the text Akhtar Hasan Software Solutions.png: [WinError 3] The system cannot find the path specified: 'C:\\Users\\fifau\\OneDrive\\Documents\\Hasan work\\Freelance Business\\Images\\A simple and sleek design with a yellow lightbulb, computer, and code screen, utilizing green for growth, blue for trust, black for sophistication, and red, with the text Akhtar Hasan Software Solutions.png'
+
+[2025-10-31 22:33:23] Output:
+Content analysis progress: 50 files processed
+
+[2025-10-31 22:33:23] Output:
+Content analysis progress: 100 files processed
+
+[2025-10-31 22:33:23] Output:
+Content analysis progress: 150 files processed
+
+[2025-10-31 22:33:23] Output:
+Reading PDF file: Freelance Contract - Rahat Nafees - To do list app - SIGNED.pdf
+
+[2025-10-31 22:33:24] Output:
+Reading PDF file: Freelance Contract - Rahat Nafees - To do list app.pdf
+
+[2025-10-31 22:33:25] Output:
+Reading PDF file: Invoice - 2025052100.pdf
+
+[2025-10-31 22:33:29] Output:
+Reading DOCX file: Rahat Nafees's Review.docx
+
+[2025-10-31 22:33:31] Output:
+Large content file found: main.py (1400 words)
+
+[2025-10-31 22:33:32] Output:
+Reading PDF file: Freelance Contract - Umair Siddiq - File Organiser app - SIGNED.pdf
+
+[2025-10-31 22:33:32] Output:
+Reading PDF file: Freelance Contract Template - Umair Siddiq - File Organiser app.pdf
+
+[2025-10-31 22:33:33] Output:
+Reading PDF file: Invoice - 2025052300.pdf
+
+[2025-10-31 22:33:39] Output:
+Large content file found: main.py (4139 words)
+
+[2025-10-31 22:33:40] Output:
+Content analysis progress: 200 files processed
+
+[2025-10-31 22:33:40] Output:
+Reading DOCX file: ChatGPT Initial Role Ideas.docx
+
+[2025-10-31 22:33:40] Output:
+Reading DOCX file: HAR Business Round-up - Template.docx
+
+[2025-10-31 22:33:41] Output:
+Reading DOCX file: HAR Business Round-up [fifth edition].docx
+
+[2025-10-31 22:33:41] Output:
+Reading DOCX file: HAR Business Round-up [first edition].docx
+
+[2025-10-31 22:33:42] Output:
+Reading DOCX file: HAR Business Round-up [fourth edition].docx
+
+[2025-10-31 22:33:42] Output:
+Reading DOCX file: HAR Business Round-up [second edition].docx
+
+[2025-10-31 22:33:43] Output:
+Reading DOCX file: HAR Business Round-up [third edition].docx
+
+[2025-10-31 22:33:45] Output:
+Reading DOCX file: Old Business Round-ups [combined edition].docx
+
+[2025-10-31 22:33:46] Output:
+Large content file found: Old Business Round-ups [combined edition].docx (1601 words)
+
+[2025-10-31 22:33:46] Output:
+Reading DOCX file: Python Transcripts for first project (05.10.2024).docx
+
+[2025-10-31 22:33:47] Output:
+Large content file found: Python Transcripts for first project (05.10.2024).docx (1484 words)
+
+[2025-10-31 22:33:47] Output:
+Reading DOCX file: Redshift Business Round-up [first edition].docx
+
+[2025-10-31 22:33:55] Output:
+Content analysis progress: 250 files processed
+
+[2025-10-31 22:34:08] Output:
+Content analysis progress: 300 files processed
+
+[2025-10-31 22:34:08] Output:
+Reading PDF file: The_New_Driver_Emergency_Checklist_120x180mm_1_.01.pdf
+
+[2025-10-31 22:34:12] Output:
+Large content file found: The_New_Driver_Emergency_Checklist_120x180mm_1_.01.pdf (2695 words)
+
+[2025-10-31 22:34:12] Output:
+Reading DOCX file: AI Apps Challenge April brief.docx
+
+[2025-10-31 22:34:12] Output:
+Reading DOCX file: AI Apps Challenge August brief.docx
+
+[2025-10-31 22:34:13] Output:
+Reading DOCX file: AI Apps Challenge February brief.docx
+
+[2025-10-31 22:34:13] Output:
+Reading PDF file: AI Apps Challenge February brief.pdf
+
+[2025-10-31 22:34:14] Output:
+Reading DOCX file: AI Apps Challenge January brief.docx
+
+[2025-10-31 22:34:14] Output:
+Reading DOCX file: AI Apps Challenge July brief.docx
+
+[2025-10-31 22:34:15] Output:
+Reading DOCX file: AI Apps Challenge June brief.docx
+
+[2025-10-31 22:34:16] Output:
+Reading DOCX file: AI Apps Challenge March brief.docx
+
+[2025-10-31 22:34:16] Output:
+Reading DOCX file: AI Apps Challenge May brief.docx
+
+[2025-10-31 22:34:16] Output:
+Reading DOCX file: AI Apps Challenge October brief.docx
+
+[2025-10-31 22:34:17] Output:
+Reading DOCX file: AI Apps Challenge September brief.docx
+
+[2025-10-31 22:34:18] Output:
+Reading DOCX file: AI Apps Challenge Yt Video Scripts.docx
+
+[2025-10-31 22:34:18] Output:
+Large content file found: AI Apps Challenge Yt Video Scripts.docx (1424 words)
+
+[2025-10-31 22:34:19] Output:
+Large content file found: AI Job Ad Generator Saved Info.txt (1318 words)
+
+[2025-10-31 22:34:21] Output:
+Large content file found: app.py (1254 words)
+
+[2025-10-31 22:34:22] Output:
+Large content file found: packNames.txt (2389 words)
+
+[2025-10-31 22:34:24] Output:
+Large content file found: warn-interface.txt (7633 words)
+
+[2025-10-31 22:34:26] Output:
+Large content file found: xref-interface.html (384884 words)
+
+[2025-10-31 22:34:26] Output:
+Content analysis progress: 350 files processed
+
+[2025-10-31 22:34:26] Output:
+Content analysis progress: 400 files processed
+
+[2025-10-31 22:34:26] Output:
+Reading PDF file: 126-statements-from-the-amir-of-ahl-al-sunnah.pdf
+
+[2025-10-31 22:34:29] Output:
+Reading PDF file: defining-the-contemptable-world.pdf
+
+[2025-10-31 22:34:33] Output:
+Reading PDF file: first-night-in-the-grave.pdf
+
+[2025-10-31 22:34:36] Output:
+Large content file found: first-night-in-the-grave.pdf (9186 words)
+
+[2025-10-31 22:34:37] Output:
+Reading PDF file: Madani Qaida English New.pdf
+
+[2025-10-31 22:35:27] Output:
+Large content file found: Madani Qaida English New.pdf (10579 words)
+
+[2025-10-31 22:35:27] Output:
+Reading PDF file: the-grandeur-of-ramadan.pdf
+
+[2025-10-31 22:35:31] Output:
+Reading PowerPoint file: chatGPT vs Microsoft Copilot.pptx
+
+[2025-10-31 22:35:31] Output:
+Reading PowerPoint file: Messi Vs Ronaldo Fc26 (in my Career Mode).pptx
+
+[2025-10-31 22:35:32] Output:
+Reading PowerPoint file: Muller Vs Reus Fc26 (in my Career Mode).pptx
+
+[2025-10-31 22:35:32] Output:
+Reading PowerPoint file: Neuer Vs Lloris Fc26 (in my Career Mode).pptx
+
+[2025-10-31 22:35:33] Output:
+Reading PowerPoint file: Presentation (6).pptx
+
+[2025-10-31 22:35:37] Output:
+Reading DOCX file: 2024-25 Placements Logger.docx
+
+[2025-10-31 22:35:37] Output:
+Large content file found: 2024-25 Placements Logger.docx (3705 words)
+
+[2025-10-31 22:35:37] Output:
+Reading DOCX file: BDO Internship Application Stage 2 feedback.docx
+
+[2025-10-31 22:35:38] Output:
+Reading DOCX file: Technology Interest - TPP (Technical Engineer Placement).docx
+
+[2025-10-31 22:35:38] Output:
+Reading DOCX file: Unilever Comptency question.docx
+
+[2025-10-31 22:35:39] Output:
+Reading PDF file: 2025 Industrial Placement Programme (BDO) - CL - Hasan Akhtar.pdf
+
+[2025-10-31 22:35:40] Output:
+Reading DOCX file: CL - Hasan Akhtar (Oct 2024).docx
+
+[2025-10-31 22:35:40] Output:
+Reading PDF file: Digital Internship - Thermal Energy (SSE Thermal) - CL - Hasan Akhtar (Oct 2024).pdf
+
+[2025-10-31 22:35:41] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (Apr 24) Solutions Not Sides.pdf
+
+[2025-10-31 22:35:42] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (Apr 24) SpaceKraft.pdf
+
+[2025-10-31 22:35:43] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (Apr 24) STRI.pdf
+
+[2025-10-31 22:35:44] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (June 24) Alumni.pdf
+
+[2025-10-31 22:35:45] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (June 24) Manningham Mills.pdf
+
+[2025-10-31 22:35:45] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (May 24) Emmark.pdf
+
+[2025-10-31 22:35:46] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (May 24) Funzy.pdf
+
+[2025-10-31 22:35:47] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (May 24) MInd in Bradford.pdf
+
+[2025-10-31 22:35:47] Output:
+Reading PDF file: Hasan Akhtar Cover Letter (May 24) MInd.pdf
+
+[2025-10-31 22:35:48] Output:
+Reading PDF file: IT Year in Industry Placement (Balfour Beatty) - CL - Hasan Akhtar (Nov 2024).pdf
+
+[2025-10-31 22:35:49] Output:
+Reading PDF file: Power Platform Developer (Hays Technology) - CL - Hasan Akhtar.pdf
+
+[2025-10-31 22:35:50] Output:
+Reading PDF file: Software Engineer (Guidant Global ) CL - Hasan Akhtar.pdf
+
+[2025-10-31 22:35:50] Output:
+Reading PDF file: Unilever R&D CL - Hasan Akhtar (Oct 2024).pdf
+
+[2025-10-31 22:35:51] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (June 24).docx
+
+[2025-10-31 22:35:52] Output:
+Reading DOCX file: Hamza Khan Cover Letter (October 24).docx
+
+[2025-10-31 22:35:52] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (Nov 24).docx
+
+[2025-10-31 22:35:53] Output:
+Content analysis progress: 450 files processed
+
+[2025-10-31 22:35:53] Output:
+Reading DOCX file: CL - Hasan Akhtar (Nov 2024).docx
+
+[2025-10-31 22:35:53] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (May 24).docx
+
+[2025-10-31 22:35:54] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (May 24).docx
+
+[2025-10-31 22:35:54] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (September 24).docx
+
+[2025-10-31 22:35:55] Output:
+Reading DOCX file: CL - Hasan Akhtar (May 2025).docx
+
+[2025-10-31 22:35:55] Output:
+Reading DOCX file: CL - Hasan Akhtar (May 2025).docx
+
+[2025-10-31 22:35:56] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (June 24).docx
+
+[2025-10-31 22:35:56] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (May 24).docx
+
+[2025-10-31 22:35:57] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (Apr 24).docx
+
+[2025-10-31 22:35:57] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (Apr 24).docx
+
+[2025-10-31 22:35:57] Output:
+Reading DOCX file: CL - Hasan Akhtar (Oct 2024).docx
+
+[2025-10-31 22:35:58] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (Apr 24).docx
+
+[2025-10-31 22:35:58] Output:
+Reading DOCX file: Hasan Akhtar Cover Letter (October 24).docx
+
+[2025-10-31 22:35:59] Output:
+Reading DOCX file: CV - Hasan Akhtar (April 2025).docx
+
+[2025-10-31 22:35:59] Output:
+Large content file found: CV - Hasan Akhtar (April 2025).docx (1099 words)
+
+[2025-10-31 22:35:59] Output:
+Reading DOCX file: CV - Hasan Akhtar (August 2025).docx
+
+[2025-10-31 22:36:00] Output:
+Large content file found: CV - Hasan Akhtar (August 2025).docx (1032 words)
+
+[2025-10-31 22:36:00] Output:
+Reading PDF file: CV - Hasan Akhtar (Autodesk - AI Research Scientist Intern).pdf
+
+[2025-10-31 22:36:01] Output:
+Large content file found: CV - Hasan Akhtar (Autodesk - AI Research Scientist Intern).pdf (1100 words)
+
+[2025-10-31 22:36:01] Output:
+Reading PDF file: CV - Hasan Akhtar (CGI - Space and Defence and Intelligence).pdf
+
+[2025-10-31 22:36:02] Output:
+Large content file found: CV - Hasan Akhtar (CGI - Space and Defence and Intelligence).pdf (1211 words)
+
+[2025-10-31 22:36:02] Output:
+Reading DOCX file: CV - Hasan Akhtar (Feb 2025) [LCC - Cloud and Platform Engineer].docx
+
+[2025-10-31 22:36:03] Output:
+Large content file found: CV - Hasan Akhtar (Feb 2025) [LCC - Cloud and Platform Engineer].docx (1096 words)
+
+[2025-10-31 22:36:03] Output:
+Reading DOCX file: CV - Hasan Akhtar (Feb 2025) [LCC - Data Science].docx
+
+[2025-10-31 22:36:04] Output:
+Large content file found: CV - Hasan Akhtar (Feb 2025) [LCC - Data Science].docx (1089 words)
+
+[2025-10-31 22:36:04] Output:
+Reading PDF file: CV - Hasan Akhtar (Feb 2025).pdf
+
+[2025-10-31 22:36:05] Output:
+Large content file found: CV - Hasan Akhtar (Feb 2025).pdf (1204 words)
+
+[2025-10-31 22:36:05] Output:
+Reading DOCX file: CV - Hasan Akhtar (Jan 2025) [CGI - Space
+Defence and Intelligence].docx
+
+[2025-10-31 22:36:05] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025) [CGI - Space
+Defence and Intelligence].docx (1088 words)
+
+[2025-10-31 22:36:05] Output:
+Reading DOCX file: CV - Hasan Akhtar (Jan 2025) [LCC - Power Platform].docx
+
+[2025-10-31 22:36:06] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025) [LCC - Power Platform].docx (1083 words)
+
+[2025-10-31 22:36:06] Output:
+Reading DOCX file: CV - Hasan Akhtar (Jan 2025) [Lloyds Bank - Data & Analytics].docx
+
+[2025-10-31 22:36:06] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025) [Lloyds Bank - Data & Analytics].docx (1014 words)
+
+[2025-10-31 22:36:06] Output:
+Reading DOCX file: CV - Hasan Akhtar (Jan 2025) [Lloyds Bank - Technology Engineering].docx
+
+[2025-10-31 22:36:07] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025) [Lloyds Bank - Technology Engineering].docx (1016 words)
+
+[2025-10-31 22:36:07] Output:
+Reading PDF file: CV - Hasan Akhtar (Jan 2025) [Lloyds Bank - Technology Engineering].pdf
+
+[2025-10-31 22:36:08] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025) [Lloyds Bank - Technology Engineering].pdf (1143 words)
+
+[2025-10-31 22:36:08] Output:
+Reading DOCX file: CV - Hasan Akhtar (Jan 2025) [TPP - Technical Engineer].docx
+
+[2025-10-31 22:36:09] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025) [TPP - Technical Engineer].docx (1081 words)
+
+[2025-10-31 22:36:09] Output:
+Reading DOCX file: CV - Hasan Akhtar (Jan 2025).docx
+
+[2025-10-31 22:36:09] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025).docx (1082 words)
+
+[2025-10-31 22:36:09] Output:
+Reading PDF file: CV - Hasan Akhtar (Jan 2025).pdf
+
+[2025-10-31 22:36:10] Output:
+Large content file found: CV - Hasan Akhtar (Jan 2025).pdf (1136 words)
+
+[2025-10-31 22:36:10] Output:
+Reading DOCX file: CV - Hasan Akhtar (July 2025).docx
+
+[2025-10-31 22:36:11] Output:
+Large content file found: CV - Hasan Akhtar (July 2025).docx (1108 words)
+
+[2025-10-31 22:36:11] Output:
+Reading DOCX file: CV - Hasan Akhtar (June 2025) [LA International - Python Technical Architect].docx
+
+[2025-10-31 22:36:11] Output:
+Reading DOCX file: CV - Hasan Akhtar (June 2025) [Queen Square - Python Technical Architect].docx
+
+[2025-10-31 22:36:12] Output:
+Reading DOCX file: CV - Hasan Akhtar (June 2025) [Stott and May - Python Technical Architect].docx
+
+[2025-10-31 22:36:12] Output:
+Reading DOCX file: CV - Hasan Akhtar (June 2025) [TPP - Summer Internship 2025 – Software Developer].docx
+
+[2025-10-31 22:36:13] Output:
+Reading DOCX file: CV - Hasan Akhtar (June 2025) [Wiser Academy - Ambassador].docx
+
+[2025-10-31 22:36:14] Output:
+Large content file found: CV - Hasan Akhtar (June 2025) [Wiser Academy - Ambassador].docx (1009 words)
+
+[2025-10-31 22:36:14] Output:
+Reading DOCX file: CV - Hasan Akhtar (June 2025).docx
+
+[2025-10-31 22:36:14] Output:
+Reading PDF file: CV - Hasan Akhtar (June 2025).pdf
+
+[2025-10-31 22:36:15] Output:
+Large content file found: CV - Hasan Akhtar (June 2025).pdf (1065 words)
+
+[2025-10-31 22:36:15] Output:
+Reading PDF file: CV - Hasan Akhtar (Kalisa - Flask Python AI Engineer).pdf
+
+[2025-10-31 22:36:16] Output:
+Large content file found: CV - Hasan Akhtar (Kalisa - Flask Python AI Engineer).pdf (1095 words)
+
+[2025-10-31 22:36:16] Output:
+Reading DOCX file: CV - Hasan Akhtar (May 2025) [Autodesk - AI Research Scientist Intern].docx
+
+[2025-10-31 22:36:17] Output:
+Reading DOCX file: CV - Hasan Akhtar (May 2025) [Guidant Global - Software Engineer].docx
+
+[2025-10-31 22:36:17] Output:
+Reading PDF file: CV - Hasan Akhtar (May 2025) [Guidant Global - Software Engineer].pdf
+
+[2025-10-31 22:36:18] Output:
+Large content file found: CV - Hasan Akhtar (May 2025) [Guidant Global - Software Engineer].pdf (1093 words)
+
+[2025-10-31 22:36:18] Output:
+Reading DOCX file: CV - Hasan Akhtar (May 2025) [Hays Technology - Power Platform Developer].docx
+
+[2025-10-31 22:36:19] Output:
+Reading DOCX file: CV - Hasan Akhtar (May 2025) [Kalisa - Flask Python AI Engineer].docx
+
+[2025-10-31 22:36:20] Output:
+Reading DOCX file: CV - Hasan Akhtar (May 2025) [RegGenome - Python Developer].docx
+
+[2025-10-31 22:36:20] Output:
+Reading DOCX file: CV - Hasan Akhtar (May 2025) [Twine Jobs - AI Developer].docx
+
+[2025-10-31 22:36:21] Output:
+Reading PDF file: CV - Hasan Akhtar (May 2025) [Twine Jobs - AI Developer].pdf
+
+[2025-10-31 22:36:22] Output:
+Large content file found: CV - Hasan Akhtar (May 2025) [Twine Jobs - AI Developer].pdf (1079 words)
+
+[2025-10-31 22:36:22] Output:
+Reading DOCX file: CV - Hasan Akhtar (May 2025).docx
+
+[2025-10-31 22:36:22] Output:
+Reading DOCX file: CV - Hasan Akhtar (Nov 2024) [Balfour Beatty].docx
+
+[2025-10-31 22:36:23] Output:
+Large content file found: CV - Hasan Akhtar (Nov 2024) [Balfour Beatty].docx (1012 words)
+
+[2025-10-31 22:36:23] Output:
+Reading DOCX file: CV - Hasan Akhtar (Nov 2024) [BDO].docx
+
+[2025-10-31 22:36:24] Output:
+Large content file found: CV - Hasan Akhtar (Nov 2024) [BDO].docx (1024 words)
+
+[2025-10-31 22:36:24] Output:
+Reading PDF file: CV - Hasan Akhtar (Nov 2024).pdf
+
+[2025-10-31 22:36:25] Output:
+Large content file found: CV - Hasan Akhtar (Nov 2024).pdf (1134 words)
+
+[2025-10-31 22:36:25] Output:
+Reading DOCX file: CV - Hasan Akhtar (Oct 2024) [SSE Thermal].docx
+
+[2025-10-31 22:36:26] Output:
+Content analysis progress: 500 files processed
+
+[2025-10-31 22:36:26] Output:
+Reading DOCX file: CV - Hasan Akhtar (Oct 2024) [Unilever].docx
+
+[2025-10-31 22:36:27] Output:
+Large content file found: CV - Hasan Akhtar (Oct 2024) [Unilever].docx (1018 words)
+
+[2025-10-31 22:36:27] Output:
+Reading DOCX file: CV - Hasan Akhtar (Oct 2024).docx
+
+[2025-10-31 22:36:28] Output:
+Large content file found: CV - Hasan Akhtar (Oct 2024).docx (1018 words)
+
+[2025-10-31 22:36:28] Output:
+Reading PDF file: CV - Hasan Akhtar (Oct 2024).pdf
+
+[2025-10-31 22:36:30] Output:
+Large content file found: CV - Hasan Akhtar (Oct 2024).pdf (1107 words)
+
+[2025-10-31 22:36:30] Output:
+Reading DOCX file: CV - Hasan Akhtar (October 2025).docx
+
+[2025-10-31 22:36:31] Output:
+Large content file found: CV - Hasan Akhtar (October 2025).docx (1158 words)
+
+[2025-10-31 22:36:31] Output:
+Reading DOCX file: CV - Hasan Akhtar (September 2025).docx
+
+[2025-10-31 22:36:31] Output:
+Large content file found: CV - Hasan Akhtar (September 2025).docx (1153 words)
+
+[2025-10-31 22:36:31] Output:
+Reading PDF file: CV - Hasan Akhtar (TPP - Technical Engineer).pdf
+
+[2025-10-31 22:36:32] Output:
+Large content file found: CV - Hasan Akhtar (TPP - Technical Engineer).pdf (1198 words)
+
+[2025-10-31 22:36:32] Output:
+Reading PDF file: CV - Hasan Akhtar - Cloud and Platform Engineer.pdf
+
+[2025-10-31 22:36:33] Output:
+Large content file found: CV - Hasan Akhtar - Cloud and Platform Engineer.pdf (1216 words)
+
+[2025-10-31 22:36:33] Output:
+Reading PDF file: CV - Hasan Akhtar - Data Science.pdf
+
+[2025-10-31 22:36:34] Output:
+Large content file found: CV - Hasan Akhtar - Data Science.pdf (1209 words)
+
+[2025-10-31 22:36:34] Output:
+Reading PDF file: CV - Hasan Akhtar - Power Platform.pdf
+
+[2025-10-31 22:36:35] Output:
+Large content file found: CV - Hasan Akhtar - Power Platform.pdf (1202 words)
+
+[2025-10-31 22:36:35] Output:
+Reading PDF file: CV - Hasan Akhtar.pdf
+
+[2025-10-31 22:36:36] Output:
+Large content file found: CV - Hasan Akhtar.pdf (1202 words)
+
+[2025-10-31 22:36:36] Output:
+Reading PDF file: Hasan Akhtar Personal CV - July 2024.pdf
+
+[2025-10-31 22:36:38] Output:
+Large content file found: Hasan Akhtar Personal CV - July 2024.pdf (1110 words)
+
+[2025-10-31 22:36:38] Output:
+Reading PDF file: Hasan Akhtar Personal CV - June 2024.pdf
+
+[2025-10-31 22:36:39] Output:
+Reading PDF file: Hasan Akhtar Personal CV - September 2024.pdf
+
+[2025-10-31 22:36:40] Output:
+Large content file found: Hasan Akhtar Personal CV - September 2024.pdf (1086 words)
+
+[2025-10-31 22:36:40] Output:
+Reading DOCX file: Hasan Akhtar Placement CV 18 Oct 2024.docx
+
+[2025-10-31 22:36:40] Output:
+Reading DOCX file: Hasan Akhtar Placement CV.docx
+
+[2025-10-31 22:36:41] Output:
+Large content file found: Hasan Akhtar Placement CV.docx (1010 words)
+
+[2025-10-31 22:36:41] Output:
+Reading DOCX file: Personal CV - April 2024.docx
+
+[2025-10-31 22:36:41] Output:
+Reading PDF file: Personal CV - April 2024.pdf
+
+[2025-10-31 22:36:43] Output:
+Reading DOCX file: Personal CV - July 2024.docx
+
+[2025-10-31 22:36:43] Output:
+Large content file found: Personal CV - July 2024.docx (1008 words)
+
+[2025-10-31 22:36:43] Output:
+Reading PDF file: Personal CV - May 2024.pdf
+
+[2025-10-31 22:36:44] Output:
+Content analysis complete: 248 supported files
+
+[2025-10-31 22:36:44] Output:
+Total words: 612426
+
+[2025-10-31 22:36:44] Output:
+Total characters: 13758944
+
+[2025-10-31 22:36:44] Output:
+Average words per file: 2469.5
+
+[2025-10-31 22:36:44] Error:
+Encountered 1 parsing errors
+
+[2025-10-31 22:48:29] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-31 22:48:29] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-31 22:48:39] Output:
+Starting content analysis for: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 22:48:40] Output:
+Large content file found: Internship Experience Notes.txt (2068 words)
+
+[2025-10-31 22:48:41] Output:
+Large content file found: LICENSE.txt (5644 words)
+
+[2025-10-31 22:48:41] Output:
+Large content file found: Nums.txt (10000 words)
+
+[2025-10-31 22:48:41] Output:
+Large content file found: PyWhatKit_DB.txt (1594 words)
+
+[2025-10-31 22:48:42] Output:
+Large content file found: VideoLibraryCode.txt (3068 words)
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 50 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 100 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 150 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 200 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 250 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 300 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 350 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 400 files processed
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 450 files processed
+
+[2025-10-31 22:48:42] Output:
+Reading Excel file: 23011124 AKHTAR Hasan.xlsx
+
+[2025-10-31 22:48:42] Output:
+Content analysis progress: 500 files processed
+
+[2025-10-31 22:48:42] Output:
+Reading Excel file: COS4017-B_2023-4_CW1 PresentationSettingsCanvasVersion.xlsx
+
+[2025-10-31 22:48:42] Output:
+Large content file found: COS4017-B_2023-4_CW1 PresentationSettingsCanvasVersion.xlsx (1477 words)
+
+[2025-10-31 22:48:42] Output:
+Reading Excel file: Personal Meetings Tracker.xlsx
+
+[2025-10-31 22:48:42] Output:
+Large content file found: Personal Meetings Tracker.xlsx (1096 words)
+
+[2025-10-31 22:48:42] Output:
+Reading Excel file: Skills Matrix-14-Feb-24.xlsx
+
+[2025-10-31 22:48:43] Output:
+Large content file found: Skills Matrix-14-Feb-24.xlsx (1403 words)
+
+[2025-10-31 22:48:43] Output:
+Reading DOCX file: Chest Chess.docx
+
+[2025-10-31 22:48:43] Output:
+Reading DOCX file: FoPCW2023 hakhta26 report.docx
+
+[2025-10-31 22:48:43] Output:
+Reading DOCX file: Internship-Advert-draft-1_-_Space_kraft(1).docx
+
+[2025-10-31 22:48:43] Output:
+Reading DOCX file: Internship-Advert-draft-1_-_Space_kraft.docx
+
+[2025-10-31 22:48:43] Output:
+Reading DOCX file: Interview_Technical_questions(1).docx
+
+[2025-10-31 22:48:43] Output:
+Large content file found: Interview_Technical_questions(1).docx (1464 words)
+
+[2025-10-31 22:48:43] Output:
+Reading DOCX file: Interview_Technical_questions.docx
+
+[2025-10-31 22:48:44] Output:
+Large content file found: Interview_Technical_questions.docx (1464 words)
+
+[2025-10-31 22:48:44] Output:
+Reading DOCX file: Mark and Feedback.docx
+
+[2025-10-31 22:48:44] Output:
+Reading DOCX file: Q1b EQ.docx
+
+[2025-10-31 22:48:44] Output:
+Reading DOCX file: Script for Python showcase vid.docx
+
+[2025-10-31 22:48:44] Output:
+Large content file found: Script for Python showcase vid.docx (3396 words)
+
+[2025-10-31 22:48:44] Output:
+Reading DOCX file: Viral Video Framework.docx
+
+[2025-10-31 22:48:45] Output:
+Large content file found: speedometer-3-2024-04-26T08 58 33.374Z.json (17892 words)
+
+[2025-10-31 22:48:45] Output:
+Content analysis complete: 58 supported files
+
+[2025-10-31 22:48:45] Output:
+Total words: 65445
+
+[2025-10-31 22:48:45] Output:
+Total characters: 684844
+
+[2025-10-31 22:48:45] Output:
+Average words per file: 1128.4
+
+[2025-10-31 23:21:31] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2025-10-31 23:21:31] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2025-10-31 23:23:03] Output:
+Starting content analysis for: C:\Users\fifau\Documents\Old laptop
+
+[2025-10-31 23:23:03] Output:
+Large content file found: Internship Experience Notes.txt (2068 words)
+
+[2025-10-31 23:23:03] Output:
+Large content file found: LICENSE.txt (5644 words)
+
+[2025-10-31 23:23:03] Output:
+Large content file found: Nums.txt (10000 words)
+
+[2025-10-31 23:23:03] Output:
+Large content file found: PyWhatKit_DB.txt (1594 words)
+
+[2025-10-31 23:23:03] Output:
+Large content file found: VideoLibraryCode.txt (3068 words)
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 50 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 100 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 150 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 200 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 250 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 300 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 350 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 400 files processed
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 450 files processed
+
+[2025-10-31 23:23:03] Output:
+Reading Excel file: 23011124 AKHTAR Hasan.xlsx
+
+[2025-10-31 23:23:03] Output:
+Content analysis progress: 500 files processed
+
+[2025-10-31 23:23:03] Output:
+Reading Excel file: COS4017-B_2023-4_CW1 PresentationSettingsCanvasVersion.xlsx
+
+[2025-10-31 23:23:03] Output:
+Large content file found: COS4017-B_2023-4_CW1 PresentationSettingsCanvasVersion.xlsx (1477 words)
+
+[2025-10-31 23:23:03] Output:
+Reading Excel file: Personal Meetings Tracker.xlsx
+
+[2025-10-31 23:23:03] Output:
+Large content file found: Personal Meetings Tracker.xlsx (1096 words)
+
+[2025-10-31 23:23:03] Output:
+Reading Excel file: Skills Matrix-14-Feb-24.xlsx
+
+[2025-10-31 23:23:03] Output:
+Large content file found: Skills Matrix-14-Feb-24.xlsx (1403 words)
+
+[2025-10-31 23:23:03] Output:
+Reading DOCX file: Chest Chess.docx
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: FoPCW2023 hakhta26 report.docx
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Internship-Advert-draft-1_-_Space_kraft(1).docx
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Internship-Advert-draft-1_-_Space_kraft.docx
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Interview_Technical_questions(1).docx
+
+[2025-10-31 23:23:04] Output:
+Large content file found: Interview_Technical_questions(1).docx (1464 words)
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Interview_Technical_questions.docx
+
+[2025-10-31 23:23:04] Output:
+Large content file found: Interview_Technical_questions.docx (1464 words)
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Mark and Feedback.docx
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Q1b EQ.docx
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Script for Python showcase vid.docx
+
+[2025-10-31 23:23:04] Output:
+Large content file found: Script for Python showcase vid.docx (3396 words)
+
+[2025-10-31 23:23:04] Output:
+Reading DOCX file: Viral Video Framework.docx
+
+[2025-10-31 23:23:04] Output:
+Large content file found: speedometer-3-2024-04-26T08 58 33.374Z.json (17892 words)
+
+[2025-10-31 23:23:04] Output:
+Content analysis complete: 58 supported files
+
+[2025-10-31 23:23:04] Output:
+Total words: 65445
+
+[2025-10-31 23:23:04] Output:
+Total characters: 684844
+
+[2025-10-31 23:23:04] Output:
+Average words per file: 1128.4
+

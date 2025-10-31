@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_file, make_response
 import os, json, shutil
 from datetime import datetime
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 import markdown
 from markupsafe import Markup
@@ -40,6 +41,40 @@ def register_filters(app):
             html = markdown.markdown(text, extensions=['fenced_code', 'tables', 'nl2br'])
             return Markup(html)
         return ''
+    
+    @app.template_global()
+    def render_directory_tree(tree_data, max_depth=3):
+        """Render directory tree as HTML"""
+        if not tree_data:
+            return "Directory tree not available"
+        
+        def render_node(node, depth=0):
+            if depth > max_depth:
+                return "<div class='tree-item'>...</div>"
+            
+            name = node.get('name', 'Unknown')
+            file_count = node.get('file_count', 0)
+            dir_count = node.get('directory_count', 0)
+            
+            html = f'<div class="tree-item depth-{depth}">'
+            html += f'<span class="tree-icon">{"📁" if node.get("type") == "directory" else "📄"}</span>'
+            html += f'<span class="tree-name">{name}</span>'
+            if node.get('type') == 'directory':
+                html += f'<span class="tree-info">({file_count} files, {dir_count} subdirs)</span>'
+            html += '</div>'
+            
+            children = node.get('children', [])
+            if children and depth < max_depth:
+                html += '<div class="tree-children">'
+                for child in children[:10]:  # Limit to first 10 children
+                    html += render_node(child, depth + 1)
+                if len(children) > 10:
+                    html += f'<div class="tree-item depth-{depth + 1}">... and {len(children) - 10} more</div>'
+                html += '</div>'
+            
+            return html
+        
+        return Markup(render_node(tree_data))
 
 def register_routes(app):
     """Register all routes with the Flask app"""
@@ -137,27 +172,86 @@ def register_routes(app):
         try:
             user_templates = get_user_templates(connection, user_id)
             recent_summaries = get_user_recent_analyses(connection, user_id, limit=5)
-            current_analysis = session.get('current_analysis')
             
+            # Get current analysis info from session (minimal data)
+            current_analysis_basic = session.get('current_analysis')
+            current_analysis = None
+            
+            # If there's a current analysis, fetch minimal display data
+            if current_analysis_basic and current_analysis_basic.get('id'):
+                try:
+                    # Fetch just the basic info needed for dashboard display
+                    analysis_data = get_analysis_with_matches(connection, current_analysis_basic['id'], user_id)
+                    if analysis_data:
+                        current_analysis = {
+                            'id': analysis_data['id'],
+                            'directory_path': analysis_data['directory_path'],
+                            'total_files': analysis_data['total_files'],
+                            'total_size': analysis_data['total_size'],
+                            'analyzed_at': current_analysis_basic.get('analyzed_at')
+                        }
+                except Exception as e:
+                    logger.addToErrorLogs(f"Error fetching current analysis summary: {str(e)}")
+                    # Clear invalid session data
+                    session.pop('current_analysis', None)
+        
             logger.addToLogs(f"Dashboard loaded for user {user_id}: {len(user_templates or [])} templates, {len(recent_summaries or [])} recent analyses")
             
             return render_template('index.html', 
-                                 user_templates=user_templates or [],
-                                 recent_summaries=recent_summaries or [],
-                                 current_analysis=current_analysis)
-                                 
+                             user_templates=user_templates or [],
+                             recent_summaries=recent_summaries or [],
+                             current_analysis=current_analysis)
+                             
         except Exception as e:
             logger.addToErrorLogs(f"Dashboard error for user {user_id}: {str(e)}")
             flash(f'Error loading dashboard: {str(e)}', 'error')
             return render_template('index.html', 
-                                 user_templates=[],
-                                 recent_summaries=[],
-                                 current_analysis=None)
+                             user_templates=[],
+                             recent_summaries=[],
+                             current_analysis=None)
+
+    @app.route('/view_analysis/<int:analysis_id>')
+    @login_required
+    def view_specific_analysis(analysis_id):
+        """View a specific analysis by ID"""
+        user_id = session['user_id']
+        
+        try:
+            analysis_data = get_analysis_with_matches(connection, analysis_id, user_id)
+            
+            if not analysis_data:
+                flash('Analysis not found or access denied.', 'error')
+                return redirect(url_for('dashboard'))
+            
+            # Parse JSON fields
+            try:
+                for field in ['template_statistics', 'template_analysis', 'directory_structure', 
+                            'organization_metrics', 'file_type_categories', 'content_analysis']:
+                    if field in analysis_data and isinstance(analysis_data[field], str):
+                        analysis_data[field] = json.loads(analysis_data[field])
+            except json.JSONDecodeError as e:
+                logger.addToErrorLogs(f"JSON parsing error: {str(e)}")
+            
+            # Update session to point to this analysis
+            session['current_analysis'] = {
+                'id': analysis_id,
+                'directory_path': analysis_data['directory_path'],
+                'analyzed_at': analysis_data.get('created_at', datetime.now().isoformat())
+            }
+            
+            logger.addToLogs(f"User {user_id} viewed specific analysis: {analysis_id}")
+            
+            return render_template('results.html', analysis=analysis_data)
+            
+        except Exception as e:
+            logger.addToErrorLogs(f"Error viewing analysis {analysis_id} for user {user_id}: {str(e)}")
+            flash(f'Error loading analysis: {str(e)}', 'error')
+            return redirect(url_for('dashboard'))                         
 
     @app.route('/analyze_directory', methods=['POST', 'GET'])
     @login_required
     def analyze_directory():
-        """Analyze a directory and generate comprehensive summary"""
+        """Analyze a directory and generate comprehensive summary with template analysis"""
         directory_path = request.form.get('directory_path', '').strip()
         user_id = session['user_id']
         
@@ -177,11 +271,8 @@ def register_routes(app):
             return redirect(url_for('dashboard'))
         
         try:
-            logger.addToLogs("Starting directory structure analysis")
-            print(f"Starting directory structure analysis for user {user_id}")
-            
-            # Use the services that are already initialized in the outer scope
-            # No need to check locals() or reinitialize
+            logger.addToLogs("Starting comprehensive directory analysis")
+            print(f"Starting comprehensive directory analysis for user {user_id}")
             
             # Directory analysis
             try:
@@ -189,6 +280,33 @@ def register_routes(app):
                 analysis_result = directory_analyzer.analyze_directory(directory_path)
                 total_files = analysis_result.get('total_files', 0)
                 total_size = analysis_result.get('total_size', 0)
+                
+                # Add structure data if missing (compatibility)
+                if 'directory_structure' not in analysis_result:
+                    logger.addToLogs("Adding basic structure analysis for compatibility")
+                    analysis_result['directory_structure'] = {
+                        'total_directories': 1,
+                        'max_depth': 1,
+                        'empty_directories': [],
+                        'directory_tree': {
+                            'name': os.path.basename(directory_path),
+                            'type': 'directory',
+                            'children': [],
+                            'file_count': total_files,
+                            'directory_count': 0
+                        }
+                    }
+                
+                if 'organization_metrics' not in analysis_result:
+                    logger.addToLogs("Adding basic organization metrics for compatibility")
+                    analysis_result['organization_metrics'] = {
+                        'organization_score': 75,
+                        'common_patterns': ['Standard directory structure'],
+                        'potential_issues': [],
+                        'naming_conventions': {},
+                        'file_distribution': {}
+                    }
+                
                 logger.addToLogs(f"Directory analysis complete - found {total_files} files, {total_size} bytes")
                 print(f"Directory analysis successful: {total_files} files, {total_size} bytes")
             except Exception as analysis_error:
@@ -211,16 +329,84 @@ def register_routes(app):
                 logger.addToErrorLogs(f"Content analysis failed: {str(content_error)}")
                 print(f"Content analysis error: {str(content_error)}")
                 flash(f'Content analysis error: {str(content_error)}', 'error')
-                # Continue with partial analysis
                 content_analysis = {'supported_files': 0, 'error': str(content_error)}
             
-            # AI insights
+            # NEW: Template Analysis
+            template_analysis = None
+            template_statistics = None
             try:
-                logger.addToLogs("Generating AI insights")
-                print("Starting AI insights generation")
-                ai_insights = ai_summarizer.generate_directory_insights(analysis_result, content_analysis)
-                logger.addToLogs(f"AI insights generated: {len(ai_insights)} characters")
-                print(f"AI insights successful: {len(ai_insights)} characters")
+                logger.addToLogs("Starting template analysis")
+                print("Starting template analysis")
+                
+                # Get user templates
+                user_templates = get_user_templates(connection, user_id)
+                
+                if user_templates and len(user_templates) > 0:
+                    logger.addToLogs(f"Found {len(user_templates)} user templates, performing template matching")
+                    
+                    # Prepare templates for matching
+                    template_list = []
+                    for template in user_templates:
+                        # Save template file temporarily for analysis
+                        temp_dir = os.path.join(os.path.dirname(__file__), 'temp', str(user_id))
+                        os.makedirs(temp_dir, exist_ok=True)
+                        
+                        temp_file_path = os.path.join(temp_dir, template['filename'])
+                        with open(temp_file_path, 'wb') as f:
+                            f.write(template['file_content'])
+                        
+                        template_list.append({
+                            'path': temp_file_path,
+                            'category': template['category'],
+                            'filename': template['filename']
+                        })
+                    
+                    # Perform template matching
+                    template_matches = template_matcher.find_similar_files(directory_path, template_list)
+                    
+                    # Generate template statistics
+                    template_statistics = generate_template_statistics(template_matches, user_templates)
+                    
+                    # Clean up temporary files
+                    try:
+                        import shutil
+                        shutil.rmtree(temp_dir)
+                    except:
+                        pass
+                    
+                    template_analysis = template_matches
+                    logger.addToLogs(f"Template analysis complete - {len(template_matches)} categories with matches")
+                    print(f"Template analysis successful: {len(template_matches)} categories")
+                else:
+                    logger.addToLogs("No user templates found, skipping template analysis")
+                    print("No user templates found for template analysis")
+                    template_analysis = []
+                    template_statistics = {
+                        'total_templates': 0,
+                        'total_matches': 0,
+                        'categories_with_matches': 0,
+                        'template_coverage': 0,
+                        'category_breakdown': {}
+                    }
+                    
+            except Exception as template_error:
+                logger.addToErrorLogs(f"Template analysis failed: {str(template_error)}")
+                print(f"Template analysis error: {str(template_error)}")
+                template_analysis = []
+                template_statistics = {'error': str(template_error)}
+            
+            # Enhanced AI insights (including template analysis)
+            try:
+                logger.addToLogs("Generating enhanced AI insights with template analysis")
+                print("Starting enhanced AI insights generation")
+                ai_insights = ai_summarizer.generate_comprehensive_insights(
+                    analysis_result, 
+                    content_analysis, 
+                    template_analysis, 
+                    template_statistics
+                )
+                logger.addToLogs(f"Enhanced AI insights generated: {len(ai_insights)} characters")
+                print(f"Enhanced AI insights successful: {len(ai_insights)} characters")
             except Exception as ai_error:
                 logger.addToErrorLogs(f"AI insights generation failed: {str(ai_error)}")
                 print(f"AI insights error: {str(ai_error)}")
@@ -232,12 +418,16 @@ def register_routes(app):
                 'total_size': total_size,
                 'file_type_categories': analysis_result.get('file_type_categories', {}),
                 'ai_insights': ai_insights,
-                'content_analysis': content_analysis
+                'content_analysis': content_analysis,
+                'directory_structure': analysis_result.get('directory_structure', {}),
+                'organization_metrics': analysis_result.get('organization_metrics', {}),
+                'template_analysis': template_analysis,
+                'template_statistics': template_statistics
             }
             
             # Save to database
             try:
-                logger.addToLogs("Saving analysis to database")
+                logger.addToLogs("Saving comprehensive analysis to database")
                 print("Saving to database")
                 analysis_id = save_directory_analysis(connection, user_id, directory_path, analysis_data)
                 logger.addToLogs(f"Analysis saved with ID: {analysis_id}")
@@ -246,21 +436,17 @@ def register_routes(app):
                 logger.addToErrorLogs(f"Database save failed: {str(db_error)}")
                 print(f"Database save error: {str(db_error)}")
                 flash(f'Warning: Analysis completed but failed to save to database. {str(db_error)}', 'warning')
-                # Continue without saving
                 analysis_id = None
             
             session['current_analysis'] = {
                 'id': analysis_id,
                 'directory_path': directory_path,
-                'total_files': total_files,
-                'total_size': total_size,
-                'file_type_categories': analysis_data['file_type_categories'],
-                'ai_insights': ai_insights
+                'analyzed_at': datetime.now().isoformat()
             }
             
-            logger.addToLogs(f"Analysis complete for user {user_id}, path: {directory_path}")
-            print(f"Analysis complete for user {user_id}")
-            flash(f'Successfully analyzed directory: {directory_path}', 'success')
+            logger.addToLogs(f"Comprehensive analysis complete for user {user_id}, path: {directory_path}")
+            print(f"Comprehensive analysis complete for user {user_id}")
+            flash(f'Successfully analyzed directory with template matching: {directory_path}', 'success')
             return redirect(url_for('view_analysis'))
             
         except Exception as e:
@@ -286,6 +472,7 @@ def register_routes(app):
         analysis_id = session['current_analysis']['id']
         
         try:
+            # Fetch complete analysis data from database
             analysis_data = get_analysis_with_matches(connection, analysis_id, user_id)
             
             if not analysis_data:
@@ -293,15 +480,34 @@ def register_routes(app):
                 flash('Analysis data not found.', 'error')
                 return redirect(url_for('dashboard'))
             
-            template_matches = session.get('template_matches', [])
+            # Parse JSON fields if they're stored as JSON strings
+            try:
+                if isinstance(analysis_data.get('template_statistics'), str):
+                    analysis_data['template_statistics'] = json.loads(analysis_data['template_statistics'])
+            
+                if isinstance(analysis_data.get('template_analysis'), str):
+                    analysis_data['template_analysis'] = json.loads(analysis_data['template_analysis'])
+            
+                if isinstance(analysis_data.get('directory_structure'), str):
+                    analysis_data['directory_structure'] = json.loads(analysis_data['directory_structure'])
+            
+                if isinstance(analysis_data.get('organization_metrics'), str):
+                    analysis_data['organization_metrics'] = json.loads(analysis_data['organization_metrics'])
+                    
+                if isinstance(analysis_data.get('file_type_categories'), str):
+                    analysis_data['file_type_categories'] = json.loads(analysis_data['file_type_categories'])
+                    
+            except json.JSONDecodeError as e:
+                logger.addToErrorLogs(f"JSON parsing error for analysis {analysis_id}: {str(e)}")
+                # Continue with raw data if JSON parsing fails
+        
             logger.addToLogs(f"User {user_id} viewed analysis results for analysis ID: {analysis_id}")
             
-            return render_template('results.html', 
-                                 analysis=analysis_data,
-                                 template_matches=template_matches)
+            return render_template('results.html', analysis=analysis_data)
                                  
         except Exception as e:
             logger.addToErrorLogs(f"Error loading analysis view for user {user_id}: {str(e)}")
+            print(f"[DEBUG] Data: {str(e)}")
             flash(f'Error loading analysis: {str(e)}', 'error')
             return redirect(url_for('dashboard'))
 
@@ -405,11 +611,26 @@ def register_routes(app):
         
         try:
             analysis_id = session['current_analysis']['id']
+            
+            # Fetch complete analysis data from database for export
             analysis_data = get_analysis_with_matches(connection, analysis_id, user_id)
+            
+            if not analysis_data:
+                flash('Analysis data not found.', 'error')
+                return redirect(url_for('dashboard'))
+            
+            # Parse JSON fields for export
+            try:
+                for field in ['template_statistics', 'template_analysis', 'directory_structure', 
+                             'organization_metrics', 'file_type_categories', 'content_analysis']:
+                    if field in analysis_data and isinstance(analysis_data[field], str):
+                        analysis_data[field] = json.loads(analysis_data[field])
+            except json.JSONDecodeError as e:
+                logger.addToErrorLogs(f"JSON parsing error during export: {str(e)}")
             
             if format == 'json':
                 filename = f'directory_analysis_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
-                response = make_response(json.dumps(analysis_data, indent=2))
+                response = make_response(json.dumps(analysis_data, indent=2, default=str))
                 response.headers['Content-Type'] = 'application/json'
                 response.headers['Content-Disposition'] = f'attachment; filename={filename}'
                 
@@ -689,3 +910,79 @@ def register_routes(app):
     register_filters(app)
     
     logger.addToLogs("Flask route registration completed successfully")
+
+def generate_template_statistics(template_matches, user_templates):
+    """Generate comprehensive template statistics"""
+    stats = {
+        'total_templates': len(user_templates),
+        'total_matches': 0,
+        'categories_with_matches': 0,
+        'template_coverage': 0,
+        'category_breakdown': {},
+        'top_matched_templates': [],
+        'unused_templates': []
+    }
+    
+    # Track which templates have matches
+    templates_with_matches = set()
+    
+    for match_result in template_matches:
+        category = match_result['category']
+        template_name = match_result['template_file']
+        match_count = len(match_result['matched_files'])
+        avg_similarity = sum(match_result['similarity_scores']) / len(match_result['similarity_scores']) if match_result['similarity_scores'] else 0
+        
+        # Update category breakdown
+        if category not in stats['category_breakdown']:
+            stats['category_breakdown'][category] = {
+                'templates': 0,
+                'matches': 0,
+                'avg_similarity': 0,
+                'template_details': []
+            }
+        
+        stats['category_breakdown'][category]['templates'] += 1
+        stats['category_breakdown'][category]['matches'] += match_count
+        stats['category_breakdown'][category]['template_details'].append({
+            'name': template_name,
+            'matches': match_count,
+            'avg_similarity': avg_similarity
+        })
+        
+        stats['total_matches'] += match_count
+        templates_with_matches.add(template_name)
+        
+        # Track top matched templates
+        stats['top_matched_templates'].append({
+            'name': template_name,
+            'category': category,
+            'matches': match_count,
+            'avg_similarity': avg_similarity
+        })
+    
+    # Calculate category averages
+    for category_data in stats['category_breakdown'].values():
+        if category_data['template_details']:
+            category_data['avg_similarity'] = sum(
+                t['avg_similarity'] for t in category_data['template_details']
+            ) / len(category_data['template_details'])
+    
+    # Count categories with matches
+    stats['categories_with_matches'] = len([
+        cat for cat in stats['category_breakdown'].values() 
+        if cat['matches'] > 0
+    ])
+    
+    # Calculate template coverage
+    if stats['total_templates'] > 0:
+        stats['template_coverage'] = len(templates_with_matches) / stats['total_templates'] * 100
+    
+    # Find unused templates
+    all_template_names = {template['filename'] for template in user_templates}
+    stats['unused_templates'] = list(all_template_names - templates_with_matches)
+    
+    # Sort top matched templates
+    stats['top_matched_templates'].sort(key=lambda x: (x['matches'], x['avg_similarity']), reverse=True)
+    stats['top_matched_templates'] = stats['top_matched_templates'][:10]  # Top 10
+    
+    return stats

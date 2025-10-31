@@ -58,3 +58,57 @@ AISummarizer initialized with Google GenAI
 [2025-10-30 22:04:56] Output:
 AISummarizer initialized with Google GenAI
 
+[2025-10-31 21:33:27] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-31 21:51:50] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-31 21:57:40] Output:
+Starting AI insights generation
+
+[2025-10-31 21:57:40] Output:
+Generating insights for 51 files, 9.6 MB
+
+[2025-10-31 21:57:40] Output:
+Sending request to Google GenAI
+
+[2025-10-31 21:57:49] Output:
+AI insights generated successfully (3270 characters)
+
+[2025-10-31 22:30:45] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-31 22:36:44] Output:
+Starting enhanced AI insights generation
+
+[2025-10-31 22:36:44] Output:
+Sending enhanced structure analysis to Google GenAI
+
+[2025-10-31 22:36:59] Output:
+Enhanced AI insights generated successfully (6565 characters)
+
+[2025-10-31 22:48:29] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-31 22:48:45] Output:
+Starting enhanced AI insights generation
+
+[2025-10-31 22:48:45] Output:
+Sending enhanced structure analysis to Google GenAI
+
+[2025-10-31 22:49:01] Output:
+Enhanced AI insights generated successfully (6582 characters)
+
+[2025-10-31 23:21:31] Output:
+AISummarizer initialized with Google GenAI
+
+[2025-10-31 23:23:04] Output:
+Starting comprehensive AI insights generation with template analysis
+
+[2025-10-31 23:23:04] Output:
+Sending comprehensive analysis request to Google GenAI
+
+[2025-10-31 23:23:22] Output:
+Comprehensive AI insights generated successfully (8826 characters)
+

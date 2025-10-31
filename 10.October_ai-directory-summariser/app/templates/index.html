@@ -7,7 +7,7 @@
 
 <div class="dashboard-container">
     <!-- Main Analysis Form -->
-    <div class="dashboard-card">
+    <div class="long-dashboard-card">
         <form action="{{ url_for('analyze_directory') }}" method="POST" class="email-form">
             <input type="text" name="directory_path" placeholder="Enter directory path (e.g., C:\Documents)" class="email-input" required>
             <button type="submit" class="submit-btn">Analyze Directory</button>
@@ -25,19 +25,28 @@
             </div>
             {% endfor %}
         </div>
+        <br>
+        <br>
         <a href="{{ url_for('templates') }}" class="submit-btn">Manage Templates</a>
     </div>
     {% endif %}
 
-    <!-- Current Analysis -->
+    <!-- Current Analysis Section -->
     {% if current_analysis %}
     <div class="dashboard-card">
         <h3 class="subHeading">📊 Latest Analysis</h3>
-        <p><strong>Path:</strong> {{ current_analysis.directory_path }}</p>
-        <p><strong>Files:</strong> {{ current_analysis.total_files }} | <strong>Size:</strong> {{ (current_analysis.total_size / 1024 / 1024) | round(1) }} MB</p>
-        <div class="quick-actions">
-            <button onclick="window.location.href=`{{ url_for('view_analysis') }}`" class="action-btn">View Results</button>
-            <button onclick="window.location.href=`{{ url_for('export_analysis', format='json') }}`" class="action-btn">Export</button>
+        <div class="event-item">
+            <div class="event-details">
+                <h4>{{ current_analysis.directory_path }}</h4>
+                <p><strong>Files:</strong> {{ current_analysis.total_files }}</p>
+                <p><strong>Size:</strong> {{ (current_analysis.total_size / 1024 / 1024) | round(2) }} MB</p>
+                {% if current_analysis.analyzed_at %}
+                <p><strong>Analyzed:</strong> {{ current_analysis.analyzed_at[:16] | replace('T', ' ') }}</p>
+                {% endif %}
+            </div>
+            <div class="event-actions">
+                <button onclick="window.location.href=`{{ url_for('view_analysis') }}`" class="action-btn">📊 View Results</button>
+            </div>
         </div>
     </div>
     {% endif %}
