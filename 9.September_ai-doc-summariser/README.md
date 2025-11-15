@@ -27,11 +27,10 @@ It supports **multiple file types**, offers **customisable summary settings**, a
 2. **Frameworks and Libraries:**  
    - Flask/Django: Web application framework  
    - PyPDF2, python-docx: For document parsing  
-   - Gemini or OpenAI APIs: For summarisation  
+   - Gemini API: For summarisation  
    - SpaCy or NLTK: For additional text preprocessing  
-3. **Database:** SQLite for storing user preferences and summary logs  
-4. **Deployment:** Docker containerization and cloud service deployment (e.g., AWS or Azure)  
-5. **Version Control:** Git for source code management  
+3. **Deployment:** Docker containerization and cloud service deployment (e.g., AWS or Azure)  
+4. **Version Control:** Git for source code management  
 
 ### Installation  
 1. Clone the repository:  

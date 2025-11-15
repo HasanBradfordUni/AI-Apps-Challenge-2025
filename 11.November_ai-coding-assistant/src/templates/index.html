@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Has AI - AI Programming Assistant</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <body>
+    <header>
+      <h1>
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+        Has AI - AI Programming Assistant
+        <img
+          src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png"
+          alt="The Has AI logo"
+          width="50"
+          height="50"
+          class="logo"
+        />
+      </h1>
+      <hr />
+      <ul class="nav">
+        <li><a href="#code-editor-section">Code Editor</a></li>
+        <li><a href="#assistance-section">AI Assistance</a></li>
+        <li><a href="#results-section">Results</a></li>
+        <li><a href="#comparison-section">Code Analysis</a></li>
+        <li><a href="#sessions-section">Code Sessions</a></li>
+        <li><a href="#export-section">Export Options</a></li>
+      </ul>
+      <br />
+    </header>
+
+    <section class="mainBody"  id="code-editor-section">
+      <h1 class="mainHeading">AI Programming Assistant</h1>
+      <h2 class="subHeading">
+        Write better code with AI-powered suggestions, error explanations, and documentation generation. Support for Python, JavaScript, Java, C++, and more.
+      </h2>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Code Editor Section -->
+      <div class="section" id="assistance-section">
+        <h3>💻 Code Editor & AI Assistant</h3>
+        <form method="POST" id="code-form">
+          {{ form.hidden_tag() }}
+          
+          <div class="two-column">
+            <div class="form-group">
+              <label for="programming_language">{{ form.programming_language.label }}</label>
+              {{ form.programming_language(class="form-control", id="programming_language") }}
+            </div>
+            
+            <div class="form-group">
+              <label for="assistance_type">{{ form.assistance_type.label }}</label>
+              {{ form.assistance_type(class="form-control", id="assistance_type") }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="code_input">{{ form.code_input.label }}</label>
+            {{ form.code_input(class="form-control code-editor", id="code_input") }}
+            <small>Enter your code above. Use Ctrl+Space for suggestions (coming soon with Monaco Editor).</small>
+          </div>
+
+          <div class="two-column">
+            <div class="form-group">
+              <label for="context">{{ form.context.label }}</label>
+              {{ form.context(class="form-control", id="context") }}
+            </div>
+            
+            <div class="form-group">
+              <label for="error_message">{{ form.error_message.label }}</label>
+              {{ form.error_message(class="form-control", id="error_message") }}
+            </div>
+          </div>
+
+          <div class="two-column">
+            <div class="form-group">
+              <label for="doc_type">{{ form.doc_type.label }}</label>
+              {{ form.doc_type(class="form-control", id="doc_type") }}
+            </div>
+            
+            <div class="form-group">
+              <label for="complexity_level">{{ form.complexity_level.label }}</label>
+              {{ form.complexity_level(class="form-control", id="complexity_level") }}
+            </div>
+          </div>
+
+          <div class="form-group" id="results-section">
+            {{ form.submit_code() }}
+            <button type="button" class="button" onclick="clearCodeEditor()">Clear Editor</button>
+            <button type="button" class="button" onclick="copyCode()">Copy Code</button>
+          </div>
+        </form>
+        
+        <!-- Code Statistics -->
+        <div id="code-stats" style="display: none;">
+          <div class="stats-panel">
+            <h4>📊 Code Statistics</h4>
+            <div id="code-stats-content">
+              <!-- Code statistics will appear here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Assistance Results Section -->
+      <div class="section" id="comparison-section">
+        <h3>🤖 AI Assistant Results</h3>
+        
+        {% if suggestion_result %}
+        <div class="summary-display markdown-content">
+          {{ suggestion_result|markdown|safe }}
+        </div>
+        
+        <div class="settings-panel">
+          <h4>Current Assistance Settings</h4>
+          <p><strong>Language:</strong> {{ form.programming_language.data|title }}</p>
+          <p><strong>Assistance Type:</strong> {{ form.assistance_type.data|title }}</p>
+          <p><strong>Complexity Level:</strong> {{ form.complexity_level.data|title }}</p>
+        </div>
+        {% else %}
+        <div class="summary-display markdown-content">
+          No AI assistance generated yet. Enter your code above and select an assistance type to get AI-powered help.
+        </div>
+        {% endif %}
+
+        <!-- Quick Actions Panel -->
+        <div class="settings-panel" id="quick-actions-panel">
+          <h4>🚀 Quick Actions</h4>
+          <div class="two-column">
+            <div>
+              <button class="button" onclick="getCodeSuggestion()">Get Code Suggestions</button>
+              <button class="button" onclick="explainError()">Explain Error</button>
+              <button class="button" onclick="generateDocs()">Generate Documentation</button>
+            </div>
+            
+            <div>
+              <button class="button" onclick="completeCode()">Complete Code</button>
+              <button class="button" onclick="analyzeQuality()">Analyze Quality</button>
+              <button class="button" onclick="generateTests()">Generate Tests</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code Analysis Section -->
+      <div class="section">
+        <h3>🔍 Advanced Code Analysis</h3>
+        <p>Upload code files for comprehensive analysis or compare different coding approaches.</p>
+        
+        <!-- File Upload for Analysis -->
+        <div class="comparison-upload-area" id="file-upload">
+          <h4>📁 Upload Code File for Analysis</h4>
+          <form id="file-form" enctype="multipart/form-data">
+            <div class="custom-file-upload">
+              <label for="code_file">Select Code File</label>
+              <input type="file" id="code_file" name="code_file" class="file-input" 
+                     accept=".py,.js,.java,.cpp,.c,.h,.cs,.php,.rb,.go,.rs,.ts,.html,.css,.sql,.sh,.txt">
+              <small>Supported formats: Python, JavaScript, Java, C++, C#, PHP, Ruby, Go, Rust, TypeScript, HTML, CSS, SQL, Shell scripts</small>
+            </div>
+            <button type="button" class="button" onclick="uploadCodeFile()">Upload & Analyze</button>
+          </form>
+        </div>
+        
+        <!-- Analysis Results -->
+        <div id="analysis-results" style="display: none;">
+          <div class="comparison-panel">
+            <h4>📈 Code Analysis Results</h4>
+            <div class="two-column">
+              <div class="comparison-side">
+                <h5>Quality Metrics</h5>
+                <div id="quality-metrics">
+                  Analysis results will appear here...
+                </div>
+              </div>
+              <div class="comparison-side">
+                <h5>Improvement Suggestions</h5>
+                <div id="improvement-suggestions">
+                  Suggestions will appear here...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code Sessions -->
+      <div class="section" id="export-section">
+        <h3>💾 Code Sessions</h3>
+        <div class="sessions-list" id="sessions-list">
+          <div>No coding sessions yet. Start coding above to create your first session.</div>
+        </div>
+        
+        <!-- Session Statistics -->
+        <div class="stats-panel" id="session-stats" style="display: none;">
+          <h4>📊 Coding Statistics</h4>
+          <div id="stats-content">
+            <!-- Statistics will be loaded here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Export Options -->
+      <div class="section" id="export-section">
+        <h3>📁 Export Options</h3>
+        
+        <!-- Export Current Code -->
+        <div class="export-panel">
+          <h4>Export Current Code</h4>
+          <p>Save only the code currently in the editor as a specific file type:</p>
+          
+          <div class="export-container">
+            <div class="export-dropdown">
+              <label for="export-language-select">Export Code As:</label>
+              <select id="export-language-select" class="export-format-select form-control">
+                <option value="">Select file type...</option>
+              </select>
+              <button onclick="handleExportDropdownSelection()" class="btn btn-primary">Export Code</button>
+            </div>
+          </div>
+          
+          <div class="quick-export-buttons">
+            <h5>Quick Export:</h5>
+            <div class="export-buttons">
+              <button onclick="exportCurrentCode()" class="btn btn-primary">Current Language</button>
+              <button onclick="exportCurrentCodeAsLanguage('python')" class="btn btn-secondary">Python (.py)</button>
+              <button onclick="exportCurrentCodeAsLanguage('javascript')" class="btn btn-secondary">JavaScript (.js)</button>
+              <button onclick="exportCurrentCodeAsLanguage('java')" class="btn btn-secondary">Java (.java)</button>
+              <button onclick="exportCurrentCodeAsLanguage('cpp')" class="btn btn-secondary">C++ (.cpp)</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Session Downloads -->
+        <div class="sessions-download-panel">
+          <h4>Download Session Summaries</h4>
+          <p>Download complete session summaries including original code and AI assistance:</p>
+          
+          <div class="download-info">
+            <ul class="export-info">
+              <li><strong>TXT Format:</strong> Plain text summary with code and AI assistance</li>
+              <li><strong>Markdown Format:</strong> Formatted summary with syntax highlighting and structure</li>
+              <li><strong>Content:</strong> Original code, AI assistance, and session settings</li>
+              <li><strong>Note:</strong> No comment symbols - clean readable format</li>
+            </ul>
+          </div>
+          
+          <div id="current-session-download" style="display: none;">
+            <h5>Current Session:</h5>
+            <div class="export-buttons">
+              <button onclick="downloadCurrentSessionTXT()" class="btn btn-info">Download as TXT</button>
+              <button onclick="downloadCurrentSessionMarkdown()" class="btn btn-success">Download as Markdown</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+        <footer>
+      <div class="footer">
+        <div class="w-container">
+          <div class="w-row">
+            <div class="w-col w-col-4">
+              <h3>About</h3>
+              <div></div>
+              <div>Has AI</div>
+              <div>AI Programming Assistant</div>
+              <div>Website made with Python, Flask & Html</div>
+              <div>AI-Powered Coding Companion</div>
+              <div>
+                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+              </div>
+            </div>
+            <div class="w-col w-col-4">
+              <h3>Useful Links</h3>
+              <div class="footer-link-row">
+                <li><a href="#code-editor-section" target="_blank" class="footer-link">Code Editor</a></li>
+                <li><a href="#assistance-section" target="_blank" class="footer-link">AI Assistance</a></li>
+              </div>
+              <div class="footer-link-row">
+                <li><a href="#comparison-section" target="_blank" class="footer-link">Code Analysis</a></li>
+                <li><a href="#export-section" target="_blank" class="footer-link">Export Options</a></li>
+              </div>
+            </div>
+            <div class="f-col">
+              <h3>Socials</h3>
+              <div>
+                <img
+                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
+                  >X (Twitter)</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
+                  class="footer-link with-icon"
+                  >YouTube</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a
+                  href="https://github.com/AkhHas2005"
+                  class="footer-link with-icon"
+                  >GitHub</a
+                >
+              </div>
+              <div>
+                <img
+                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
+                  width="20"
+                  alt=""
+                  class="info-icon"
+                />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" 
+                class="footer-link with-icon"
+                  >Instagram</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+
+    <!-- JavaScript Files -->
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,172 @@
+body {
+    background-color: black;
+    text-align: center;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: goldenrod;
+    z-index: 1000;
+}
+
+img.logo {
+    border-style: solid;
+    border-color: white;
+    vertical-align: middle;
+    margin-left: 2cm;
+    margin-right: 2cm;
+}
+
+ul.nav {
+    list-style-type: none;
+    max-width: 100%;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    background-color: red;
+    display: flex;
+    justify-content: center;
+}
+
+li {
+    display: inline-block;
+}
+
+li a {
+    display: block;
+    color: black;
+    text-align: center;
+    padding: 16px;
+    text-decoration: none;
+}
+
+li a:hover {
+    background-color: gray;
+}
+
+div.menuBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#currentPage {
+    background-color: gold;
+}
+
+.mainBody {
+    margin-top: 6cm;
+}
+
+.mainHeading {
+    color: crimson;
+    font-size: xx-large;
+}
+
+.subHeading {
+    color: rebeccapurple;
+    font-size: larger;
+}
+
+.largeText {
+    color: darkkhaki;
+    font-size: large;
+}
+
+footer {
+    height: 350px;
+    background-color: goldenrod;
+}
+
+.footer {
+    padding-top: 35px;
+    padding-bottom: 35px;
+    background-color: goldenrod;
+    box-sizing: border-box;
+    height: 250px;
+}
+
+.w-container {
+    max-width: 940px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.w-container .w-row {
+    margin-left: -10px;
+    margin-right: -10px;
+}
+
+.w-col {
+    float: left;
+    min-height: 1px;
+    padding-left: 10px;
+    padding-right: 10px;
+    position: relative;
+}
+
+.f-col {
+    float: right;
+    min-height: 1px;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: 30%;
+    position: relative;
+    margin-top: -200px;
+}
+
+.w-col-4 {
+    width: 33.3333%;
+}
+
+.footer-link-row {
+    display: flex;
+    justify-content: space-evenly;
+    list-style-type: none;
+}
+
+.footer-link {
+    color: crimson;
+    border-bottom: 1px solid red;
+    margin-bottom: 6px;
+    padding-bottom: 10px;
+    font-size: 14px;
+    font-weight: 300;
+    text-decoration: none;
+    display: block;
+    list-style-type: none;
+}
+
+.footer-link:hover {
+    color: rgb(122, 106, 17);
+    text-decoration: underline;
+}
+
+.info-icon {
+    float: left;
+    vertical-align: middle;
+    max-width: 100%;
+}
+
+.footer-link.with-icon {
+    margin-left: 30px;
+}
+
+button {
+    background-color: crimson;
+    color: goldenrod;
+    border-color: gray;
+    size: 2cm;
+    padding: 13px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    animation-delay: 50ms;
+    background-color: blue;
+    color: rebeccapurple;
+}

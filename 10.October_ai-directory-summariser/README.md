@@ -25,12 +25,12 @@ The system also features a **template matching module**, allowing users to uploa
 ### Technical Specifications  
 1. **Programming Language:** Python  
 2. **Frameworks and Libraries:**  
-   - Flask or Streamlit: Web application framework  
+   - Flask: Web application framework  
    - os, pathlib: For directory traversal  
-   - python-docx, PyPDF2, openpyxl, python-pptx: For file parsing  
-   - difflib or fuzzywuzzy: For template similarity matching  
+   - python-docx, PyPDF2, openpyxl, python-pptx, etc.: For file parsing  
+   - Gemini API: For AI-based directory summaries and analysis
    - Pandas: For tabular data aggregation and filtering  
-3. **Database:** SQLite for storing template metadata and cached summaries  
+3. **Database:** SQLite for storing template metadata, user profiles and cached summaries  
 4. **Deployment:** Docker containerization and optional cloud deployment (e.g., AWS, Azure)  
 5. **Version Control:** Git for source code management  
 

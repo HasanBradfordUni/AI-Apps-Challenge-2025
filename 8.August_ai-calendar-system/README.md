@@ -26,7 +26,7 @@ The system provides a unified dashboard to manage multiple calendars, understand
 1. **Programming Language:** Python  
 2. **Frameworks and Libraries:**  
    - Flask/Django: Web application framework  
-   - SpaCy, NLTK, or Gemini APIs: For NLP and command parsing  
+   - Gemini API: For NLP and command parsing  
    - Google Calendar API, Microsoft Graph API: For calendar syncing  
    - IMAP/Gmail API: For email parsing  
    - SpeechRecognition or Vosk: For voice command input  
