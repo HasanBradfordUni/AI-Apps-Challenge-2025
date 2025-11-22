@@ -316,10 +316,259 @@ def generate_test_cases(code_content, language):
         return response.text
     except Exception as e:
         return f"Error generating test cases: {str(e)}"
+        
+def generate_code_completions(code_content, cursor_position, language, context=""):
+    """Generate intelligent code completion suggestions"""
+    
+    prompt = f"""
+    Provide code completion suggestions for this {language} code at the cursor position:
+    
+    Code: {code_content}
+    Cursor Position: {cursor_position}
+    Context: {context}
+    
+    Please provide:
+    1. Variable and function name completions
+    2. Method suggestions based on object type
+    3. Import statement completions
+    4. Keyword and syntax completions
+    5. Code snippet suggestions
+    6. Parameter hints and signatures
+    
+    Return completions as a ranked list of relevant suggestions.
+    """
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
+        return response.text
+    except Exception as e:
+        return f"Error generating code completions: {str(e)}"
+
+def generate_hover_info(code_content, symbol_name, language, context=""):
+    """Generate hover information for symbols in code"""
+    
+    prompt = f"""
+    Provide detailed hover information for the symbol '{symbol_name}' in this {language} code:
+    
+    Code: {code_content}
+    Symbol: {symbol_name}
+    Context: {context}
+    
+    Please provide:
+    1. Symbol definition and type information
+    2. Function/method signatures
+    3. Parameter descriptions
+    4. Return value information
+    5. Usage examples
+    6. Related documentation
+    7. Performance notes (if applicable)
+    
+    Format as concise but comprehensive hover tooltip content.
+    """
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
+        return response.text
+    except Exception as e:
+        return f"Error generating hover information: {str(e)}"
+
+def explain_code_functionality(code_content, language, level="intermediate"):
+    """Explain what the code does and how it works"""
+    
+    if level == "beginner":
+        prompt = f"""
+        Explain this {language} code in beginner-friendly terms:
+        
+        Code: {code_content}
+        
+        Please provide:
+        1. What this code does (high-level purpose)
+        2. Step-by-step explanation of the logic
+        3. Simple explanations of programming concepts used
+        4. What each major section accomplishes
+        5. Input and output descriptions
+        6. Real-world analogies where helpful
+        
+        Use simple language and avoid technical jargon.
+        """
+    
+    elif level == "advanced":
+        prompt = f"""
+        Provide an advanced technical explanation of this {language} code:
+        
+        Code: {code_content}
+        
+        Please analyze:
+        1. Algorithm complexity and efficiency
+        2. Design patterns and architectural decisions
+        3. Memory usage and performance implications
+        4. Advanced language features utilized
+        5. Potential optimizations and trade-offs
+        6. Integration points and dependencies
+        
+        Target explanation for experienced developers.
+        """
+    
+    else:  # intermediate level
+        prompt = f"""
+        Explain the functionality of this {language} code:
+        
+        Code: {code_content}
+        
+        Please provide:
+        1. Overall purpose and functionality
+        2. Key components and their roles
+        3. Data flow and control flow
+        4. Important algorithms or logic
+        5. External dependencies and interactions
+        6. Potential use cases and applications
+        
+        Balance technical accuracy with readability.
+        """
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[prompt]
+        )
+        return response.text
+    except Exception as e:
+        return f"Error explaining code functionality: {str(e)}"
 
 def main():
-    """Main function to demonstrate the AI functionality"""
-    pass
+    """Interactive testing system for geminiPrompt functions"""
+    print("\n=== AI Coding Assistant Interactive Test System ===\n")
+    
+    while True:
+        print("Available functions to test:")
+        print("1. generate_code_suggestion")
+        print("2. explain_error")
+        print("3. generate_documentation") 
+        print("4. complete_code")
+        print("5. analyze_code_quality")
+        print("6. generate_test_cases")
+        print("7. generate_code_completions")
+        print("8. generate_hover_info")
+        print("9. explain_code_functionality")
+        print("10. main (run full demo)")
+        print("0. Exit")
+        
+        choice = input("\nEnter function number to test: ")
+        
+        if choice == "0":
+            break
+        elif choice == "1":
+            code = input("Enter code to analyze: ")
+            language = input("Enter programming language: ")
+            context = input("Enter context (optional): ")
+            result = generate_code_suggestion(code, language, context)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "2":
+            code = input("Enter problematic code: ")
+            error = input("Enter error message: ")
+            language = input("Enter programming language: ")
+            result = explain_error(code, error, language)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "3":
+            code = input("Enter code to document: ")
+            language = input("Enter programming language: ")
+            doc_type = input("Enter doc type (docstring/comments/readme): ") or "docstring"
+            result = generate_documentation(code, language, doc_type)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "4":
+            code = input("Enter partial code: ")
+            language = input("Enter programming language: ")
+            context = input("Enter context (optional): ")
+            result = complete_code(code, language, context)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "5":
+            code = input("Enter code to analyze: ")
+            language = input("Enter programming language: ")
+            result = analyze_code_quality(code, language)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "6":
+            code = input("Enter code to generate tests for: ")
+            language = input("Enter programming language: ")
+            result = generate_test_cases(code, language)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "7":
+            code = input("Enter code: ")
+            cursor_pos = input("Enter cursor position: ")
+            language = input("Enter programming language: ")
+            context = input("Enter context (optional): ")
+            result = generate_code_completions(code, cursor_pos, language, context)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "8":
+            code = input("Enter code: ")
+            symbol = input("Enter symbol name: ")
+            language = input("Enter programming language: ")
+            context = input("Enter context (optional): ")
+            result = generate_hover_info(code, symbol, language, context)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "9":
+            code = input("Enter code to explain: ")
+            language = input("Enter programming language: ")
+            level = input("Enter explanation level (beginner/intermediate/advanced): ") or "intermediate"
+            result = explain_code_functionality(code, language, level)
+            print(f"\n✅ Result:\n{result}\n")
+            
+        elif choice == "10":
+            print("\n✅ Running main function demo:")
+            full_demo()
+            print("\n")
+            
+        else:
+            print("❌ Invalid choice. Please try again.")
+
+def full_demo():
+    """Run a full demo of all functions with sample inputs"""
+    sample_code = """def add(a, b):
+    return a + b
+    """
+    print("=== Full Demo of geminiPrompt Functions ===\n")
+    print("1. generate_code_suggestion:")
+    suggestion = generate_code_suggestion(sample_code, "python")
+    print(suggestion + "\n")
+    print("2. explain_error:")
+    error_explanation = explain_error(sample_code, "TypeError: unsupported operand type(s) for +: 'int' and 'str'", "python")
+    print(error_explanation + "\n")
+    print("3. generate_documentation:")
+    documentation = generate_documentation(sample_code, "python", "docstring")
+    print(documentation + "\n")
+    print("4. complete_code:")
+    partial_code = "def multiply(a, b):\n    "
+    completed_code = complete_code(partial_code, "python")
+    print(completed_code + "\n")
+    print("5. analyze_code_quality:")
+    code_quality = analyze_code_quality(sample_code, "python")
+    print(code_quality + "\n")
+    print("6. generate_test_cases:")
+    test_cases = generate_test_cases(sample_code, "python")
+    print(test_cases + "\n")
+    print("7. generate_code_completions:")
+    code_completions = generate_code_completions("def divide(a, b):\n    return a / ", 22, "python")
+    print(code_completions + "\n")
+    print("8. generate_hover_info:")
+    hover_info = generate_hover_info(sample_code, "add", "python")
+    print(hover_info + "\n")
+    print("9. explain_code_functionality:")
+    code_explanation = explain_code_functionality(sample_code, "python", "intermediate")
+    print(code_explanation + "\n")
+    print("=== End of Full Demo ===")
 
 if __name__ == '__main__':
     main()

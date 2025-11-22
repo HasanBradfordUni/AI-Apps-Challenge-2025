@@ -12,7 +12,10 @@ from ai.geminiPrompt import (
     generate_documentation, 
     complete_code,
     analyze_code_quality,
-    generate_test_cases
+    generate_test_cases, 
+    generate_code_completions,
+    generate_hover_info,    
+    explain_code_functionality
 )
 
 app = Flask(__name__)
@@ -486,67 +489,130 @@ def export_code_direct(session_id, export_format):
 @app.route('/api/get-sessions', methods=['GET'])
 def get_sessions():
     """Get all coding sessions"""
-    return jsonify({
-        'sessions': [
-            {
-                'id': session_id,
-                'timestamp': data['timestamp'],
-                'type': data['type'],
-                'language': data.get('language', ''),
-                'code_length': len(data.get('code_content', '')),
-                'has_suggestion': bool(data.get('suggestion')),
-                'assistance_settings': data.get('assistance_settings', {})
-            }
-            for session_id, data in coding_sessions.items()
-        ]
-    })
+    try:
+        return jsonify({
+            'success': True,
+            'sessions': coding_sessions
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/delete-session/<session_id>', methods=['DELETE'])
 def delete_session(session_id):
-    """Delete a coding session"""
-    if session_id not in coding_sessions:
-        return jsonify({'error': 'Session not found'}), 404
-    
-    del coding_sessions[session_id]
-    return jsonify({'success': True, 'message': 'Session deleted'})
+    """Delete a specific session"""
+    try:
+        if session_id in coding_sessions:
+            del coding_sessions[session_id]
+            return jsonify({'success': True})
+        else:
+            return jsonify({'error': 'Session not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/get-session/<session_id>', methods=['GET'])
 def get_session(session_id):
-    """Get specific session data"""
-    if session_id not in coding_sessions:
-        return jsonify({'error': 'Session not found'}), 404
-    
-    return jsonify({
-        'success': True,
-        'session': coding_sessions[session_id]
-    })
+    """Get a specific session"""
+    try:
+        if session_id in coding_sessions:
+            return jsonify({
+                'success': True,
+                'session': coding_sessions[session_id]
+            })
+        else:
+            return jsonify({'error': 'Session not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/get-coding-stats', methods=['GET'])
 def get_coding_stats():
-    """Get statistics about coding sessions"""
-    total_sessions = len(coding_sessions)
-    total_code_lines = sum(session.get('code_content', '').count('\n') + 1 for session in coding_sessions.values())
+    """Get coding statistics"""
+    try:
+        total_sessions = len(coding_sessions)
+        languages = [session['language'] for session in coding_sessions.values()]
+        most_used_language = max(set(languages), key=languages.count) if languages else 'None'
+        
+        return jsonify({
+            'success': True,
+            'stats': {
+                'total_sessions': total_sessions,
+                'most_used_language': most_used_language,
+                'total_lines': sum(len(session['code_content'].split('\n')) for session in coding_sessions.values())
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ai-completions', methods=['POST'])
+def get_ai_completions():
+    """Get AI-powered code completions for Monaco Editor"""
+    try:
+        data = request.get_json()
+        code = data.get('code', '')
+        language = data.get('language', 'python')
+        line = data.get('line', 1)
+        column = data.get('column', 1)
+        context = data.get('context', '')
+        
+        # Generate AI completions
+        completions = generate_code_completions(code, language, context, line, column)
+        
+        return jsonify({
+            'success': True,
+            'completions': completions
+        })
     
-    # Language distribution
-    languages = {}
-    for session in coding_sessions.values():
-        language = session.get('language', 'unknown')
-        languages[language] = languages.get(language, 0) + 1
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'completions': []
+        }), 200  # Return 200 to avoid breaking Monaco
+
+@app.route('/api/ai-hover', methods=['POST'])
+def get_ai_hover():
+    """Get AI-powered hover information"""
+    try:
+        data = request.get_json()
+        code = data.get('code', '')
+        word = data.get('word', '')
+        line = data.get('line', 1)
+        language = data.get('language', 'python')
+        
+        # Generate AI hover info
+        info = generate_hover_info(code, word, language, line)
+        
+        return jsonify({
+            'success': True,
+            'info': info
+        })
     
-    # Assistance type distribution
-    assistance_types = {}
-    for session in coding_sessions.values():
-        settings = session.get('assistance_settings', {})
-        assistance_type = settings.get('type', 'unknown')
-        assistance_types[assistance_type] = assistance_types.get(assistance_type, 0) + 1
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 200
+
+@app.route('/api/explain-code', methods=['POST'])
+def explain_code_snippet():
+    """Explain a specific code snippet"""
+    try:
+        data = request.get_json()
+        code = data.get('code', '')
+        language = data.get('language', 'python')
+        
+        if not code.strip():
+            return jsonify({'error': 'No code provided'}), 400
+        
+        # Generate explanation
+        explanation = explain_code_functionality(code, language)
+        
+        return jsonify({
+            'success': True,
+            'explanation': explanation
+        })
     
-    return jsonify({
-        'total_sessions': total_sessions,
-        'total_code_lines': total_code_lines,
-        'language_distribution': languages,
-        'assistance_type_distribution': assistance_types,
-        'average_lines_per_session': total_code_lines / total_sessions if total_sessions > 0 else 0
-    })
+    except Exception as e:
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6922, debug=True)

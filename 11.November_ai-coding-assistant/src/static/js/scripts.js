@@ -9,16 +9,771 @@ let processingInProgress = false;
 // Global variables for supported file types
 let supportedFileTypes = [];
 
+// Global variables for Monaco Editor
+let monacoEditor = null;
+let completionProvider = null;
+let languageFeatureProvider = null;
+
 // Document ready initialization
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('AI Programming Assistant initialized');
+    setupFloatingHeader();
+    setupSmoothScrolling();
+    setupBackToTop();
+    initializeMonacoEditor();
     loadSupportedFileTypes();
     loadSessions();
-    setupFormValidation();
-    setupCodeEditor();
-    handleFormSubmission();
     updateCodeStats();
+    updateSessionStats();
+    setupFormValidation();
 });
+
+// Initialize Monaco Editor
+function initializeMonacoEditor() {
+    // Show loading overlay
+    const container = document.getElementById('monaco-editor-container');
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'monaco-loading-overlay';
+    loadingOverlay.innerHTML = '<div class="monaco-loading-spinner"></div>Loading Monaco Editor...';
+    container.appendChild(loadingOverlay);
+
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+        // Remove loading overlay
+        container.removeChild(loadingOverlay);
+        
+        // Create the editor
+        monacoEditor = monaco.editor.create(container, {
+            value: `# Welcome to the AI Programming Assistant
+# Start typing your code here...
+# Use Ctrl+Space for AI-powered suggestions!
+
+def hello_world():
+    print("Hello, World!")
+    return "Welcome to Has AI!"
+
+if __name__ == "__main__":
+    message = hello_world()
+    print(f"Message: {message}")`,
+            language: 'python',
+            theme: 'vs-dark',
+            fontSize: 14,
+            lineNumbers: 'on',
+            roundedSelection: false,
+            scrollBeyondLastLine: false,
+            readOnly: false,
+            automaticLayout: true,
+            minimap: { enabled: true },
+            wordWrap: 'on',
+            bracketMatching: 'always',
+            autoIndent: 'advanced',
+            formatOnPaste: true,
+            formatOnType: true,
+            suggestOnTriggerCharacters: true,
+            acceptSuggestionOnCommitCharacter: true,
+            acceptSuggestionOnEnter: 'on',
+            tabCompletion: 'on',
+            quickSuggestions: {
+                other: true,
+                comments: true,
+                strings: true
+            },
+            parameterHints: {
+                enabled: true
+            },
+            codeLens: true,
+            folding: true,
+            renderWhitespace: 'selection'
+        });
+
+        // Setup editor event listeners
+        setupMonacoEventListeners();
+        
+        // Register AI completion provider
+        registerAICompletionProvider();
+        
+        // Register language features
+        registerLanguageFeatures();
+        
+        // Update hidden input on change
+        monacoEditor.onDidChangeModelContent(() => {
+            const code = monacoEditor.getValue();
+            document.getElementById('code_input').value = code;
+            updateCodeStats();
+        });
+
+        // Handle language changes
+        const languageSelect = document.getElementById('programming_language');
+        if (languageSelect) {
+            languageSelect.addEventListener('change', function() {
+                const language = this.value;
+                monaco.editor.setModelLanguage(monacoEditor.getModel(), getMonacoLanguage(language));
+            });
+        }
+
+        console.log('Monaco Editor initialized successfully!');
+    });
+}
+
+// Setup Monaco Editor event listeners
+function setupMonacoEventListeners() {
+    // Handle Ctrl+Space for AI suggestions
+    monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space, function() {
+        triggerAISuggestions();
+    });
+
+    // Handle Ctrl+Shift+F for formatting
+    monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF, function() {
+        formatCode();
+    });
+
+    // Handle Ctrl+/ for commenting
+    monacoEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Slash, function() {
+        monacoEditor.getAction('editor.action.commentLine').run();
+    });
+
+    // Context menu additions
+    monacoEditor.addAction({
+        id: 'ai-suggestion',
+        label: 'Get AI Suggestion',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Space],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1,
+        run: function() {
+            triggerAISuggestions();
+        }
+    });
+
+    monacoEditor.addAction({
+        id: 'explain-code',
+        label: 'Explain Selected Code',
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 2,
+        run: function() {
+            explainSelectedCode();
+        }
+    });
+}
+
+// Register AI completion provider
+function registerAICompletionProvider() {
+    const languages = ['python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go', 'rust'];
+    
+    languages.forEach(language => {
+        completionProvider = monaco.languages.registerCompletionItemProvider(language, {
+            provideCompletionItems: function(model, position) {
+                return getAICompletionItems(model, position);
+            },
+            triggerCharacters: ['.', '(', ' ', '\n']
+        });
+    });
+}
+
+// Register language features (hover, diagnostics, etc.)
+function registerLanguageFeatures() {
+    const languages = ['python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go', 'rust'];
+    
+    languages.forEach(language => {
+        // Hover provider for AI explanations
+        monaco.languages.registerHoverProvider(language, {
+            provideHover: function(model, position) {
+                return getAIHoverInfo(model, position);
+            }
+        });
+
+        // Code action provider for AI fixes
+        monaco.languages.registerCodeActionProvider(language, {
+            provideCodeActions: function(model, range, context) {
+                return getAICodeActions(model, range, context);
+            }
+        });
+    });
+}
+
+// Get AI completion items
+async function getAICompletionItems(model, position) {
+    const lineContent = model.getLineContent(position.lineNumber);
+    const textUntilPosition = lineContent.substring(0, position.column - 1);
+    const textAfterPosition = lineContent.substring(position.column - 1);
+    const allText = model.getValue();
+    
+    // Don't show AI suggestions for very short input
+    if (textUntilPosition.trim().length < 2) {
+        return { suggestions: [] };
+    }
+
+    try {
+        const suggestions = await getAICodeCompletions(allText, position, textUntilPosition);
+        
+        return {
+            suggestions: suggestions.map((suggestion, index) => ({
+                label: suggestion.label,
+                kind: suggestion.kind || monaco.languages.CompletionItemKind.Function,
+                documentation: {
+                    value: suggestion.documentation || 'AI-powered suggestion'
+                },
+                insertText: suggestion.insertText,
+                insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                range: {
+                    startLineNumber: position.lineNumber,
+                    endLineNumber: position.lineNumber,
+                    startColumn: position.column - textUntilPosition.split(/\s+/).pop().length,
+                    endColumn: position.column
+                },
+                sortText: `0${index}`, // High priority
+                filterText: suggestion.filterText || suggestion.label,
+                detail: `🤖 AI: ${suggestion.detail || 'Smart completion'}`,
+                command: {
+                    id: 'ai-suggestion-applied',
+                    title: 'AI Suggestion Applied'
+                }
+            }))
+        };
+    } catch (error) {
+        console.error('Error getting AI completions:', error);
+        return { suggestions: [] };
+    }
+}
+
+// Get AI code completions from server
+async function getAICodeCompletions(code, position, context) {
+    const language = getSelectedLanguage();
+    
+    try {
+        const response = await fetch('/api/ai-completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: code,
+                language: language,
+                line: position.lineNumber,
+                column: position.column,
+                context: context
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.success) {
+            return data.completions || [];
+        } else {
+            console.warn('AI completions error:', data.error);
+            return getStaticCompletions(context, language);
+        }
+    } catch (error) {
+        console.warn('Failed to get AI completions, using fallback:', error);
+        return getStaticCompletions(context, language);
+    }
+}
+
+// Fallback static completions
+function getStaticCompletions(context, language) {
+    const completions = [];
+    
+    if (language === 'python') {
+        if (context.includes('def ')) {
+            completions.push({
+                label: 'function_template',
+                insertText: 'def ${1:function_name}(${2:parameters}):\n    """${3:Description}\n    \n    Args:\n        ${2:parameters}: ${4:Description}\n    \n    Returns:\n        ${5:Description}\n    """\n    ${0:pass}',
+                documentation: 'Python function template with docstring',
+                detail: 'Function template'
+            });
+        }
+        
+        if (context.includes('class ')) {
+            completions.push({
+                label: 'class_template',
+                insertText: 'class ${1:ClassName}:\n    """${2:Class description}\n    """\n    \n    def __init__(self, ${3:parameters}):\n        """${4:Initialize the class}\n        \n        Args:\n            ${3:parameters}: ${5:Description}\n        """\n        ${0:pass}',
+                documentation: 'Python class template with docstring',
+                detail: 'Class template'
+            });
+        }
+
+        if (context.includes('for ')) {
+            completions.push({
+                label: 'for_range',
+                insertText: 'for ${1:i} in range(${2:n}):\n    ${0:pass}',
+                documentation: 'For loop with range',
+                detail: 'For loop'
+            });
+        }
+
+        if (context.includes('if ')) {
+            completions.push({
+                label: 'if_else',
+                insertText: 'if ${1:condition}:\n    ${2:pass}\nelse:\n    ${0:pass}',
+                documentation: 'If-else statement',
+                detail: 'If-else'
+            });
+        }
+    }
+    
+    if (language === 'javascript') {
+        if (context.includes('function ')) {
+            completions.push({
+                label: 'function_template',
+                insertText: 'function ${1:functionName}(${2:parameters}) {\n    ${0:// TODO: Implement function}\n}',
+                documentation: 'JavaScript function template',
+                detail: 'Function template'
+            });
+        }
+
+        if (context.includes('const ')) {
+            completions.push({
+                label: 'arrow_function',
+                insertText: 'const ${1:functionName} = (${2:parameters}) => {\n    ${0:// TODO: Implement function}\n};',
+                documentation: 'Arrow function template',
+                detail: 'Arrow function'
+            });
+        }
+    }
+
+    return completions;
+}
+
+// Get AI hover information
+async function getAIHoverInfo(model, position) {
+    const word = model.getWordAtPosition(position);
+    if (!word) return null;
+
+    const lineContent = model.getLineContent(position.lineNumber);
+    const allText = model.getValue();
+    
+    try {
+        const response = await fetch('/api/ai-hover', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                code: allText,
+                word: word.word,
+                line: position.lineNumber,
+                language: getSelectedLanguage()
+            })
+        });
+
+        const data = await response.json();
+        if (data.success && data.info) {
+            return {
+                range: new monaco.Range(
+                    position.lineNumber,
+                    word.startColumn,
+                    position.lineNumber,
+                    word.endColumn
+                ),
+                contents: [
+                    { value: '**AI Explanation**' },
+                    { value: data.info }
+                ]
+            };
+        }
+    } catch (error) {
+        console.warn('Failed to get AI hover info:', error);
+    }
+
+    return null;
+}
+
+// Get AI code actions (fixes, refactoring suggestions)
+async function getAICodeActions(model, range, context) {
+    const selectedText = model.getValueInRange(range);
+    if (!selectedText || selectedText.trim().length === 0) {
+        return { actions: [] };
+    }
+
+    const actions = [
+        {
+            title: '🤖 Get AI Suggestion for Selection',
+            kind: monaco.languages.CodeActionKind.QuickFix,
+            command: {
+                id: 'ai-suggestion-selection',
+                title: 'AI Suggestion',
+                arguments: [selectedText]
+            }
+        },
+        {
+            title: '📝 Explain Selected Code',
+            kind: monaco.languages.CodeActionKind.Refactor,
+            command: {
+                id: 'explain-selection',
+                title: 'Explain Code',
+                arguments: [selectedText]
+            }
+        },
+        {
+            title: '🔧 Optimize Selected Code',
+            kind: monaco.languages.CodeActionKind.RefactorRewrite,
+            command: {
+                id: 'optimize-selection',
+                title: 'Optimize Code',
+                arguments: [selectedText]
+            }
+        }
+    ];
+
+    return { actions: actions };
+}
+
+// Trigger AI suggestions manually
+function triggerAISuggestions() {
+    if (!monacoEditor) return;
+    
+    const position = monacoEditor.getPosition();
+    const model = monacoEditor.getModel();
+    const lineContent = model.getLineContent(position.lineNumber);
+    const selectedText = monacoEditor.getModel().getValueInRange(monacoEditor.getSelection());
+    
+    if (selectedText && selectedText.trim().length > 0) {
+        // Get suggestion for selected text
+        getAISuggestionForSelection(selectedText);
+    } else {
+        // Trigger completion suggestions
+        monacoEditor.trigger('source', 'editor.action.triggerSuggest');
+    }
+}
+
+// Get AI suggestion for selected text
+function getAISuggestionForSelection(selectedText) {
+    const language = getSelectedLanguage();
+    
+    showProcessingIndicator();
+    
+    fetch('/api/code-suggestion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            code: selectedText,
+            language: language,
+            context: 'Selected code improvement'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProcessingIndicator();
+        if (data.success) {
+            // Display suggestion in results panel
+            const processedContent = processMarkdownText(data.suggestion);
+            updateSuggestionDisplay(processedContent);
+            showSuccessMessage('AI suggestion generated for selection!');
+        } else {
+            showErrorMessage('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideProcessingIndicator();
+        console.error('Error:', error);
+        showErrorMessage('Network error occurred');
+    });
+}
+
+// Explain selected code
+function explainSelectedCode() {
+    if (!monacoEditor) return;
+    
+    const selectedText = monacoEditor.getModel().getValueInRange(monacoEditor.getSelection());
+    if (!selectedText || selectedText.trim().length === 0) {
+        showErrorMessage('Please select some code to explain');
+        return;
+    }
+    
+    const language = getSelectedLanguage();
+    
+    showProcessingIndicator();
+    
+    fetch('/api/explain-code', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            code: selectedText,
+            language: language
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProcessingIndicator();
+        if (data.success) {
+            const processedContent = processMarkdownText(data.explanation);
+            updateSuggestionDisplay(processedContent);
+            showSuccessMessage('Code explanation generated!');
+        } else {
+            showErrorMessage('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideProcessingIndicator();
+        console.error('Error:', error);
+        showErrorMessage('Network error occurred');
+    });
+}
+
+// Format code using Monaco's built-in formatter
+function formatCode() {
+    if (!monacoEditor) return;
+    
+    monacoEditor.getAction('editor.action.formatDocument').run();
+    showSuccessMessage('Code formatted!');
+}
+
+// Clear Monaco Editor
+function clearCodeEditor() {
+    if (monacoEditor) {
+        monacoEditor.setValue('');
+        updateCodeStats();
+        showSuccessMessage('Code editor cleared!');
+    }
+}
+
+// Copy code from Monaco Editor
+function copyCode() {
+    if (!monacoEditor) return;
+    
+    const code = monacoEditor.getValue();
+    if (!code.trim()) {
+        showErrorMessage('No code to copy');
+        return;
+    }
+    
+    navigator.clipboard.writeText(code).then(() => {
+        showSuccessMessage('Code copied to clipboard!');
+    }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = code;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showSuccessMessage('Code copied to clipboard!');
+    });
+}
+
+// Get selected programming language
+function getSelectedLanguage() {
+    const languageSelect = document.getElementById('programming_language');
+    return languageSelect ? languageSelect.value : 'python';
+}
+
+// Convert language to Monaco language identifier
+function getMonacoLanguage(language) {
+    const languageMap = {
+        'python': 'python',
+        'javascript': 'javascript',
+        'typescript': 'typescript',
+        'java': 'java',
+        'cpp': 'cpp',
+        'c': 'c',
+        'csharp': 'csharp',
+        'php': 'php',
+        'ruby': 'ruby',
+        'go': 'go',
+        'rust': 'rust',
+        'swift': 'swift',
+        'kotlin': 'kotlin',
+        'scala': 'scala',
+        'html': 'html',
+        'css': 'css',
+        'scss': 'scss',
+        'less': 'less',
+        'xml': 'xml',
+        'json': 'json',
+        'yaml': 'yaml',
+        'sql': 'sql',
+        'bash': 'shell',
+        'powershell': 'powershell'
+    };
+    
+    return languageMap[language] || 'plaintext';
+}
+
+// Update code statistics
+function updateCodeStats() {
+    const code = monacoEditor ? monacoEditor.getValue() : document.getElementById('code_input').value;
+    
+    if (!code) {
+        document.getElementById('code-stats').style.display = 'none';
+        return;
+    }
+    
+    const lines = code.split('\n').length;
+    const chars = code.length;
+    const words = code.trim() ? code.trim().split(/\s+/).length : 0;
+    const functions = (code.match(/def\s+\w+|function\s+\w+|class\s+\w+/g) || []).length;
+    
+    document.getElementById('lines-count').textContent = lines;
+    document.getElementById('chars-count').textContent = chars;
+    document.getElementById('words-count').textContent = words;
+    document.getElementById('functions-count').textContent = functions;
+    
+    document.getElementById('code-stats').style.display = 'block';
+}
+
+// Update the existing functions to work with Monaco Editor
+function getCodeSuggestion() {
+    const code = monacoEditor ? monacoEditor.getValue() : document.getElementById('code_input').value;
+    const language = getSelectedLanguage();
+    const context = document.getElementById('context').value;
+    
+    if (!code.trim()) {
+        showErrorMessage('Please enter some code first');
+        return;
+    }
+    
+    showProcessingIndicator();
+    
+    fetch('/api/code-suggestion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            code: code,
+            language: language,
+            context: context
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProcessingIndicator();
+        if (data.success) {
+            currentCode = { session_id: data.session_id };
+            currentSuggestion = data.suggestion;
+            
+            const processedContent = processMarkdownText(data.suggestion);
+            updateSuggestionDisplay(processedContent);
+            
+            updateCodeStats();
+            loadSessions();
+            updateSessionStats();
+            showCurrentSessionDownload();
+            showSuccessMessage('Code suggestion generated successfully!');
+        } else {
+            showErrorMessage('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        hideProcessingIndicator();
+        console.error('Error:', error);
+        showErrorMessage('Network error occurred');
+    });
+}
+
+// Floating Header Functionality
+function setupFloatingHeader() {
+    const header = document.querySelector('header');
+    const body = document.body;
+    let lastScrollTop = 0;
+    let isAtTop = true;
+    let hoverTimeout;
+    
+    // Create hover zone at top of screen
+    const hoverZone = document.createElement('div');
+    hoverZone.className = 'header-hover-zone';
+    body.appendChild(hoverZone);
+    
+    // Scroll event handler
+    function handleScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        // Check if we're at the top of the page
+        if (scrollTop <= 100) {
+            isAtTop = true;
+            header.classList.remove('header-hidden');
+            header.classList.remove('header-hover');
+        } else {
+            if (isAtTop) {
+                // Just left the top area
+                isAtTop = false;
+                header.classList.add('header-hidden');
+                header.classList.remove('header-hover');
+            }
+        }
+        
+        lastScrollTop = scrollTop;
+    }
+    
+    // Mouse enter hover zone
+    function showHeaderOnHover() {
+        if (!isAtTop) {
+            clearTimeout(hoverTimeout);
+            header.classList.remove('header-hidden');
+            header.classList.add('header-hover');
+        }
+    }
+    
+    // Mouse leave hover zone or header
+    function hideHeaderOnLeave() {
+        if (!isAtTop) {
+            hoverTimeout = setTimeout(() => {
+                header.classList.add('header-hidden');
+                header.classList.remove('header-hover');
+            }, 500); // 500ms delay before hiding
+        }
+    }
+    
+    // Event listeners
+    window.addEventListener('scroll', handleScroll);
+    
+    // Hover zone events
+    hoverZone.addEventListener('mouseenter', showHeaderOnHover);
+    hoverZone.addEventListener('mouseleave', hideHeaderOnLeave);
+    
+    // Header events
+    header.addEventListener('mouseenter', () => {
+        clearTimeout(hoverTimeout);
+        showHeaderOnHover();
+    });
+    
+    header.addEventListener('mouseleave', hideHeaderOnLeave);
+    
+    // Touch events for mobile
+    hoverZone.addEventListener('touchstart', showHeaderOnHover);
+    
+    // Click outside to hide on mobile
+    document.addEventListener('touchstart', (e) => {
+        if (!header.contains(e.target) && !hoverZone.contains(e.target) && !isAtTop) {
+            hideHeaderOnLeave();
+        }
+    });
+    
+    // Initial state
+    if (window.pageYOffset > 100) {
+        isAtTop = false;
+        header.classList.add('header-hidden');
+    }
+}
+
+// Enhanced smooth scrolling for navigation links
+function setupSmoothScrolling() {
+    const navLinks = document.querySelectorAll('header .nav a[href^="#"]');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                const headerHeight = document.querySelector('header').offsetHeight;
+                const targetPosition = targetElement.offsetTop - headerHeight - 20;
+                
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+}
 
 // Code editor functions
 function clearCodeEditor() {
@@ -1068,4 +1823,33 @@ function getCodeSuggestion() {
         console.error('Error:', error);
         showErrorMessage('Network error occurred');
     });
+}
+
+// Back to top functionality
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// Show/hide back to top button
+function setupBackToTop() {
+    const backToTopBtn = document.getElementById('back-to-top');
+    
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 500) {
+                backToTopBtn.classList.add('visible');
+                backToTopBtn.style.display = 'block';
+            } else {
+                backToTopBtn.classList.remove('visible');
+                setTimeout(() => {
+                    if (!backToTopBtn.classList.contains('visible')) {
+                        backToTopBtn.style.display = 'none';
+                    }
+                }, 300);
+            }
+        });
+    }
 }

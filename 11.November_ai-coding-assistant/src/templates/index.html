@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Monaco Editor CSS -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.css">
+  </head>
   <body>
     <header>
       <h1>
@@ -24,21 +28,21 @@
           width="50"
           height="50"
           class="logo"
-        />
+        />      
       </h1>
       <hr />
       <ul class="nav">
         <li><a href="#code-editor-section">Code Editor</a></li>
         <li><a href="#assistance-section">AI Assistance</a></li>
         <li><a href="#results-section">Results</a></li>
-        <li><a href="#comparison-section">Code Analysis</a></li>
+        <li><a href="#analysis-section">Code Analysis</a></li>
         <li><a href="#sessions-section">Code Sessions</a></li>
-        <li><a href="#export-section">Export Options</a></li>
+        <li><a href="#export-options-section">Export Options</a></li>
       </ul>
       <br />
     </header>
 
-    <section class="mainBody"  id="code-editor-section">
+    <section class="mainBody" id="code-editor-section">
       <h1 class="mainHeading">AI Programming Assistant</h1>
       <h2 class="subHeading">
         Write better code with AI-powered suggestions, error explanations, and documentation generation. Support for Python, JavaScript, Java, C++, and more.
@@ -47,82 +51,104 @@
       <!-- Flash Messages -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          {% for category, message in messages %}
-            <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
-              {{ message }}
-            </div>
-          {% endfor %}
+          <div class="flash-messages">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
         {% endif %}
       {% endwith %}
 
       <!-- Code Editor Section -->
-      <div class="section" id="assistance-section">
+      <div class="section">
         <h3>💻 Code Editor & AI Assistant</h3>
         <form method="POST" id="code-form">
           {{ form.hidden_tag() }}
           
-          <div class="two-column">
-            <div class="form-group">
-              <label for="programming_language">{{ form.programming_language.label }}</label>
-              {{ form.programming_language(class="form-control", id="programming_language") }}
-            </div>
-            
-            <div class="form-group">
-              <label for="assistance_type">{{ form.assistance_type.label }}</label>
-              {{ form.assistance_type(class="form-control", id="assistance_type") }}
-            </div>
-          </div>
-
+          <!-- Programming Language Selection -->
           <div class="form-group">
-            <label for="code_input">{{ form.code_input.label }}</label>
-            {{ form.code_input(class="form-control code-editor", id="code_input") }}
-            <small>Enter your code above. Use Ctrl+Space for suggestions (coming soon with Monaco Editor).</small>
+            {{ form.programming_language.label(class="form-label") }}
+            {{ form.programming_language(class="form-control", id="programming_language") }}
           </div>
-
-          <div class="two-column">
-            <div class="form-group">
-              <label for="context">{{ form.context.label }}</label>
-              {{ form.context(class="form-control", id="context") }}
-            </div>
-            
-            <div class="form-group">
-              <label for="error_message">{{ form.error_message.label }}</label>
-              {{ form.error_message(class="form-control", id="error_message") }}
-            </div>
+          
+          <!-- Code Editor Container -->
+          <div class="form-group">
+            <label for="code-editor">Code Editor (Use Ctrl+Space for AI suggestions):</label>
+            <div id="monaco-editor-container" style="height: 400px; border: 2px solid #ddd; border-radius: 8px;"></div>
+            {{ form.code_input(style="display: none;", id="code_input") }}
           </div>
-
-          <div class="two-column">
-            <div class="form-group">
-              <label for="doc_type">{{ form.doc_type.label }}</label>
-              {{ form.doc_type(class="form-control", id="doc_type") }}
-            </div>
-            
-            <div class="form-group">
-              <label for="complexity_level">{{ form.complexity_level.label }}</label>
-              {{ form.complexity_level(class="form-control", id="complexity_level") }}
-            </div>
+          
+          <!-- AI Assistance Type -->
+          <div class="form-group" id="assistance-section">
+            {{ form.assistance_type.label(class="form-label") }}
+            {{ form.assistance_type(class="form-control", id="assistance_type") }}
           </div>
-
-          <div class="form-group" id="results-section">
-            {{ form.submit_code() }}
-            <button type="button" class="button" onclick="clearCodeEditor()">Clear Editor</button>
-            <button type="button" class="button" onclick="copyCode()">Copy Code</button>
+          
+          <!-- Context (for suggestions and completion) -->
+          <div class="form-group" id="context-group">
+            {{ form.context.label(class="form-label") }}
+            {{ form.context(class="form-control", id="context", placeholder="Describe what you want to achieve...") }}
+          </div>
+          
+          <!-- Error Message (for error explanation) -->
+          <div class="form-group" id="error-group" style="display: none;">
+            {{ form.error_message.label(class="form-label") }}
+            {{ form.error_message(class="form-control", id="error_message", placeholder="Paste the error message here...") }}
+          </div>
+          
+          <!-- Documentation Type (for documentation generation) -->
+          <div class="form-group" id="doc-type-group" style="display: none;">
+            {{ form.doc_type.label(class="form-label") }}
+            {{ form.doc_type(class="form-control", id="doc_type") }}
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="quick-actions-grid">
+            <button type="button" onclick="getCodeSuggestion()" class="btn btn-primary">💡 Get Suggestion</button>
+            <button type="button" onclick="explainError()" class="btn btn-info">🐛 Explain Error</button>
+            <button type="button" onclick="generateDocs()" class="btn btn-success">📚 Generate Docs</button>
+            <button type="button" onclick="completeCode()" class="btn btn-warning">🔄 Complete Code</button>
+            <button type="button" onclick="analyzeQuality()" class="btn btn-secondary">🔍 Analyze Quality</button>
+            <button type="button" onclick="generateTests()" class="btn btn-primary">🧪 Generate Tests</button>
+          </div>
+          
+          <!-- Utility Buttons -->
+          <div class="quick-actions-grid">
+            <button type="button" onclick="clearCodeEditor()" class="btn btn-secondary">🗑️ Clear Editor</button>
+            <button type="button" onclick="copyCode()" class="btn btn-info">📋 Copy Code</button>
+            <button type="button" onclick="uploadCodeFile()" class="btn btn-success">📁 Upload File</button>
+            <button type="button" onclick="formatCode()" class="btn btn-warning">🎨 Format Code</button>
           </div>
         </form>
         
         <!-- Code Statistics -->
-        <div id="code-stats" style="display: none;">
-          <div class="stats-panel">
-            <h4>📊 Code Statistics</h4>
-            <div id="code-stats-content">
-              <!-- Code statistics will appear here -->
+        <div class="code-stats" id="code-stats" style="display: none;">
+          <h4>📊 Code Statistics</h4>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-value" id="lines-count">0</span>
+              <span class="stat-label">Lines</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="chars-count">0</span>
+              <span class="stat-label">Characters</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="words-count">0</span>
+              <span class="stat-label">Words</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value" id="functions-count">0</span>
+              <span class="stat-label">Functions</span>
             </div>
           </div>
         </div>
       </div>
 
       <!-- AI Assistance Results Section -->
-      <div class="section" id="comparison-section">
+      <div class="section" id="results-section">
         <h3>🤖 AI Assistant Results</h3>
         
         {% if suggestion_result %}
@@ -144,82 +170,13 @@
 
         <!-- Quick Actions Panel -->
         <div class="settings-panel" id="quick-actions-panel">
-          <h4>🚀 Quick Actions</h4>
-          <div class="two-column">
-            <div>
-              <button class="button" onclick="getCodeSuggestion()">Get Code Suggestions</button>
-              <button class="button" onclick="explainError()">Explain Error</button>
-              <button class="button" onclick="generateDocs()">Generate Documentation</button>
-            </div>
-            
-            <div>
-              <button class="button" onclick="completeCode()">Complete Code</button>
-              <button class="button" onclick="analyzeQuality()">Analyze Quality</button>
-              <button class="button" onclick="generateTests()">Generate Tests</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Code Analysis Section -->
-      <div class="section">
-        <h3>🔍 Advanced Code Analysis</h3>
-        <p>Upload code files for comprehensive analysis or compare different coding approaches.</p>
-        
-        <!-- File Upload for Analysis -->
-        <div class="comparison-upload-area" id="file-upload">
-          <h4>📁 Upload Code File for Analysis</h4>
-          <form id="file-form" enctype="multipart/form-data">
-            <div class="custom-file-upload">
-              <label for="code_file">Select Code File</label>
-              <input type="file" id="code_file" name="code_file" class="file-input" 
-                     accept=".py,.js,.java,.cpp,.c,.h,.cs,.php,.rb,.go,.rs,.ts,.html,.css,.sql,.sh,.txt">
-              <small>Supported formats: Python, JavaScript, Java, C++, C#, PHP, Ruby, Go, Rust, TypeScript, HTML, CSS, SQL, Shell scripts</small>
-            </div>
-            <button type="button" class="button" onclick="uploadCodeFile()">Upload & Analyze</button>
-          </form>
-        </div>
-        
-        <!-- Analysis Results -->
-        <div id="analysis-results" style="display: none;">
-          <div class="comparison-panel">
-            <h4>📈 Code Analysis Results</h4>
-            <div class="two-column">
-              <div class="comparison-side">
-                <h5>Quality Metrics</h5>
-                <div id="quality-metrics">
-                  Analysis results will appear here...
-                </div>
-              </div>
-              <div class="comparison-side">
-                <h5>Improvement Suggestions</h5>
-                <div id="improvement-suggestions">
-                  Suggestions will appear here...
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Code Sessions -->
-      <div class="section" id="export-section">
-        <h3>💾 Code Sessions</h3>
-        <div class="sessions-list" id="sessions-list">
-          <div>No coding sessions yet. Start coding above to create your first session.</div>
-        </div>
-        
-        <!-- Session Statistics -->
-        <div class="stats-panel" id="session-stats" style="display: none;">
-          <h4>📊 Coding Statistics</h4>
-          <div id="stats-content">
-            <!-- Statistics will be loaded here -->
-          </div>
+          <h4>⚡ Quick Actions</h4>
+          <p>Select code in the editor and use Ctrl+Space for context-aware suggestions, or use the buttons above for specific assistance types.</p>
         </div>
       </div>
 
       <!-- Export Options -->
-      <div class="section" id="export-section">
+      <div class="section" id="export-options-section">
         <h3>📁 Export Options</h3>
         
         <!-- Export Current Code -->
@@ -248,117 +205,92 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Code Analysis Section -->
+      <div id="analysis-section">
+        <h3>🔍 Advanced Code Analysis</h3>
+        <p>Upload code files for comprehensive analysis or compare different coding approaches.</p>
         
-        <!-- Session Downloads -->
-        <div class="sessions-download-panel">
-          <h4>Download Session Summaries</h4>
-          <p>Download complete session summaries including original code and AI assistance:</p>
-          
-          <div class="download-info">
-            <ul class="export-info">
-              <li><strong>TXT Format:</strong> Plain text summary with code and AI assistance</li>
-              <li><strong>Markdown Format:</strong> Formatted summary with syntax highlighting and structure</li>
-              <li><strong>Content:</strong> Original code, AI assistance, and session settings</li>
-              <li><strong>Note:</strong> No comment symbols - clean readable format</li>
-            </ul>
-          </div>
-          
-          <div id="current-session-download" style="display: none;">
-            <h5>Current Session:</h5>
-            <div class="export-buttons">
-              <button onclick="downloadCurrentSessionTXT()" class="btn btn-info">Download as TXT</button>
-              <button onclick="downloadCurrentSessionMarkdown()" class="btn btn-success">Download as Markdown</button>
-            </div>
+        <!-- File Upload for Analysis -->
+        <div class="file-upload-area" id="file-upload">
+          <p>📁 Upload Code Files for Analysis</p>
+          <input type="file" class="file-input" accept=".py,.js,.java,.cpp,.c,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala" multiple>
+          <div class="custom-file-upload">Choose Files</div>
+          <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+            Supported: Python, JavaScript, Java, C++, C#, PHP, Ruby, Go, Rust, Swift, Kotlin, Scala
+          </p>
+        </div>
+        
+        <!-- Analysis Results -->
+        <div class="analysis-results" id="analysis-results" style="display: none;">
+          <h4>📈 Analysis Results</h4>
+          <div id="analysis-content">
+            <!-- Analysis results will be displayed here -->
           </div>
         </div>
       </div>
 
-    </section>
+      <!-- Code Sessions -->
+      <div class="section" id="sessions-section">
+        <h3>💾 Code Sessions</h3>
+        <div class="sessions-list" id="sessions-list">
+          <div>No coding sessions yet. Start coding above to create your first session.</div>
+        </div>
 
-        <footer>
-      <div class="footer">
-        <div class="w-container">
-          <div class="w-row">
-            <div class="w-col w-col-4">
-              <h3>About</h3>
-              <div></div>
-              <div>Has AI</div>
-              <div>AI Programming Assistant</div>
-              <div>Website made with Python, Flask & Html</div>
-              <div>AI-Powered Coding Companion</div>
-              <div>
-                Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
-              </div>
-            </div>
-            <div class="w-col w-col-4">
-              <h3>Useful Links</h3>
-              <div class="footer-link-row">
-                <li><a href="#code-editor-section" target="_blank" class="footer-link">Code Editor</a></li>
-                <li><a href="#assistance-section" target="_blank" class="footer-link">AI Assistance</a></li>
-              </div>
-              <div class="footer-link-row">
-                <li><a href="#comparison-section" target="_blank" class="footer-link">Code Analysis</a></li>
-                <li><a href="#export-section" target="_blank" class="footer-link">Export Options</a></li>
-              </div>
-            </div>
-            <div class="f-col">
-              <h3>Socials</h3>
-              <div>
-                <img
-                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
-                  >X (Twitter)</a
-                >
-              </div>
-              <div>
-                <img
-                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a
-                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
-                  class="footer-link with-icon"
-                  >YouTube</a
-                >
-              </div>
-              <div>
-                <img
-                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a
-                  href="https://github.com/AkhHas2005"
-                  class="footer-link with-icon"
-                  >GitHub</a
-                >
-              </div>
-              <div>
-                <img
-                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a href="https://www.instagram.com/pythonprogrammeryt/" 
-                class="footer-link with-icon"
-                  >Instagram</a
-                >
-              </div>
-            </div>
+        <h4>Download Session Summaries</h4>
+        <p>Download complete session summaries including original code and AI assistance:</p>
+        
+        <div class="download-info">
+          <ul class="export-info">
+            <li><strong>TXT Format:</strong> Plain text summary with code and AI assistance</li>
+            <li><strong>Markdown Format:</strong> Formatted summary with syntax highlighting and structure</li>
+            <li><strong>Content:</strong> Original code, AI assistance, and session settings</li>
+            <li><strong>Note:</strong> No comment symbols - clean readable format</li>
+          </ul>
+        </div>
+        
+        <div id="current-session-download" style="display: none;">
+          <h5>Current Session:</h5>
+          <div class="export-buttons">
+            <button onclick="downloadCurrentSessionTXT()" class="btn btn-info">Download as TXT</button>
+            <button onclick="downloadCurrentSessionMarkdown()" class="btn btn-success">Download as Markdown</button>
           </div>
         </div>
+        
+        <!-- Session Statistics -->
+        <div class="stats-panel" id="session-stats" style="display: none;">
+          <h4>📊 Coding Statistics</h4>
+          <div id="stats-content">
+            <!-- Statistics will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer">
+        <!-- Footer content -->
       </div>
       <hr />
       <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
     </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top-btn" onclick="scrollToTop()" style="display: none;">
+        ↑ Top
+    </button>
+
+    <!-- Hidden file input for upload functionality -->
+    <input type="file" id="hidden-file-input" style="display: none;" accept=".py,.js,.java,.cpp,.c,.cs,.php,.rb,.go,.rs,.swift,.kt,.scala" />
+
+    <!-- Monaco Editor Scripts -->
+    <script>
+        var require = { paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs' } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.nls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.44.0/min/vs/editor/editor.main.js"></script>
 
     <!-- JavaScript Files -->
     <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
