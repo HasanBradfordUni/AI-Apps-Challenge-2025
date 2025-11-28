@@ -90,9 +90,9 @@
       <div>
         <ul class="nav">
           <li><a href="{{ url_for('app.index') }}" class="nav">Home</a></li>
-          <li><a href="{{ url_for('app.profile') }}" class="nav" id="currentPage">Create Job Ad</a></li>
+          <li><a href="{{ url_for('app.profile') }}" class="nav">Create Job Ad</a></li>
           {% if session.get('user_id') %}
-          <li><a href="{{ url_for('app.ad_history') }}" class="nav">My Job Ads</a></li>
+          <li><a href="{{ url_for('app.ad_history') }}" class="nav" id="currentPage">My Job Ads</a></li>
           <li><a href="{{ url_for('app.logout') }}" class="nav">Logout</a></li>
           {% endif %}
         </ul>

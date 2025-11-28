@@ -6,178 +6,7 @@
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <style>
-      body {
-        background-color: black;
-        text-align: center;
-      }
-
-      header {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        background-color: goldenrod;
-      }
-
-      img.logo {
-        border-style: solid;
-        border-color: white;
-        vertical-align: middle;
-        margin-left: 2cm;
-        margin-right: 2cm;
-      }
-
-      ul.nav {
-        list-style-type: none;
-        max-width: 100%;
-        width: 100%;
-        padding: 0;
-        overflow: hidden;
-        background-color: red;
-        display: flex;
-        justify-content: center;
-      }
-
-      li a.nav {
-        display: block;
-        color: black;
-        text-align: center;
-        padding: 16px;
-        text-decoration: none;
-      }
-
-      li a.nav:hover {
-        background-color: gray;
-      }
-
-      div.menuBar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      #currentPage {
-        background-color: gold;
-      }
-
-      .mainBody {
-        margin-top: 3cm;
-      }
-
-      .mainHeading {
-        color: crimson;
-        font-size: xx-large;
-      }
-
-      .subHeading {
-        color: rebeccapurple;
-        font-size: larger;
-      }
-
-      .largeText {
-        color: darkkhaki;
-        font-size: large;
-      }
-
-      footer {
-        height: 350px;
-        background-color: goldenrod;
-      }
-
-      .footer {
-        padding-top: 35px;
-        padding-bottom: 35px;
-        background-color: goldenrod;
-        box-sizing: border-box;
-        height: 250px;
-      }
-
-      .w-container {
-        max-width: 940px;
-        margin-left: auto;
-        margin-right: auto;
-      }
-
-      .w-container .w-row {
-        margin-left: -10px;
-        margin-right: -10px;
-      }
-
-      .w-col {
-        float: left;
-        min-height: 1px;
-        padding-left: 10px;
-        padding-right: 10px;
-        position: relative;
-      }
-
-      .f-col {
-        float: right;
-        min-height: 1px;
-        padding-left: 10px;
-        padding-right: 10px;
-        width: 30%;
-        position: relative;
-        margin-top: -200px;
-      }
-
-      .w-col-4 {
-        width: 33.3333%;
-      }
-
-      .footer-link-row {
-        display: flex;
-        justify-content: space-evenly;
-      }
-
-      .footer-link {
-        color: crimson;
-        border-bottom: 1px solid red;
-        margin-bottom: 6px;
-        padding-bottom: 10px;
-        font-size: 14px;
-        font-weight: 300;
-        text-decoration: none;
-        display: block;
-      }
-
-      .footer-link:hover {
-        color: rgb(122, 106, 17);
-        text-decoration: underline;
-      }
-
-      .info-icon {
-        float: left;
-        vertical-align: middle;
-        max-width: 100%;
-      }
-
-      .footer-link.with-icon {
-        margin-left: 30px;
-      }
-
-      .results {
-        text-align: center;
-        color: white;
-      }
-
-      .no-bullet {
-        list-style: none;
-        width:90%;
-        padding:0;
-        text-align:center;
-        overflow:auto;
-        color: crimson;
-        background-color: rebeccapurple;
-        border-radius: 5px;
-        margin: 5% 5%;
-        font: 1.2em 'Arial';
-      }
-
-      .no-bullet > li{
-        margin-bottom:15px;
-      }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}"> 
   </head>
 
   <body>
@@ -263,20 +92,29 @@
         <section id="results">
             <h2 class="largeText">Search Results</h2>
             <div class="results">
-                <!-- Search results will be displayed here -->
                 {% if ai_summary %}
-                  <p id="results-container">AI Summary: {{ ai_summary }}</p>
+                  <div class="ai-summary-container">
+                    <div class="ai-summary-content" id="results-container">{{ ai_summary }}</div>
+                  </div>
                 {% else %}
-                  <p>AI Summary not generated yet</p>
+                  <div class="no-results">
+                    <p>AI Summary not generated yet</p>
+                  </div>
                 {% endif %}
+                
                 {% if results %}
+                  <div class="search-stats">
+                    Found {{ results|length }} result(s)
+                  </div>
                   <ul class="no-bullet">
                   {% for result in results %}
                     <li>{{ result }}</li>
                   {% endfor %}
                   </ul>
                 {% else %}
-                  <p>No results found.</p>
+                  <div class="no-results">
+                    <p>No search results found. Try adjusting your search query.</p>
+                  </div>
                 {% endif %}
             </div>
         </section>
