@@ -104,7 +104,7 @@
             {{ form.doc_type(class="form-control", id="doc_type") }}
           </div>
           
-          <!-- Action Buttons -->
+          <!-- Action Buttons - Fixed Spacing -->
           <div class="quick-actions-grid">
             <button type="button" onclick="getCodeSuggestion()" class="btn btn-primary">💡 Get Suggestion</button>
             <button type="button" onclick="explainError()" class="btn btn-info">🐛 Explain Error</button>
@@ -114,7 +114,7 @@
             <button type="button" onclick="generateTests()" class="btn btn-primary">🧪 Generate Tests</button>
           </div>
           
-          <!-- Utility Buttons -->
+          <!-- Utility Buttons - Fixed Spacing -->
           <div class="quick-actions-grid">
             <button type="button" onclick="clearCodeEditor()" class="btn btn-secondary">🗑️ Clear Editor</button>
             <button type="button" onclick="copyCode()" class="btn btn-info">📋 Copy Code</button>
@@ -207,8 +207,8 @@
         </div>
       </div>
 
-      <!-- Code Analysis Section -->
-      <div id="analysis-section">
+      <!-- Code Analysis Section - Fixed Width and Text Color -->
+      <div class="section" id="analysis-section">
         <h3>🔍 Advanced Code Analysis</h3>
         <p>Upload code files for comprehensive analysis or compare different coding approaches.</p>
         
@@ -231,30 +231,45 @@
         </div>
       </div>
 
-      <!-- Code Sessions -->
+      <!-- Code Sessions - Enhanced Session Downloads -->
       <div class="section" id="sessions-section">
         <h3>💾 Code Sessions</h3>
         <div class="sessions-list" id="sessions-list">
           <div>No coding sessions yet. Start coding above to create your first session.</div>
         </div>
 
-        <h4>Download Session Summaries</h4>
-        <p>Download complete session summaries including original code and AI assistance:</p>
-        
-        <div class="download-info">
-          <ul class="export-info">
-            <li><strong>TXT Format:</strong> Plain text summary with code and AI assistance</li>
-            <li><strong>Markdown Format:</strong> Formatted summary with syntax highlighting and structure</li>
-            <li><strong>Content:</strong> Original code, AI assistance, and session settings</li>
-            <li><strong>Note:</strong> No comment symbols - clean readable format</li>
-          </ul>
+        <!-- Current Session Download - Enhanced -->
+        <div class="sessions-download-panel" id="current-session-download" style="display: none;">
+          <h4>📥 Current Session Downloads</h4>
+          <p>Download the current AI assistance session with all details:</p>
+          
+          <div class="download-info">
+            <ul class="export-info">
+              <li><strong>Session Summary:</strong> Complete record including original code, AI response, and settings</li>
+              <li><strong>TXT Format:</strong> Plain text format for easy reading and sharing</li>
+              <li><strong>Markdown Format:</strong> Formatted document with syntax highlighting</li>
+            </ul>
+          </div>
+          
+          <h5>Download Current Session:</h5>
+          <div class="export-buttons download-session-buttons">
+            <button onclick="downloadCurrentSessionTXT()" class="btn btn-info">📄 Download as TXT</button>
+            <button onclick="downloadCurrentSessionMarkdown()" class="btn btn-success">📝 Download as Markdown</button>
+          </div>
         </div>
-        
-        <div id="current-session-download" style="display: none;">
-          <h5>Current Session:</h5>
-          <div class="export-buttons">
-            <button onclick="downloadCurrentSessionTXT()" class="btn btn-info">Download as TXT</button>
-            <button onclick="downloadCurrentSessionMarkdown()" class="btn btn-success">Download as Markdown</button>
+
+        <!-- All Sessions Download -->
+        <div class="sessions-download-panel">
+          <h4>📚 Session History Downloads</h4>
+          <p>Each session in the list below can be downloaded individually. Use the TXT and MD buttons next to each session.</p>
+          
+          <div class="download-info">
+            <ul class="export-info">
+              <li><strong>Individual Downloads:</strong> Each session can be downloaded separately</li>
+              <li><strong>Complete Records:</strong> Includes original code, AI assistance, session configurations</li>
+              <li><strong>Multiple Formats:</strong> Choose between TXT (plain text) or MD (markdown) formats</li>
+              <li><strong>Separate from Export:</strong> These are comprehensive session summaries, not just code files</li>
+            </ul>
           </div>
         </div>
         

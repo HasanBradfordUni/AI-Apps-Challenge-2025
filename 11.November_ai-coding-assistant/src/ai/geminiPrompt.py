@@ -122,7 +122,7 @@ def generate_code_suggestion(code_content, language, context=""):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[base_prompt]
         )
         return response.text
@@ -152,7 +152,7 @@ def explain_error(code_content, error_message, language):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
@@ -223,7 +223,7 @@ def generate_documentation(code_content, language, doc_type="docstring"):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
@@ -252,7 +252,7 @@ def complete_code(code_content, language, context=""):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
@@ -282,7 +282,7 @@ def analyze_code_quality(code_content, language):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
@@ -310,42 +310,110 @@ def generate_test_cases(code_content, language):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
     except Exception as e:
         return f"Error generating test cases: {str(e)}"
         
-def generate_code_completions(code_content, cursor_position, language, context=""):
-    """Generate intelligent code completion suggestions"""
-    
-    prompt = f"""
-    Provide code completion suggestions for this {language} code at the cursor position:
-    
-    Code: {code_content}
-    Cursor Position: {cursor_position}
-    Context: {context}
-    
-    Please provide:
-    1. Variable and function name completions
-    2. Method suggestions based on object type
-    3. Import statement completions
-    4. Keyword and syntax completions
-    5. Code snippet suggestions
-    6. Parameter hints and signatures
-    
-    Return completions as a ranked list of relevant suggestions.
-    """
-    
+def generate_code_completions(code, language, context="", line=1, column=1, current_line_content="", previous_lines=None, full_context=False):
+    """Generate intelligent AI-powered code completions"""
     try:
-        response = client.models.generate_content(
-            model="gemini-2.0-flash",
-            contents=[prompt]
-        )
-        return response.text
+        if previous_lines is None:
+            previous_lines = []
+            
+        # Build context for AI
+        prompt_parts = [
+            f"You are an intelligent code completion assistant for {language}.",
+            "Analyze the following code and provide smart completions based on:",
+            "1. The current context and what the user is likely trying to write",
+            "2. Common patterns in the programming language",
+            "3. Comments that indicate intended functionality",
+            "4. Variable names and function signatures that suggest next steps",
+            "5. Incomplete statements or expressions",
+            "",
+            f"Programming Language: {language}",
+            f"Current line {line}, column {column}",
+            ""
+        ]
+        
+        if context:
+            prompt_parts.append(f"Additional context: {context}")
+            prompt_parts.append("")
+        
+        if previous_lines:
+            prompt_parts.append("Previous lines:")
+            prompt_parts.extend([f"{i+1}: {line}" for i, line in enumerate(previous_lines)])
+            prompt_parts.append("")
+        
+        prompt_parts.extend([
+            f"Current line content: '{current_line_content}'",
+            "",
+            "Full code context:",
+            "```" + language,
+            code,
+            "```",
+            "",
+            "Provide 5-10 intelligent code completion suggestions in JSON format:",
+            "Each suggestion should have:",
+            "- 'label': Brief description",
+            "- 'insertText': Code to insert", 
+            "- 'detail': Explanation of what it does",
+            "- 'kind': Type (function, variable, keyword, snippet, etc.)",
+            "",
+            "Focus on:",
+            "- Completing partial statements",
+            "- Suggesting based on comments or TODO items", 
+            "- Common next steps for the current context",
+            "- Variable/function names that make sense",
+            "- Language-specific patterns and idioms",
+            "",
+            "Return only valid JSON array of completion objects."
+        ])
+        
+        prompt = "\n".join(prompt_parts)
+        
+        # Use your existing Gemini API call
+        model = client.models.get("gemini-2.5-pro")
+        response = model.generate_content(prompt)
+        
+        try:
+            # Try to parse as JSON
+            import json
+            completions_data = json.loads(response.text)
+            
+            # Ensure it's a list
+            if not isinstance(completions_data, list):
+                completions_data = []
+                
+            # Validate and clean completions
+            valid_completions = []
+            for comp in completions_data[:10]:  # Limit to 10 completions
+                if isinstance(comp, dict) and 'label' in comp and 'insertText' in comp:
+                    valid_completions.append({
+                        'label': comp.get('label', ''),
+                        'insertText': comp.get('insertText', ''),
+                        'detail': comp.get('detail', ''),
+                        'kind': comp.get('kind', 'text')
+                    })
+            
+            return valid_completions
+            
+        except json.JSONDecodeError:
+            # Fallback: parse text response and create simple completions
+            return [
+                {
+                    'label': 'AI Suggestion',
+                    'insertText': response.text.strip(),
+                    'detail': 'AI-generated code suggestion',
+                    'kind': 'snippet'
+                }
+            ]
+            
     except Exception as e:
-        return f"Error generating code completions: {str(e)}"
+        print(f"Error generating AI completions: {e}")
+        return []
 
 def generate_hover_info(code_content, symbol_name, language, context=""):
     """Generate hover information for symbols in code"""
@@ -371,7 +439,7 @@ def generate_hover_info(code_content, symbol_name, language, context=""):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
@@ -434,7 +502,7 @@ def explain_code_functionality(code_content, language, level="intermediate"):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text

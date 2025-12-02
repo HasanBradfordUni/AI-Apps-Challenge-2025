@@ -155,6 +155,7 @@ function setupMonacoEventListeners() {
 }
 
 // Register AI completion provider
+// Enhanced AI completion provider with better context understanding
 function registerAICompletionProvider() {
     const languages = ['python', 'javascript', 'typescript', 'java', 'cpp', 'csharp', 'go', 'rust'];
     
@@ -163,7 +164,7 @@ function registerAICompletionProvider() {
             provideCompletionItems: function(model, position) {
                 return getAICompletionItems(model, position);
             },
-            triggerCharacters: ['.', '(', ' ', '\n']
+            triggerCharacters: ['.', '(', ' ', '\n', '#', '/', '*', '@', '"', "'"]
         });
     });
 }
@@ -190,39 +191,39 @@ function registerLanguageFeatures() {
 }
 
 // Get AI completion items
+// Enhanced AI completion items with comment and context awareness
 async function getAICompletionItems(model, position) {
     const lineContent = model.getLineContent(position.lineNumber);
     const textUntilPosition = lineContent.substring(0, position.column - 1);
     const textAfterPosition = lineContent.substring(position.column - 1);
     const allText = model.getValue();
     
-    // Don't show AI suggestions for very short input
-    if (textUntilPosition.trim().length < 2) {
+    // Enhanced trigger conditions - include comments and partial statements
+    if (textUntilPosition.trim().length < 1) {
         return { suggestions: [] };
     }
 
+    // Check if we're in a comment and suggest code based on comment content
+    const isInComment = checkIfInComment(lineContent, position.column, getSelectedLanguage());
+    
     try {
-        const suggestions = await getAICodeCompletions(allText, position, textUntilPosition);
+        const suggestions = await getAICodeCompletions(allText, position, textUntilPosition, isInComment);
         
         return {
             suggestions: suggestions.map((suggestion, index) => ({
                 label: suggestion.label,
-                kind: suggestion.kind || monaco.languages.CompletionItemKind.Function,
+                kind: getCompletionKind(suggestion.kind),
                 documentation: {
-                    value: suggestion.documentation || 'AI-powered suggestion'
+                    value: suggestion.detail || 'AI-powered suggestion',
+                    isTrusted: true
                 },
                 insertText: suggestion.insertText,
                 insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                range: {
-                    startLineNumber: position.lineNumber,
-                    endLineNumber: position.lineNumber,
-                    startColumn: position.column - textUntilPosition.split(/\s+/).pop().length,
-                    endColumn: position.column
-                },
-                sortText: `0${index}`, // High priority
+                range: getInsertionRange(position, textUntilPosition),
+                sortText: `${isInComment ? 'A' : 'B'}${index.toString().padStart(3, '0')}`, // Prioritize comment-based suggestions
                 filterText: suggestion.filterText || suggestion.label,
                 detail: `🤖 AI: ${suggestion.detail || 'Smart completion'}`,
-                command: {
+                command: suggestion.command || {
                     id: 'ai-suggestion-applied',
                     title: 'AI Suggestion Applied'
                 }
@@ -234,8 +235,60 @@ async function getAICompletionItems(model, position) {
     }
 }
 
-// Get AI code completions from server
-async function getAICodeCompletions(code, position, context) {
+// Check if cursor is in a comment
+function checkIfInComment(lineContent, column, language) {
+    const textBeforeCursor = lineContent.substring(0, column - 1);
+    
+    switch (language) {
+        case 'python':
+            return textBeforeCursor.includes('#');
+        case 'javascript':
+        case 'typescript':
+        case 'java':
+        case 'cpp':
+        case 'csharp':
+            return textBeforeCursor.includes('//') || textBeforeCursor.includes('/*');
+        default:
+            return false;
+    }
+}
+
+// Get appropriate completion kind
+function getCompletionKind(kindString) {
+    const kindMap = {
+        'function': monaco.languages.CompletionItemKind.Function,
+        'method': monaco.languages.CompletionItemKind.Method,
+        'variable': monaco.languages.CompletionItemKind.Variable,
+        'class': monaco.languages.CompletionItemKind.Class,
+        'interface': monaco.languages.CompletionItemKind.Interface,
+        'module': monaco.languages.CompletionItemKind.Module,
+        'property': monaco.languages.CompletionItemKind.Property,
+        'keyword': monaco.languages.CompletionItemKind.Keyword,
+        'snippet': monaco.languages.CompletionItemKind.Snippet,
+        'text': monaco.languages.CompletionItemKind.Text,
+        'file': monaco.languages.CompletionItemKind.File,
+        'reference': monaco.languages.CompletionItemKind.Reference
+    };
+    
+    return kindMap[kindString] || monaco.languages.CompletionItemKind.Text;
+}
+
+// Get appropriate insertion range
+function getInsertionRange(position, textUntilPosition) {
+    const words = textUntilPosition.split(/\s+/);
+    const lastWord = words[words.length - 1];
+    const wordStart = textUntilPosition.lastIndexOf(lastWord);
+    
+    return {
+        startLineNumber: position.lineNumber,
+        endLineNumber: position.lineNumber,
+        startColumn: wordStart >= 0 ? wordStart + 1 : position.column,
+        endColumn: position.column
+    };
+}
+
+// Enhanced AI code completions with comment awareness
+async function getAICodeCompletions(code, position, context, isInComment = false) {
     const language = getSelectedLanguage();
     
     try {
@@ -249,7 +302,9 @@ async function getAICodeCompletions(code, position, context) {
                 language: language,
                 line: position.lineNumber,
                 column: position.column,
-                context: context
+                context: context,
+                is_in_comment: isInComment,
+                surrounding_lines: getSurroundingLines(code, position.lineNumber)
             })
         });
 
@@ -262,408 +317,288 @@ async function getAICodeCompletions(code, position, context) {
             return data.completions || [];
         } else {
             console.warn('AI completions error:', data.error);
-            return getStaticCompletions(context, language);
+            return getEnhancedStaticCompletions(context, language, isInComment);
         }
     } catch (error) {
-        console.warn('Failed to get AI completions, using fallback:', error);
-        return getStaticCompletions(context, language);
+        console.warn('Failed to get AI completions, using enhanced fallback:', error);
+        return getEnhancedStaticCompletions(context, language, isInComment);
     }
 }
 
-// Fallback static completions
-function getStaticCompletions(context, language) {
+// Get surrounding lines for better context
+function getSurroundingLines(code, lineNumber) {
+    const lines = code.split('\n');
+    const start = Math.max(0, lineNumber - 3);
+    const end = Math.min(lines.length, lineNumber + 2);
+    
+    return lines.slice(start, end).join('\n');
+}
+
+// Enhanced static completions with comment awareness
+function getEnhancedStaticCompletions(context, language, isInComment) {
     const completions = [];
     
-    if (language === 'python') {
-        if (context.includes('def ')) {
+    // If in comment, suggest code based on comment content
+    if (isInComment) {
+        const commentText = context.replace(/[#/\*]/g, '').trim().toLowerCase();
+        
+        // Comment-driven code suggestions
+        if (commentText.includes('function') || commentText.includes('def')) {
             completions.push({
-                label: 'function_template',
-                insertText: 'def ${1:function_name}(${2:parameters}):\n    """${3:Description}\n    \n    Args:\n        ${2:parameters}: ${4:Description}\n    \n    Returns:\n        ${5:Description}\n    """\n    ${0:pass}',
-                documentation: 'Python function template with docstring',
-                detail: 'Function template'
+                label: 'function_from_comment',
+                insertText: generateFunctionFromComment(commentText, language),
+                detail: 'Function based on comment',
+                kind: 'function'
             });
         }
         
-        if (context.includes('class ')) {
+        if (commentText.includes('loop') || commentText.includes('iterate')) {
             completions.push({
-                label: 'class_template',
-                insertText: 'class ${1:ClassName}:\n    """${2:Class description}\n    """\n    \n    def __init__(self, ${3:parameters}):\n        """${4:Initialize the class}\n        \n        Args:\n            ${3:parameters}: ${5:Description}\n        """\n        ${0:pass}',
-                documentation: 'Python class template with docstring',
-                detail: 'Class template'
+                label: 'loop_from_comment',
+                insertText: generateLoopFromComment(commentText, language),
+                detail: 'Loop based on comment',
+                kind: 'snippet'
             });
         }
-
-        if (context.includes('for ')) {
+        
+        if (commentText.includes('class') || commentText.includes('object')) {
             completions.push({
-                label: 'for_range',
-                insertText: 'for ${1:i} in range(${2:n}):\n    ${0:pass}',
-                documentation: 'For loop with range',
-                detail: 'For loop'
-            });
-        }
-
-        if (context.includes('if ')) {
-            completions.push({
-                label: 'if_else',
-                insertText: 'if ${1:condition}:\n    ${2:pass}\nelse:\n    ${0:pass}',
-                documentation: 'If-else statement',
-                detail: 'If-else'
+                label: 'class_from_comment',
+                insertText: generateClassFromComment(commentText, language),
+                detail: 'Class based on comment',
+                kind: 'class'
             });
         }
     }
     
-    if (language === 'javascript') {
-        if (context.includes('function ')) {
-            completions.push({
-                label: 'function_template',
-                insertText: 'function ${1:functionName}(${2:parameters}) {\n    ${0:// TODO: Implement function}\n}',
-                documentation: 'JavaScript function template',
-                detail: 'Function template'
-            });
-        }
-
-        if (context.includes('const ')) {
-            completions.push({
-                label: 'arrow_function',
-                insertText: 'const ${1:functionName} = (${2:parameters}) => {\n    ${0:// TODO: Implement function}\n};',
-                documentation: 'Arrow function template',
-                detail: 'Arrow function'
-            });
-        }
+    // Regular language-specific completions
+    if (language === 'python') {
+        addPythonCompletions(completions, context);
+    } else if (language === 'javascript') {
+        addJavaScriptCompletions(completions, context);
     }
-
+    
     return completions;
 }
 
-// Get AI hover information
-async function getAIHoverInfo(model, position) {
-    const word = model.getWordAtPosition(position);
-    if (!word) return null;
-
-    const lineContent = model.getLineContent(position.lineNumber);
-    const allText = model.getValue();
+// Generate function from comment
+function generateFunctionFromComment(commentText, language) {
+    const words = commentText.split(' ');
+    const functionName = words.find(word => !['function', 'def', 'create', 'make'].includes(word)) || 'newFunction';
     
-    try {
-        const response = await fetch('/api/ai-hover', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                code: allText,
-                word: word.word,
-                line: position.lineNumber,
-                language: getSelectedLanguage()
-            })
+    switch (language) {
+        case 'python':
+            return `def ${functionName}(\${1:parameters}):\n    """${commentText}\n    \n    Args:\n        \${1:parameters}: Description\n    \n    Returns:\n        Description\n    """\n    \${0:pass}`;
+        case 'javascript':
+            return `function ${functionName}(\${1:parameters}) {\n    // ${commentText}\n    \${0:// TODO: Implement}\n}`;
+        default:
+            return `${functionName}()`;
+    }
+}
+
+// Generate loop from comment
+function generateLoopFromComment(commentText, language) {
+    switch (language) {
+        case 'python':
+            return `for \${1:item} in \${2:iterable}:\n    # ${commentText}\n    \${0:pass}`;
+        case 'javascript':
+            return `for (let \${1:i} = 0; \${1:i} < \${2:length}; \${1:i}++) {\n    // ${commentText}\n    \${0:// TODO: Implement}\n}`;
+        default:
+            return `// ${commentText}`;
+    }
+}
+
+// Generate class from comment
+function generateClassFromComment(commentText, language) {
+    const words = commentText.split(' ');
+    const className = words.find(word => !['class', 'object', 'create', 'make'].includes(word)) || 'NewClass';
+    
+    switch (language) {
+        case 'python':
+            return `class ${className}:\n    """${commentText}\n    """\n    \n    def __init__(self, \${1:parameters}):\n        """Initialize ${className}\n        \n        Args:\n            \${1:parameters}: Description\n        """\n        \${0:pass}`;
+        case 'javascript':
+            return `class ${className} {\n    // ${commentText}\n    constructor(\${1:parameters}) {\n        \${0:// TODO: Initialize}\n    }\n}`;
+        default:
+            return `class ${className} {}`;
+    }
+}
+
+// Add Python-specific completions
+function addPythonCompletions(completions, context) {
+    if (context.includes('import ')) {
+        completions.push({
+            label: 'common_imports',
+            insertText: 'import numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt',
+            detail: 'Common data science imports',
+            kind: 'snippet'
         });
+    }
+    
+    if (context.includes('if __name__')) {
+        completions.push({
+            label: 'main_block',
+            insertText: 'if __name__ == "__main__":\n    ${0:main()}',
+            detail: 'Main execution block',
+            kind: 'snippet'
+        });
+    }
+}
 
-        const data = await response.json();
-        if (data.success && data.info) {
-            return {
-                range: new monaco.Range(
-                    position.lineNumber,
-                    word.startColumn,
-                    position.lineNumber,
-                    word.endColumn
-                ),
-                contents: [
-                    { value: '**AI Explanation**' },
-                    { value: data.info }
-                ]
-            };
+// Add JavaScript-specific completions
+function addJavaScriptCompletions(completions, context) {
+    if (context.includes('console.')) {
+        completions.push({
+            label: 'console_log',
+            insertText: 'console.log(${1:value});',
+            detail: 'Console log statement',
+            kind: 'snippet'
+        });
+    }
+    
+    if (context.includes('async ')) {
+        completions.push({
+            label: 'async_function',
+            insertText: 'async function ${1:functionName}(${2:parameters}) {\n    try {\n        ${0:// TODO: Implement}\n    } catch (error) {\n        console.error(error);\n    }\n}',
+            detail: 'Async function with error handling',
+            kind: 'function'
+        });
+    }
+}
+
+// Enhanced session downloads with better loading states
+function downloadSession(sessionId, showLoading = true) {
+    try {
+        if (!sessionId || !codingSessions[sessionId]) {
+            showErrorMessage('Session not found');
+            return;
         }
+        
+        if (showLoading) {
+            showProcessingIndicator();
+        }
+        
+        // Create download URL for txt format
+        const downloadUrl = `/api/download-session-summary/${sessionId}`;
+        
+        console.log('Downloading session as TXT:', sessionId);
+        
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `session_summary_${sessionId}.txt`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // Handle download completion
+        link.addEventListener('click', function() {
+            setTimeout(() => {
+                document.body.removeChild(link);
+                if (showLoading) {
+                    hideProcessingIndicator();
+                }
+                showSuccessMessage('Session summary downloaded as TXT!');
+            }, 1000);
+        });
+        
+        link.click();
+        
     } catch (error) {
-        console.warn('Failed to get AI hover info:', error);
+        if (showLoading) {
+            hideProcessingIndicator();
+        }
+        console.error('Download error:', error);
+        showErrorMessage('Failed to download session');
     }
-
-    return null;
 }
 
-// Get AI code actions (fixes, refactoring suggestions)
-async function getAICodeActions(model, range, context) {
-    const selectedText = model.getValueInRange(range);
-    if (!selectedText || selectedText.trim().length === 0) {
-        return { actions: [] };
+function downloadSessionMarkdown(sessionId, showLoading = true) {
+    try {
+        if (!sessionId || !codingSessions[sessionId]) {
+            showErrorMessage('Session not found');
+            return;
+        }
+        
+        if (showLoading) {
+            showProcessingIndicator();
+        }
+        
+        // Create download URL for markdown format
+        const downloadUrl = `/api/download-session-markdown/${sessionId}`;
+        
+        console.log('Downloading session as Markdown:', sessionId);
+        
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `session_summary_${sessionId}.md`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        
+        // Handle download completion
+        link.addEventListener('click', function() {
+            setTimeout(() => {
+                document.body.removeChild(link);
+                if (showLoading) {
+                    hideProcessingIndicator();
+                }
+                showSuccessMessage('Session summary downloaded as Markdown!');
+            }, 1000);
+        });
+        
+        link.click();
+        
+    } catch (error) {
+        if (showLoading) {
+            hideProcessingIndicator();
+        }
+        console.error('Download error:', error);
+        showErrorMessage('Failed to download session');
     }
+}
 
-    const actions = [
-        {
-            title: '🤖 Get AI Suggestion for Selection',
-            kind: monaco.languages.CodeActionKind.QuickFix,
-            command: {
-                id: 'ai-suggestion-selection',
-                title: 'AI Suggestion',
-                arguments: [selectedText]
+// Enhanced current session download functions
+function downloadCurrentSessionTXT() {
+    if (!currentCode || !currentCode.session_id) {
+        showErrorMessage('No active session to download. Please generate AI assistance first.');
+        return;
+    }
+    
+    downloadSession(currentCode.session_id, true);
+}
+
+function downloadCurrentSessionMarkdown() {
+    if (!currentCode || !currentCode.session_id) {
+        showErrorMessage('No active session to download. Please generate AI assistance first.');
+        return;
+    }
+    
+    downloadSessionMarkdown(currentCode.session_id, true);
+}
+
+// Enhanced session loading after AI assistance
+function showCurrentSessionDownload() {
+    const currentSessionDiv = document.getElementById('current-session-download');
+    if (currentSessionDiv && currentCode && currentCode.session_id) {
+        currentSessionDiv.style.display = 'block';
+        
+        // Update the display with current session info
+        const sessionInfo = codingSessions[currentCode.session_id];
+        if (sessionInfo) {
+            const infoDiv = currentSessionDiv.querySelector('.download-info');
+            if (infoDiv) {
+                infoDiv.innerHTML = `
+                    <p><strong>Current Session:</strong> ${currentCode.session_id}</p>
+                    <p><strong>Language:</strong> ${sessionInfo.language?.toUpperCase() || 'Unknown'}</p>
+                    <p><strong>Type:</strong> ${sessionInfo.type?.replace('_', ' ').toUpperCase() || 'Unknown'}</p>
+                    <ul class="export-info">
+                        <li><strong>Session Summary:</strong> Complete record including original code, AI response, and settings</li>
+                        <li><strong>TXT Format:</strong> Plain text format for easy reading and sharing</li>
+                        <li><strong>Markdown Format:</strong> Formatted document with syntax highlighting</li>
+                    </ul>
+                `;
             }
-        },
-        {
-            title: '📝 Explain Selected Code',
-            kind: monaco.languages.CodeActionKind.Refactor,
-            command: {
-                id: 'explain-selection',
-                title: 'Explain Code',
-                arguments: [selectedText]
-            }
-        },
-        {
-            title: '🔧 Optimize Selected Code',
-            kind: monaco.languages.CodeActionKind.RefactorRewrite,
-            command: {
-                id: 'optimize-selection',
-                title: 'Optimize Code',
-                arguments: [selectedText]
-            }
         }
-    ];
-
-    return { actions: actions };
-}
-
-// Trigger AI suggestions manually
-function triggerAISuggestions() {
-    if (!monacoEditor) return;
-    
-    const position = monacoEditor.getPosition();
-    const model = monacoEditor.getModel();
-    const lineContent = model.getLineContent(position.lineNumber);
-    const selectedText = monacoEditor.getModel().getValueInRange(monacoEditor.getSelection());
-    
-    if (selectedText && selectedText.trim().length > 0) {
-        // Get suggestion for selected text
-        getAISuggestionForSelection(selectedText);
-    } else {
-        // Trigger completion suggestions
-        monacoEditor.trigger('source', 'editor.action.triggerSuggest');
     }
-}
-
-// Get AI suggestion for selected text
-function getAISuggestionForSelection(selectedText) {
-    const language = getSelectedLanguage();
-    
-    showProcessingIndicator();
-    
-    fetch('/api/code-suggestion', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            code: selectedText,
-            language: language,
-            context: 'Selected code improvement'
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideProcessingIndicator();
-        if (data.success) {
-            // Display suggestion in results panel
-            const processedContent = processMarkdownText(data.suggestion);
-            updateSuggestionDisplay(processedContent);
-            showSuccessMessage('AI suggestion generated for selection!');
-        } else {
-            showErrorMessage('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        hideProcessingIndicator();
-        console.error('Error:', error);
-        showErrorMessage('Network error occurred');
-    });
-}
-
-// Explain selected code
-function explainSelectedCode() {
-    if (!monacoEditor) return;
-    
-    const selectedText = monacoEditor.getModel().getValueInRange(monacoEditor.getSelection());
-    if (!selectedText || selectedText.trim().length === 0) {
-        showErrorMessage('Please select some code to explain');
-        return;
-    }
-    
-    const language = getSelectedLanguage();
-    
-    showProcessingIndicator();
-    
-    fetch('/api/explain-code', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            code: selectedText,
-            language: language
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideProcessingIndicator();
-        if (data.success) {
-            const processedContent = processMarkdownText(data.explanation);
-            updateSuggestionDisplay(processedContent);
-            showSuccessMessage('Code explanation generated!');
-        } else {
-            showErrorMessage('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        hideProcessingIndicator();
-        console.error('Error:', error);
-        showErrorMessage('Network error occurred');
-    });
-}
-
-// Format code using Monaco's built-in formatter
-function formatCode() {
-    if (!monacoEditor) return;
-    
-    monacoEditor.getAction('editor.action.formatDocument').run();
-    showSuccessMessage('Code formatted!');
-}
-
-// Clear Monaco Editor
-function clearCodeEditor() {
-    if (monacoEditor) {
-        monacoEditor.setValue('');
-        updateCodeStats();
-        showSuccessMessage('Code editor cleared!');
-    }
-}
-
-// Copy code from Monaco Editor
-function copyCode() {
-    if (!monacoEditor) return;
-    
-    const code = monacoEditor.getValue();
-    if (!code.trim()) {
-        showErrorMessage('No code to copy');
-        return;
-    }
-    
-    navigator.clipboard.writeText(code).then(() => {
-        showSuccessMessage('Code copied to clipboard!');
-    }).catch(() => {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = code;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showSuccessMessage('Code copied to clipboard!');
-    });
-}
-
-// Get selected programming language
-function getSelectedLanguage() {
-    const languageSelect = document.getElementById('programming_language');
-    return languageSelect ? languageSelect.value : 'python';
-}
-
-// Convert language to Monaco language identifier
-function getMonacoLanguage(language) {
-    const languageMap = {
-        'python': 'python',
-        'javascript': 'javascript',
-        'typescript': 'typescript',
-        'java': 'java',
-        'cpp': 'cpp',
-        'c': 'c',
-        'csharp': 'csharp',
-        'php': 'php',
-        'ruby': 'ruby',
-        'go': 'go',
-        'rust': 'rust',
-        'swift': 'swift',
-        'kotlin': 'kotlin',
-        'scala': 'scala',
-        'html': 'html',
-        'css': 'css',
-        'scss': 'scss',
-        'less': 'less',
-        'xml': 'xml',
-        'json': 'json',
-        'yaml': 'yaml',
-        'sql': 'sql',
-        'bash': 'shell',
-        'powershell': 'powershell'
-    };
-    
-    return languageMap[language] || 'plaintext';
-}
-
-// Update code statistics
-function updateCodeStats() {
-    const code = monacoEditor ? monacoEditor.getValue() : document.getElementById('code_input').value;
-    
-    if (!code) {
-        document.getElementById('code-stats').style.display = 'none';
-        return;
-    }
-    
-    const lines = code.split('\n').length;
-    const chars = code.length;
-    const words = code.trim() ? code.trim().split(/\s+/).length : 0;
-    const functions = (code.match(/def\s+\w+|function\s+\w+|class\s+\w+/g) || []).length;
-    
-    document.getElementById('lines-count').textContent = lines;
-    document.getElementById('chars-count').textContent = chars;
-    document.getElementById('words-count').textContent = words;
-    document.getElementById('functions-count').textContent = functions;
-    
-    document.getElementById('code-stats').style.display = 'block';
-}
-
-// Update the existing functions to work with Monaco Editor
-function getCodeSuggestion() {
-    const code = monacoEditor ? monacoEditor.getValue() : document.getElementById('code_input').value;
-    const language = getSelectedLanguage();
-    const context = document.getElementById('context').value;
-    
-    if (!code.trim()) {
-        showErrorMessage('Please enter some code first');
-        return;
-    }
-    
-    showProcessingIndicator();
-    
-    fetch('/api/code-suggestion', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            code: code,
-            language: language,
-            context: context
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideProcessingIndicator();
-        if (data.success) {
-            currentCode = { session_id: data.session_id };
-            currentSuggestion = data.suggestion;
-            
-            const processedContent = processMarkdownText(data.suggestion);
-            updateSuggestionDisplay(processedContent);
-            
-            updateCodeStats();
-            loadSessions();
-            updateSessionStats();
-            showCurrentSessionDownload();
-            showSuccessMessage('Code suggestion generated successfully!');
-        } else {
-            showErrorMessage('Error: ' + data.error);
-        }
-    })
-    .catch(error => {
-        hideProcessingIndicator();
-        console.error('Error:', error);
-        showErrorMessage('Network error occurred');
-    });
 }
 
 // Floating Header Functionality
