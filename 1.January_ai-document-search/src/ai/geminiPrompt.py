@@ -3,8 +3,6 @@ from google.genai.types import GenerateContentConfig
 from google.genai import Client
 import google.auth
 import os
-#from search_algorithm import search_documents
-#from document_processing import handle_documents
 
 credentials, project_id = google.auth.default()
 
@@ -30,7 +28,7 @@ def generate_ai_summary(query, results, documents):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         print("AI Response:", response.text)
@@ -55,7 +53,7 @@ def generate_search_suggestions(query, available_documents):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
@@ -80,7 +78,7 @@ def analyze_search_quality(query, results, documents):
     
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="gemini-2.5-pro",
             contents=[prompt]
         )
         return response.text
@@ -117,7 +115,7 @@ def main():
 
     print(f"Available documents in directory {directory} are as follow:\n")
     
-    """all_documents = handle_documents(directory)
+    all_documents = handle_documents(directory)
 
     for doc in all_documents:
         print(doc)
@@ -142,7 +140,10 @@ def main():
     # Optional: Analyze search quality
     quality_analysis = analyze_search_quality(query, results, all_documents)
     print("\n--- Search Quality Analysis ---")
-    print(quality_analysis)"""
+    print(quality_analysis)
 
 if __name__ == '__main__':
+    from search_algorithm import search_documents
+    from document_processing import handle_documents
+
     main()

@@ -3,6 +3,7 @@ from .forms import UploadForm
 from .models import *
 from .utils import *
 import os
+import markdown
 
 app = Blueprint('app', __name__)
 db_path = os.path.join(os.path.dirname(__file__), 'static', 'database.db')
@@ -12,6 +13,16 @@ create_tables(connection)
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/latest-results')
+def latest_results():
+    # Get the latest project ID from the database
+    try:
+        latest_id = get_last_row_id(connection)[0]
+        return redirect(url_for('app.results', project_id=latest_id))
+    except:
+        flash('No test results available yet. Please upload a test first.', 'warning')
+        return redirect(url_for('app.upload'))
     
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -59,15 +70,20 @@ def results(project_id):
     evaluation_results = get_evaluation_result(connection, project_id)
     comparison = evaluation_results[4]
     evaluation = evaluation_results[5]
-    evaluation = evaluation.replace("\n", "  <br>  ")
+    
+    # Convert markdown to HTML for display
+    comparison_html = markdown.markdown(comparison)
+    evaluation_html = markdown.markdown(evaluation)
+    
+    # Extract the summary section (for copy functionality)
     summary = ""
     evaluation_lower = evaluation.lower()
-    if "overall" in evaluation_lower:
-        print("Summary found")
-        print("Overall summary:",evaluation_lower.split("overall"))
-        summary = evaluation.split("Overall" if "Overall" in evaluation else "overall")[-1]  # Preserve original case for display
-    elif "conclusion" in evaluation_lower:
-        print("Summary found")
-        print("Conclusion summary:",evaluation_lower.split("conclusion"))
-        summary = evaluation.split("Conclusion" if "Conclusion" in evaluation else "conclusion")[-1]  # Preserve original case for display
-    return render_template('results.html', ai_result1=comparison, ai_result2=evaluation, ai_result3=summary)
+    if "## summary" in evaluation_lower:
+        summary_section = evaluation.split("## Summary" if "## Summary" in evaluation else "## summary")[-1]
+        # Extract just the first paragraph/sentence for the 150 char limit
+        summary = summary_section.strip().split('\n')[0][:150]
+    elif "**summary**" in evaluation_lower:
+        summary_section = evaluation.split("**Summary**" if "**Summary**" in evaluation else "**summary**")[-1]
+        summary = summary_section.strip().split('\n')[0][:150]
+    
+    return render_template('results.html', ai_result1=comparison_html, ai_result2=evaluation_html, ai_result3=summary)

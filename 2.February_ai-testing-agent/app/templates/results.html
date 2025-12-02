@@ -113,6 +113,44 @@
             color: white;
             font-size: 20px;
         }
+
+        .ai-result-text h1, .ai-result-text h2, .ai-result-text h3 {
+            color: goldenrod;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .ai-result-text p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .ai-result-text ul, .ai-result-text ol {
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto 15px auto;
+            padding-left: 30px;
+        }
+
+        .ai-result-text li {
+            margin-bottom: 5px;
+        }
+
+        .ai-result-text strong {
+            color: goldenrod;
+            font-weight: bold;
+        }
+
+        .ai-result-text em {
+            font-style: italic;
+        }
+
+        .ai-result-text code {
+            background-color: #333;
+            color: #fff;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -129,17 +167,13 @@
         <h1 class="mainHeading">AI Testing Agent Results</h1>
         <br>
         <h2 class="subHeading">Evaluation Summary</h2>
-        <p id="results-container" class="ai-result-text">{{ ai_result2 }}</p>
+        <div id="results-container" class="ai-result-text">{{ ai_result2|safe }}</div>
         <br>
-        <h2 class="subHeading">Detailed Comparison</h3>
-        <div id="comparison" class="ai-result-text">
-            <pre>{{ ai_result1 }}</pre>
-        </div>
+        <h2 class="subHeading">Detailed Comparison</h2>
+        <div id="comparison" class="ai-result-text">{{ ai_result1|safe }}</div>
         <br>
-        <h2 class="subHeading">Summary Part</h3>
-        <div id="summary" class="ai-result-text">
-            <pre>{{ ai_result3 }}</pre>
-        </div>
+        <h2 class="subHeading">Summary for Report</h2>
+        <div id="summary" class="ai-result-text">{{ ai_result3 }}</div>
         
         <button onclick="copyToClipboard('summary')">Copy Summary</button>
         <button onclick="copyToClipboard('detailed')">Copy Full Evaluation</button>
@@ -149,25 +183,6 @@
     <br>
     <hr>
     <br>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const resultsContainer = document.getElementById('results-container');
-        const comparisonContainer = document.getElementById('comparison');
-        const summaryContainer = document.getElementById('summary');
-        const summaryText = summaryContainer.innerText;
-        const markdownContent = resultsContainer.innerText;
-        const markdownContent2 = comparisonContainer.innerText;
-        const htmlContent = marked.parse(markdownContent);
-        const htmlContent2 = marked.parse(markdownContent2);
-        const htmlContent3 = marked.parse(summaryText);
-        resultsContainer.innerHTML = htmlContent;
-        comparisonContainer.innerHTML = htmlContent2;
-        summaryContainer.innerHTML = htmlContent3;
-        resultsContainer.style.whiteSpace = 'pre-wrap';
-      });
-    </script>
-
     <footer>
         <div class="footer">
             <div class="w-container">
@@ -232,9 +247,12 @@
         function copyToClipboard(type) {
             let textToCopy;
             if (type === 'summary') {
-                textToCopy = document.getElementById('summary').innerText;
+                // Get the plain text summary from the DOM
+                textToCopy = document.getElementById('summary').innerText || document.getElementById('summary').textContent;
             } else {
-                textToCopy = document.getElementById('results-container').innerText;
+                // Get the full evaluation text without HTML
+                const container = document.getElementById('results-container');
+                textToCopy = container.innerText || container.textContent;
             }
             navigator.clipboard.writeText(textToCopy).then(() => {
                 alert('Copied to clipboard!');
