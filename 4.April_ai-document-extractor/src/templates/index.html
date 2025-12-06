@@ -6,6 +6,7 @@
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
     <style>
       body {
         background-color: black;
@@ -26,39 +27,6 @@
         vertical-align: middle;
         margin-left: 2cm;
         margin-right: 2cm;
-      }
-
-      ul.nav {
-        list-style-type: none;
-        max-width: 100%;
-        width: 100%;
-        padding: 0;
-        overflow: hidden;
-        background-color: red;
-        display: flex;
-        justify-content: center;
-      }
-
-      li a.nav {
-        display: block;
-        color: black;
-        text-align: center;
-        padding: 16px;
-        text-decoration: none;
-      }
-
-      li a.nav:hover {
-        background-color: gray;
-      }
-
-      div.menuBar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      #currentPage {
-        background-color: gold;
       }
 
       .mainBody {
@@ -158,35 +126,6 @@
         margin-left: 30px;
       }
 
-      #results-container {
-        text-align: center;
-        color: white;
-      }
-
-      .no-bullet {
-        list-style: none;
-        width:90%;
-        padding:0;
-        text-align:center;
-        overflow:auto;
-        color: crimson;
-        background-color: rebeccapurple;
-        border-radius: 5px;
-        margin: 5% 5%;
-        font: 1.2em 'Arial';
-      }
-
-      .no-bullet > li{
-        margin-bottom:15px;
-      }
-
-      .ai-summary {
-        margin-left: auto;
-        margin-right: auto;
-        width: 50%;
-        color: white;
-      }
-
       .button {
         background-color: #35424a;
         color: white;
@@ -198,27 +137,6 @@
 
       .button:hover {
         background-color: #45a049;
-      }
-
-      .container {
-            width: 400px;
-            margin: 0 auto;
-            text-align: center;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      }
-
-      h1 {
-          font-size: 2em;
-          margin-bottom: 20px;
-      }
-
-      label {
-          display: block;
-          margin: 15px 0 5px;
-          font-size: 1.2em;
       }
 
       input[type="file"],
@@ -257,6 +175,172 @@
           color: #155724;
           border-radius: 4px;
       }
+
+      .form-section {
+        margin: 30px 0;
+        padding: 20px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      .form-section h2 {
+        margin-top: 0;
+        color: #fff;
+        border-bottom: 2px solid goldenrod;
+        padding-bottom: 10px;
+      }
+
+      select, textarea, input[type="text"] {
+        width: 90%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: white;
+        color: black;
+      }
+
+      textarea {
+        resize: vertical;
+      }
+
+      .success-message {
+        margin-top: 20px;
+        padding: 10px;
+        border: 1px solid #4CAF50;
+        background-color: #d4edda;
+        color: #155724;
+        border-radius: 4px;
+      }
+
+      .download-button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .download-button:hover {
+        background-color: #218838;
+      }
+
+      /* AI Summary Styling - Based on March project */
+      .ai-summary {
+        margin: 20px auto;
+        width: 80%;
+        color: white;
+      }
+
+      .ai-summary-container {
+        background: #2c2c2c;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px auto;
+        max-width: 90%;
+        border: 2px solid goldenrod;
+      }
+
+      .ai-summary-content.markdown-content {
+        color: white;
+        line-height: 1.6;
+        text-align: left;
+      }
+
+      .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+        color: #e74c3c;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+
+      .markdown-content h1 { font-size: 1.8em; }
+      .markdown-content h2 { font-size: 1.5em; }
+      .markdown-content h3 { font-size: 1.3em; }
+
+      .markdown-content p {
+        margin: 10px 0;
+        color: #f8f9fa;
+      }
+
+      .markdown-content ul, .markdown-content ol {
+        margin: 10px 0;
+        padding-left: 30px;
+      }
+
+      .markdown-content li {
+        margin: 5px 0;
+        color: #e9ecef;
+      }
+
+      .markdown-content strong {
+        color: #ffc107;
+        font-weight: bold;
+      }
+
+      .markdown-content em {
+        color: #17a2b8;
+        font-style: italic;
+      }
+
+      .markdown-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 15px 0;
+        background: rgba(255,255,255,0.1);
+      }
+
+      .markdown-content th, .markdown-content td {
+        border: 1px solid #555;
+        padding: 8px 12px;
+        text-align: left;
+      }
+
+      .markdown-content th {
+        background: rgba(231, 76, 60, 0.7);
+        color: white;
+        font-weight: bold;
+      }
+
+      .markdown-content td {
+        background: rgba(255,255,255,0.05);
+      }
+
+      .markdown-content code {
+        background: #495057;
+        color: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+      }
+
+      .markdown-content pre {
+        background: #212529;
+        color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        border-left: 4px solid #e74c3c;
+      }
+
+      .markdown-content blockquote {
+        border-left: 4px solid #6c757d;
+        margin: 15px 0;
+        padding: 10px 20px;
+        background: rgba(108, 117, 125, 0.1);
+        font-style: italic;
+      }
+
+      .markdown-content hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(to right, transparent, #e74c3c, transparent);
+        margin: 20px 0;
+      }
     </style>
   </head>
 
@@ -288,73 +372,184 @@
       <h2 class="subHeading">
         The AI Document Extractor & Converter is a dynamic and modular application designed to simplify the process of extracting, processing, and converting data from various document formats. With support for Word, PDF, and plain text files, the tool leverages AI-powered data extraction techniques to provide users with a seamless experience. Through its intuitive web-based interface, users can upload documents, customize configurations, and generate outputs in desired formats, all with real-time feedback and logging.      
       </h2>
-      <div class="container">
-      <h1 style="color: white">Upload Document</h1>
-      <p class="largeText">Upload your document and get the extracted text!</p>
+      
+      <!-- Upload Document Section -->
+      <div class="form-section">
+        <h2>Upload Document</h2>
+        <p class="largeText">Upload your document to extract text and make it available for conversion!</p>
         <form id="upload-form" action="{{ url_for('index') }}" method="post" enctype="multipart/form-data">
-          <label for="file-upload" style="color: black;">Upload Document</label>
+          <label for="file-upload" style="color: white;">Select Document to Upload</label>
           <input type="file" id="file-upload" name="file" accept=".pdf, .docx, .txt" required>
 
-          <label for="output-file-name" style="color: black;">Output File Name</label>
-          <input type="text" id="output-file-name" name="output-filename" placeholder="Enter output file name" required>
-
           <div class="button-container">
-              <button type="submit">Upload & Convert</button>
+              <button type="submit">Upload this document</button>
           </div>
         </form>
-      <br />
-      <h1 style="color: white">Convert options</h1>
-      <p class="largeText">Choose the format and configurations for the AI document conversion:</p>
-        <form id="convert-form" action="{{ url_for('convert') }}" method="post" enctype="multipart/form-data">
-          {{ form.hidden_tag() }}
         
-        {{ form.table_handling.label }}<br />
-        {{ form.table_handling() }}
-        <br />
-        <br />
-        {{ form.field_mapping.label }}<br />
-        {{ form.field_mapping.description }}<br />
-        {{ form.field_mapping(rows=4, cols=32) }}
-        <br />
-        <br />
-        {{ form.placeholder_text.label }}<br />
-        {{ form.placeholder_text.description }}
-        {{ form.placeholder_text() }}
-        <br />
-        <br />
-        {{ form.page_range.label }}<br />
-        {{ form.page_range.description }}
-        {{ form.page_range() }}
-        <br />
-        <br />
-        {{ form.output_formatting.label }}<br />
-        {{ form.output_formatting() }}
-        <br />
-        <br />
-        {{ form.additional_notes.label }}<br />
-        {{ form.additional_notes.description }}<br />
-        {{ form.additional_notes(rows=4, cols=32) }}
-        <br />
-        <br />
-        {{ form.submit() }}
-      </form>
-      <br />
-      {% if extracted_text %}
-      <div class="flash-message">
-          <h3>Extracted Text:</h3>
-          <pre>{{ extracted_text }}</pre>
-      </div>
-      {% endif %}
+        {% if success_message %}
+        <div class="success-message">
+            <p>{{ success_message }}</p>
+        </div>
+        {% endif %}
 
-      {% if error %}
-      <div class="flash-message" style="border-color: #f44336; background-color: #f8d7da; color: #721c24;">
-          <p>{{ error }}</p>
+        {% if extracted_text %}
+        <div class="flash-message">
+            <h3>Extracted Text Preview:</h3>
+            <pre>{{ extracted_text[:500] }}{% if extracted_text|length > 500 %}...{% endif %}</pre>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="flash-message" style="border-color: #f44336; background-color: #f8d7da; color: #721c24;">
+            <p>{{ error }}</p>
+        </div>
+        {% endif %}
       </div>
-      {% endif %}
-    </div>
+
+      <!-- Convert Document Section -->
+      <div class="form-section">
+        <h2>Convert Document</h2>
+        <p class="largeText">Select a previously uploaded document and configure the conversion options:</p>
+        
+        <form id="convert-form" action="{{ url_for('convert') }}" method="post">
+          {{ form.hidden_tag() }}
+          
+          <label for="selected-document" style="color: white;">Select Document to Convert</label>
+          <select name="selected-document" id="selected-document" required>
+            <option value="">-- Select a document --</option>
+          </select>
+          <br />
+
+          <label for="output-file-name" style="color: white;">Output File Name</label>
+          <input type="text" id="output-file-name" name="output-filename" placeholder="Enter output file name (without extension)" required>
+          <br />
+
+          {{ form.output_file_type.label(style="color: white;") }}<br />
+          {{ form.output_file_type() }}
+          <br />
+        
+          {{ form.table_handling.label(style="color: white;") }}<br />
+          {{ form.table_handling() }}
+          <br />
+          
+          {{ form.field_mapping.label(style="color: white;") }}<br />
+          <small style="color: #ccc;">{{ form.field_mapping.description }}</small><br />
+          {{ form.field_mapping(rows=4, cols=50) }}
+          <br />
+          
+          {{ form.placeholder_text.label(style="color: white;") }}<br />
+          <small style="color: #ccc;">{{ form.placeholder_text.description }}</small><br />
+          {{ form.placeholder_text() }}
+          <br />
+          
+          {{ form.page_range.label(style="color: white;") }}<br />
+          <small style="color: #ccc;">{{ form.page_range.description }}</small><br />
+          {{ form.page_range() }}
+          <br />
+          
+          {{ form.output_formatting.label(style="color: white;") }}<br />
+          {{ form.output_formatting() }}
+          <br />
+          
+          {{ form.additional_notes.label(style="color: white;") }}<br />
+          <small style="color: #ccc;">{{ form.additional_notes.description }}</small><br />
+          {{ form.additional_notes(rows=4, cols=50) }}
+          <br />
+          
+          <div class="button-container">
+            {{ form.submit(class="button") }}
+          </div>
+        </form>
+        
+        <div id="conversion-result" style="margin-top: 20px;"></div>
+      </div>
+
+      <!-- AI Summary Section -->
+      <div class="ai-summary">
+        <h2>AI Conversion Analysis</h2>
+        <p>AI will provide detailed analysis and recommendations for your document conversion.</p>
+        <div class="ai-summary-container">
+          <div class="ai-summary-content markdown-content" id="ai-summary-display">
+            <p>AI Analysis will appear here after document conversion...</p>
+          </div>
+        </div>
+      </div>
+
       <hr />
       <br />
     </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      // Load documents for the dropdown
+      document.addEventListener('DOMContentLoaded', function() {
+        fetch('/get-documents')
+          .then(response => response.json())
+          .then(data => {
+            const documentSelect = document.getElementById('selected-document');
+            if (data.documents && data.documents.length > 0) {
+              data.documents.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc;
+                option.textContent = doc;
+                documentSelect.appendChild(option);
+              });
+            } else {
+              const option = document.createElement('option');
+              option.value = "";
+              option.textContent = "No documents available - please upload a document first";
+              option.disabled = true;
+              documentSelect.appendChild(option);
+            }
+          })
+          .catch(error => {
+            console.error('Error loading documents:', error);
+          });
+      });
+
+      // Handle conversion form submission
+      document.getElementById('convert-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const resultDiv = document.getElementById('conversion-result');
+        const aiSummaryDiv = document.getElementById('ai-summary-display');
+        
+        // Show loading message
+        resultDiv.innerHTML = '<div class="flash-message">Converting document, please wait...</div>';
+        aiSummaryDiv.innerHTML = '<p>Generating AI analysis...</p>';
+        
+        fetch('/convert', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.error) {
+            resultDiv.innerHTML = `<div class="flash-message" style="border-color: #f44336; background-color: #f8d7da; color: #721c24;"><p>Error: ${data.error}</p></div>`;
+            aiSummaryDiv.innerHTML = '<p>Error generating AI analysis.</p>';
+          } else {
+            // Update conversion result
+            resultDiv.innerHTML = `
+              <div class="success-message">
+                <p>${data.message}</p>
+                <a href="${data.download_url}" class="download-button">Download Converted File</a>
+              </div>
+            `;
+            
+            // Convert markdown to HTML and update AI summary
+            const markdownContent = data.ai_summary || 'No AI summary available';
+            const htmlContent = marked.parse(markdownContent);
+            aiSummaryDiv.innerHTML = htmlContent;
+          }
+        })
+        .catch(error => {
+          resultDiv.innerHTML = `<div class="flash-message" style="border-color: #f44336; background-color: #f8d7da; color: #721c24;"><p>Error: ${error}</p></div>`;
+          aiSummaryDiv.innerHTML = '<p>Error generating AI analysis.</p>';
+        });
+      });
+    </script>
+
     <footer>
       <div class="footer">
         <div class="w-container">
@@ -375,89 +570,42 @@
                 <a href="shop.html" target="_blank" class="footer-link">Shop</a>
               </div>
               <div class="footer-link-row">
-                <a href="about.html" target="_blank" class="footer-link"
-                  >About</a
-                >
-                <a
-                  href="#"
-                  target="_blank"
-                  class="footer-link"
-                  id="accountLinkFooter"
-                  >Account</a
-                >
+                <a href="about.html" target="_blank" class="footer-link">About</a>
+                <a href="#" target="_blank" class="footer-link" id="accountLinkFooter">Account</a>
               </div>
               <div class="footer-link-row">
-                <a href="contact.html" target="_blank" class="footer-link"
-                  >Contact</a
-                >
+                <a href="contact.html" target="_blank" class="footer-link">Contact</a>
                 <a href="cart.html" target="_blank" class="footer-link">Cart</a>
               </div>
               <div class="footer-link-row">
-                <a href="login.html" target="_blank" class="footer-link"
-                  >Login</a
-                >
-                <a href="register.html" target="_blank" class="footer-link"
-                  >Sign-up</a
-                >
+                <a href="login.html" target="_blank" class="footer-link">Login</a>
+                <a href="register.html" target="_blank" class="footer-link">Sign-up</a>
               </div>
             </div>
             <div class="f-col">
               <h3>Socials</h3>
               <div>
-                <img
-                  src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon"
-                  >X (Twitter)</a
-                >
+                <img src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg" width="20" alt="" class="info-icon" />
+                <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon">X (Twitter)</a>
               </div>
               <div>
-                <img
-                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a
-                  href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg"
-                  class="footer-link with-icon"
-                  >YouTube</a
-                >
+                <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg" width="20" alt="" class="info-icon" />
+                <a href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg" class="footer-link with-icon">YouTube</a>
               </div>
               <div>
-                <img
-                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a
-                  href="https://github.com/AkhHas2005"
-                  class="footer-link with-icon"
-                  >GitHub</a
-                >
+                <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg" width="20" alt="" class="info-icon" />
+                <a href="https://github.com/AkhHas2005" class="footer-link with-icon">GitHub</a>
               </div>
               <div>
-                <img
-                  src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg"
-                  width="20"
-                  alt=""
-                  class="info-icon"
-                />
-                <a href="https://www.instagram.com/pythonprogrammeryt/" 
-                class="footer-link with-icon"
-                  >Instagram</a
-                >
+                <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg" width="20" alt="" class="info-icon" />
+                <a href="https://www.instagram.com/pythonprogrammeryt/" class="footer-link with-icon">Instagram</a>
               </div>
             </div>
           </div>
         </div>
       </div>
       <hr />
-      <h1 style="color: black;">&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+      <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
     </footer>
   </body>
 </html>

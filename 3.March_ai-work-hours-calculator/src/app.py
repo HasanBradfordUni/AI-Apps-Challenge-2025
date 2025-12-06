@@ -2,9 +2,20 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify
 from utils.forms import WorkHoursForm
 from ai.geminiPrompt import generate_work_hours_summary
 from datetime import datetime, timedelta
+import markdown
+from markupsafe import Markup
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'randomString'
+
+# Register the markdown filter
+@app.template_filter('markdown')
+def markdown_filter(text):
+    if text:
+        # Convert markdown to HTML
+        html = markdown.markdown(text, extensions=['fenced_code', 'tables', 'nl2br'])
+        return Markup(html)
+    return ''
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -15,17 +26,7 @@ def index():
         contracted_hours = f"{contracted_hours} hours per {time_frame}"
         work_hours_description = form.work_hours_description.data
         summary = generate_work_hours_summary(contracted_hours, work_hours_description)
-        responses = summary.split("\n")
-        summary = ""
-        for response in responses:
-            response = response.strip("#").strip("*")
-            if response.startswith("Total"):
-                summary += "<h2>"+response+"</h2><br>"
-            elif response.startswith("Overtime") or response.startswith("Undertime"):
-                summary += "<h3>"+response+"</h3><br>"
-            else:
-                summary += response+"<br>"
-            print(summary)
+        print(summary)
         return render_template('index.html', form=form, ai_summary=summary)
     return render_template('index.html', form=form)
 

@@ -5,6 +5,18 @@ from wtforms.validators import DataRequired, Optional
 class ConfigOptionsForm(FlaskForm):
     """Form for configuring options for document processing."""
     
+    # Dropdown for output file type
+    output_file_type = SelectField(
+        "Output File Type",
+        choices=[
+            ("same", "Keep Same Format"),
+            ("pdf", "Convert to PDF"),
+            ("docx", "Convert to Word Document"),
+            ("txt", "Convert to Text File")
+        ],
+        validators=[DataRequired()]
+    )
+    
     # Dropdown for table handling options
     table_handling = SelectField(
         "Table Handling",
@@ -56,4 +68,4 @@ class ConfigOptionsForm(FlaskForm):
     )
     
     # Submit button
-    submit = SubmitField("Submit")
+    submit = SubmitField("Download Converted Version")
