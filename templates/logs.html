@@ -1,0 +1,885 @@
+{% extends "base.html" %}
+
+{% block title %}Has AI - Log Search{% endblock %}
+
+{% block header_title %}Log Search & Management{% endblock %}
+
+{% block content %}
+<h1 class="mainHeading">🔍 Log Search & Management</h1>
+
+<div class="dashboard-container">
+
+    <!-- Log Management -->
+    <div class="long-dashboard-card">
+        <h3 class="subHeading">⚙️ Log Management</h3>
+        
+        <div class="management-actions">
+            <div class="action-group">
+                <h4 class="subHeading">File Operations</h4>
+                <button class="action-btn" onclick="refreshLogsList()">
+                    🔄 Refresh Files
+                </button>
+                <button class="action-btn" onclick="showLogStats()">
+                    📊 Show Statistics
+                </button>
+            </div>
+            
+            <div class="action-group">
+                <h4 class="subHeading">Maintenance</h4>
+                <button class="action-btn warning" onclick="cleanAllLogs()">
+                    🧹 Clean All Logs
+                </button>
+                <button class="action-btn danger" onclick="showClearAllConfirm()">
+                    ⚠️ Clear All Logs
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Interface -->
+    <div class="long-dashboard-card">
+        <h3 class="subHeading">🔎 Search Logs</h3>
+        
+        <form method="POST" action="{{ url_for('search_logs') }}" class="search-form">
+            <div class="form-group">
+                <label for="log_file">Select Log File:</label>
+                <select name="log_file" id="log_file" class="form-input" required>
+                    <option value="">Choose a log file...</option>
+                    {% for log in available_logs %}
+                    <option value="{{ log.filename }}" 
+                        {% if selected_file == log.filename %}selected{% endif %}>
+                        {{ log.filename }} ({{ log.size_formatted }}, Modified: {{ log.modified }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="log_type">Log Type:</label>
+                    <select name="log_type" id="log_type" class="form-input">
+                        <option value="all" {% if log_type == 'all' %}selected{% endif %}>All Types</option>
+                        <option value="output" {% if log_type == 'output' %}selected{% endif %}>Output Logs</option>
+                        <option value="error" {% if log_type == 'error' %}selected{% endif %}>Error Logs</option>
+                        <option value="input" {% if log_type == 'input' %}selected{% endif %}>User Input Logs</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="search_term">Search Term:</label>
+                    <input type="text" name="search_term" id="search_term" 
+                           value="{{ search_term or '' }}" 
+                           placeholder="Enter search term..." 
+                           class="form-input" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="narrow_search">Narrow Search (Optional):</label>
+                <input type="text" name="narrow_search" id="narrow_search" 
+                       value="{{ narrow_search or '' }}" 
+                       placeholder="Additional filter term..." 
+                       class="form-input">
+                <small class="form-help">Use this to further filter the initial search results</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="submit-btn">
+                    🔍 Search Logs
+                </button>
+                <button type="button" class="action-btn" onclick="clearSearch()">
+                    🗑️ Clear
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Search Results -->
+    {% if search_results is defined %}
+    <div class="long-dashboard-card">
+        <h3 class="subHeading">📋 Search Results</h3>
+        
+        <div class="search-summary">
+            <p><strong>Search Term:</strong> "{{ search_term }}"</p>
+            <p><strong>Log Type:</strong> {{ log_type.title() }}</p>
+            <p><strong>Log File:</strong> {{ selected_file }}</p>
+            {% if narrow_search %}
+            <p><strong>Narrow Filter:</strong> "{{ narrow_search }}"</p>
+            {% endif %}
+            <p><strong>Results Found:</strong> {{ search_results|length }}</p>
+        </div>
+        
+        {% if search_results %}
+        <div class="results-actions">
+            <form method="POST" action="{{ url_for('export_logs') }}" style="display: inline;">
+                <input type="hidden" name="export_type" value="results">
+                <button type="submit" name="export_format" value="txt" class="action-btn">
+                    📄 Export as TXT
+                </button>
+                <button type="submit" name="export_format" value="json" class="action-btn">
+                    📊 Export as JSON
+                </button>
+            </form>
+            <button class="action-btn" onclick="toggleResultsView()">
+                👁️ Toggle View
+            </button>
+        </div>
+        
+        <div class="search-results-container" id="searchResults">
+            {% for result in search_results %}
+            <div class="result-item">
+                <div class="result-header">
+                    <span class="result-type result-type-{{ result.type.lower() }}">
+                        {{ result.type }}
+                    </span>
+                    <span class="result-number">#{{ loop.index }}</span>
+                </div>
+                <div class="result-content">
+                    <pre>{{ result.content }}</pre>
+                </div>
+                <div class="result-actions">
+                    <button class="action-btn small" onclick="copyToClipboard('{{ loop.index }}')">
+                        📋 Copy
+                    </button>
+                    <button class="action-btn small" onclick="highlightSearchTerm('{{ loop.index }}', '{{ search_term }}')">
+                        🔍 Highlight
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination for large results -->
+        {% if search_results|length > 50 %}
+        <div class="pagination-info">
+            <p>Showing first 50 results. Use narrow search to filter further.</p>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="no-results">
+            <p>No results found for "{{ search_term }}" in {{ log_type }} logs.</p>
+            <p>Try:</p>
+            <ul>
+                <li>Different search terms</li>
+                <li>Broader log type selection</li>
+                <li>Checking other log files</li>
+                <li>Removing narrow search filter</li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Available Log Files -->
+    <div class="long-dashboard-card">
+        <h3 class="subHeading">📁 Available Log Files</h3>
+        
+        {% if available_logs %}
+        <div class="log-files-grid">
+            {% for log in available_logs %}
+            <div class="log-file-card">
+                <div class="log-file-info">
+                    <h4>{{ log.filename }}</h4>
+                    <p><strong>Size:</strong> {{ log.size_formatted }}</p>
+                    <p><strong>Modified:</strong> {{ log.modified }}</p>
+                </div>
+                <div class="log-file-actions">
+                    <button class="action-btn small" onclick="selectLogFile('{{ log.filename }}')">
+                        🎯 Select
+                    </button>
+                    <button class="action-btn small danger" onclick="confirmClearLog('{{ log.filename }}')">
+                        🗑️ Clear
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="no-data">No log files found.</p>
+        {% endif %}
+    </div>
+
+    
+
+</div>
+
+<!-- Hidden forms for log management -->
+<form id="clearLogForm" method="POST" action="{{ url_for('clear_logs') }}" style="display: none;">
+    <input type="hidden" name="log_file" id="clearLogFile">
+</form>
+
+<!-- Log Statistics Modal -->
+<div id="statsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📊 Log Statistics</h3>
+            <button class="modal-close" onclick="closeStatsModal()">&times;</button>
+        </div>
+        <div class="modal-body" id="statsContent">
+            <!-- Statistics will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Import the main scripts.js functions or redefine them for this page
+// Enhanced logging for debugging
+const DEBUG = true; // Set to false in production
+
+function debugLog(message, data = null) {
+    if (DEBUG) {
+        console.log(`[DEBUG] ${new Date().toISOString()} - ${message}`);
+        if (data) {
+            console.log('[DEBUG] Data:', data);
+        }
+    }
+}
+
+function errorLog(message, error = null) {
+    console.error(`[ERROR] ${new Date().toISOString()} - ${message}`);
+    if (error) {
+        console.error('[ERROR] Details:', error);
+    }
+}
+
+function infoLog(message, data = null) {
+    console.info(`[INFO] ${new Date().toISOString()} - ${message}`);
+    if (data) {
+        console.info('[INFO] Data:', data);
+    }
+}
+
+// Show notification system (redefined for logs page)
+function showNotification(message, type = 'info', duration = 5000) {
+    debugLog(`Showing notification: ${type} - ${message}`);
+    
+    // Remove existing notifications of the same type
+    const existing = document.querySelectorAll(`.notification-${type}`);
+    existing.forEach(notif => {
+        debugLog('Removing existing notification of same type');
+        notif.remove();
+    });
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-icon">${getNotificationIcon(type)}</span>
+            <span class="notification-message">${message}</span>
+            <button class="notification-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+        </div>
+    `;
+    
+    // Add notification styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        ${type === 'success' ? 'background-color: #28a745;' : ''}
+        ${type === 'error' ? 'background-color: #dc3545;' : ''}
+        ${type === 'warning' ? 'background-color: #ffc107; color: #212529;' : ''}
+        ${type === 'info' ? 'background-color: #17a2b8;' : ''}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Auto-remove after duration
+    setTimeout(() => {
+        if (notification.parentElement) {
+            debugLog(`Auto-removing notification after ${duration}ms`);
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, duration);
+    
+    infoLog('Notification displayed', { type: type, message: message });
+}
+
+// Get notification icon based on type
+function getNotificationIcon(type) {
+    const icons = {
+        'success': '✅',
+        'error': '❌',
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
+    return icons[type] || 'ℹ️';
+}
+
+// Enhanced JavaScript for log search functionality
+function selectLogFile(filename) {
+    debugLog(`Selecting log file: ${filename}`);
+    document.getElementById('log_file').value = filename;
+    showNotification(`Selected log file: ${filename}`, 'info', 2000);
+}
+
+function clearSearch() {
+    debugLog('Clearing search form');
+    document.getElementById('search_term').value = '';
+    document.getElementById('narrow_search').value = '';
+    document.getElementById('log_type').value = 'all';
+    document.getElementById('log_file').value = '';
+    
+    // Clear results if shown
+    const resultsContainer = document.getElementById('searchResults');
+    if (resultsContainer) {
+        resultsContainer.style.display = 'none';
+    }
+    
+    showNotification('Search form cleared', 'info', 2000);
+}
+
+function confirmClearLog(filename) {
+    debugLog(`Clear log confirmation for: ${filename}`);
+    
+    if (confirm(`Are you sure you want to clear the log file "${filename}"?\n\nThis action cannot be undone, but a backup will be created.`)) {
+        document.getElementById('clearLogFile').value = filename;
+        document.getElementById('clearLogForm').submit();
+    }
+}
+
+function toggleResultsView() {
+    debugLog('Toggling results view');
+    const results = document.querySelectorAll('.result-content');
+    if (results.length === 0) {
+        showNotification('No results to toggle', 'warning', 2000);
+        return;
+    }
+    
+    const isCompact = results[0]?.style.maxHeight === '100px';
+    
+    results.forEach(result => {
+        if (isCompact) {
+            result.style.maxHeight = 'none';
+            result.style.overflow = 'visible';
+        } else {
+            result.style.maxHeight = '100px';
+            result.style.overflow = 'hidden';
+        }
+    });
+    
+    showNotification(isCompact ? 'Expanded view' : 'Compact view', 'info', 1500);
+}
+
+function copyToClipboard(resultIndex) {
+    debugLog(`Copying result ${resultIndex} to clipboard`);
+    
+    const resultContent = document.querySelector(`.result-item:nth-child(${resultIndex}) .result-content pre`);
+    if (resultContent) {
+        navigator.clipboard.writeText(resultContent.textContent).then(() => {
+            showNotification(`Result ${resultIndex} copied to clipboard`, 'success', 2000);
+        }).catch(err => {
+            errorLog('Failed to copy to clipboard', err);
+            showNotification('Failed to copy to clipboard', 'error');
+        });
+    }
+}
+
+function highlightSearchTerm(resultIndex, searchTerm) {
+    debugLog(`Highlighting search term in result ${resultIndex}: ${searchTerm}`);
+    
+    const resultContent = document.querySelector(`.result-item:nth-child(${resultIndex}) .result-content pre`);
+    if (resultContent && searchTerm) {
+        const text = resultContent.textContent;
+        const highlightedText = text.replace(
+            new RegExp(searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), 
+            `<mark>$&</mark>`
+        );
+        resultContent.innerHTML = highlightedText;
+        showNotification('Search term highlighted', 'info', 1500);
+    }
+}
+
+function refreshLogsList() {
+    debugLog('Refreshing logs list');
+    showNotification('Refreshing logs list...', 'info');
+    window.location.reload();
+}
+
+function showLogStats() {
+    debugLog('Showing log statistics');
+    
+    // Calculate basic statistics from available logs
+    try {
+        const logFiles = `{{ available_logs|tojson|safe }}`;
+        let totalSize = 0;
+        let totalFiles = logFiles.length;
+        let latestModified = '';
+        
+        logFiles.forEach(log => {
+            totalSize += log.size;
+            if (!latestModified || log.modified > latestModified) {
+                latestModified = log.modified;
+            }
+        });
+        
+        const statsContent = `
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <h4>Total Log Files</h4>
+                    <p class="stat-value">${totalFiles}</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Total Size</h4>
+                    <p class="stat-value">${(totalSize / 1024).toFixed(1)} KB</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Latest Modified</h4>
+                    <p class="stat-value">${latestModified}</p>
+                </div>
+                <div class="stat-item">
+                    <h4>Average File Size</h4>
+                    <p class="stat-value">${totalFiles > 0 ? (totalSize / totalFiles / 1024).toFixed(1) : 0} KB</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('statsContent').innerHTML = statsContent;
+        document.getElementById('statsModal').style.display = 'block';
+    } catch (error) {
+        errorLog('Error showing stats', error);
+        showNotification('Error loading statistics', 'error');
+    }
+}
+
+function closeStatsModal() {
+    document.getElementById('statsModal').style.display = 'none';
+}
+
+function cleanAllLogs() {
+    debugLog('Clean all logs requested');
+    
+    if (confirm('This will clean empty lines from all log files. Continue?')) {
+        showNotification('Log cleaning functionality would be implemented here', 'info');
+        // You could implement a route to clean all logs using the cleanLoggerFile method
+    }
+}
+
+function showClearAllConfirm() {
+    debugLog('Clear all logs confirmation');
+    
+    if (confirm('⚠️ WARNING: This will clear ALL log files!\n\nThis action cannot be undone. Backups will be created.\n\nAre you absolutely sure?')) {
+        if (confirm('🔥 FINAL WARNING: You are about to clear ALL logs!\n\nType YES in the next prompt to confirm.')) {
+            const confirmation = prompt('Type YES to confirm clearing all logs:');
+            if (confirmation === 'YES') {
+                showNotification('Clear all logs functionality would be implemented here', 'warning');
+                // Implement route to clear all logs
+            } else {
+                showNotification('Clear all cancelled', 'info');
+            }
+        }
+    }
+}
+
+// Auto-refresh functionality
+let autoRefreshInterval;
+
+function toggleAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        showNotification('Auto-refresh disabled', 'info');
+    } else {
+        autoRefreshInterval = setInterval(() => {
+            debugLog('Auto-refreshing logs list');
+            refreshLogsList();
+        }, 30000); // Refresh every 30 seconds
+        showNotification('Auto-refresh enabled (30s)', 'success');
+    }
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    debugLog('Logs page initialized');
+    
+    // Setup form submission handling with proper loading states
+    const searchForm = document.querySelector('form[action*="search_logs"]');
+    if (searchForm) {
+        debugLog('Setting up search form submission handler');
+        
+        searchForm.addEventListener('submit', function(e) {
+            debugLog('Search form submitted');
+            
+            const submitBtn = searchForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            // Show loading state
+            submitBtn.textContent = 'Searching...';
+            submitBtn.disabled = true;
+            
+            // Show progress notification
+            showNotification('Searching logs...', 'info');
+            
+            // Store original state for restoration if needed
+            submitBtn.dataset.originalText = originalText;
+            
+            // The form will submit normally, but we've added visual feedback
+        });
+    }
+    
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === '/') {
+            e.preventDefault();
+            const searchInput = document.getElementById('search_term');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+        if (e.ctrlKey && e.key === 'r') {
+            e.preventDefault();
+            refreshLogsList();
+        }
+    });
+    
+    // Check if we have search results and show them
+    const hasResults = `{{ 'true' if search_results is defined else 'false' }}`;
+    const resultsCount = `{{ search_results|length if search_results is defined else 0 }}`;
+
+    if (hasResults && resultsCount > 0) {
+        debugLog(`Search results found: ${resultsCount} results`);
+        showNotification(`Found ${resultsCount} search results`, 'success', 3000);
+    } else if (hasResults && resultsCount === 0) {
+        debugLog('Search completed but no results found');
+        showNotification('Search completed - no results found', 'warning', 3000);
+    }
+    
+    infoLog('Logs page ready', {
+        availableLogs: `{{ available_logs|length }}`,
+        hasResults: hasResults,
+        resultsCount: resultsCount
+    });
+});
+
+// Handle page errors
+window.addEventListener('error', function(e) {
+    errorLog('JavaScript error on logs page', {
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        error: e.error
+    });
+});
+</script>
+
+<style>
+/* Additional CSS for logs page */
+.search-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.log-files-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.log-file-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background: #fff;
+}
+
+.log-file-info h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+.log-file-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.log-file-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn.small {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.action-btn.danger {
+    background: #dc3545;
+}
+
+.action-btn.warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.search-summary {
+    background: #e9ecef;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.search-summary p {
+    margin: 5px 0;
+}
+
+.results-actions {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.result-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.result-header {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.result-type {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.result-type-output {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.result-type-error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.result-type-input {
+    background: #d4edda;
+    color: #155724;
+}
+
+.result-content {
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.result-content pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.result-actions {
+    padding: 10px 15px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    display: flex;
+    gap: 10px;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.no-results ul {
+    text-align: left;
+    display: inline-block;
+    margin-top: 15px;
+}
+
+.management-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.action-group h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 5px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80%;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.stat-item h4 {
+    margin: 0 0 10px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.stat-value {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #3498db;
+}
+
+mark {
+    background: #ffeb3b;
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+/* Ensure search results are visible */
+.search-results-container {
+    display: block !important;
+}
+
+.long-dashboard-card {
+    margin-bottom: 20px;
+    display: block;
+}
+
+/* Fix notification positioning */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-width: 400px;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: auto;
+}
+
+/* Button loading states */
+button[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Ensure search form is working properly */
+.search-form button[type="submit"] {
+    transition: all 0.3s ease;
+}
+
+.search-form button[type="submit"]:disabled {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.search-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+    color: darkblue;
+}
+</style>
+{% endblock %}

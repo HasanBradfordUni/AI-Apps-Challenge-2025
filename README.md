@@ -4,17 +4,17 @@ Welcome to the AI Apps Challenge 2025! This repository chronicles my ambitious p
 
 ## Challenge Overview
 
-**January:** General AI Doc Search ✅
-**February:** AI Testing Agent ✅
-**March:** AI Version of Work Hours Calculator ✅ 
-**April:** AI Document Extractor & Converter ✅ 
-**May:** AI Cover Letter Writer ✅ 
-**June:** AI Job Ad Generator ✅
-**July:** AI Speech-to-Text App (Including Voice Commands) ✅ 
-**August:** AI Calendar & Scheduling System ✅
-**September:** General Document Summarization AI ✅ 
-**October:** Docs Directory AI Summarizer  
-**November:** AI Programming Assistant  
+**January:** General AI Doc Search ✅ [Folder: 01_january_ai_document_search]
+**February:** AI Testing Agent ✅ [Folder: 02_february_ai_testing_agent]
+**March:** AI Version of Work Hours Calculator ✅ [Folder: 03_march_ai_work_hours_calculator]
+**April:** AI Document Extractor & Converter ✅ [Folder: 04_april_ai_document_extractor]
+**May:** AI Cover Letter Writer ✅ [Folder: 05_may_ai_cover_letter_writer]
+**June:** AI Job Ad Generator ✅ [Folder: 06_june_ai_job_ad_generator]
+**July:** AI Speech-to-Text App (Including Voice Commands) ✅ [Folder: 07_july_ai_speech_to_text_app]
+**August:** AI Calendar & Scheduling System ✅ [Folder: 08_august_ai_calendar_system]
+**September:** General Document Summarization AI ✅ [Folder: 09_september_ai_doc_summariser]
+**October:** Docs Directory AI Summarizer ✅ [Folder: 10_october_ai_directory_summariser]
+**November:** AI Programming Assistant ✅ [Folder: 11_november_ai_coding_assistant]
 **December:** General Integrated AI Chatbot
 
 ## Project Milestones

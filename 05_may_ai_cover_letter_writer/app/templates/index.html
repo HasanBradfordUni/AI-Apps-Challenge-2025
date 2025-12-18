@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Has AI - AI Cover Letter Writer</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+        body {
+            background-color: black;
+            text-align: center;
+            color: white;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: goldenrod;
+        }
+
+        img.logo {
+            border-style: solid;
+            border-color: white;
+            vertical-align: middle;
+            margin-left: 2cm;
+            margin-right: 2cm;
+        }
+
+        ul.nav {
+            list-style-type: none;
+            max-width: 100%;
+            width: 100%;
+            padding: 0;
+            overflow: hidden;
+            background-color: red;
+            display: flex;
+            justify-content: center;
+        }
+
+        li a.nav {
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 16px;
+            text-decoration: none;
+        }
+
+        li a.nav:hover {
+            background-color: gray;
+        }
+
+        div.menuBar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #currentPage {
+            background-color: gold;
+        }
+
+        .mainBody {
+            margin-top: 3cm;
+        }
+
+        .mainHeading {
+            color: crimson;
+            font-size: xx-large;
+        }
+
+        .subHeading {
+            color: rebeccapurple;
+            font-size: larger;
+        }
+
+        .largeText {
+            color: darkkhaki;
+            font-size: large;
+        }
+
+        footer {
+            height: 350px;
+            background-color: goldenrod;
+        }
+
+        .footer {
+            padding-top: 35px;
+            padding-bottom: 35px;
+            background-color: goldenrod;
+            box-sizing: border-box;
+            height: 250px;
+        }
+
+        .w-container {
+            max-width: 940px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .w-container .w-row {
+            margin-left: -10px;
+            margin-right: -10px;
+        }
+
+        .w-col {
+            float: left;
+            min-height: 1px;
+            padding-left: 10px;
+            padding-right: 10px;
+            position: relative;
+        }
+
+        .f-col {
+            float: right;
+            min-height: 1px;
+            padding-left: 10px;
+            padding-right: 10px;
+            width: 30%;
+            position: relative;
+            margin-top: -200px;
+        }
+
+        .w-col-4 {
+            width: 33.3333%;
+        }
+
+        .footer-link-row {
+            display: flex;
+            justify-content: space-evenly;
+        }
+
+        .footer-link {
+            color: crimson;
+            border-bottom: 1px solid red;
+            margin-bottom: 6px;
+            padding-bottom: 10px;
+            font-size: 14px;
+            font-weight: 300;
+            text-decoration: none;
+            display: block;
+        }
+
+        .footer-link:hover {
+            color: rgb(122, 106, 17);
+            text-decoration: underline;
+        }
+
+        .info-icon {
+            float: left;
+            vertical-align: middle;
+            max-width: 100%;
+        }
+
+        .footer-link.with-icon {
+            margin-left: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="The Has AI logo" width="50" height="50" class="logo">
+            Has AI
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="The Has AI logo" width="50" height="50" class="logo">
+        </h1>
+        <hr>
+    </header>
+
+    <section class="mainBody">
+      <h1 class="mainHeading">Welcome to the AI Apps Challenge - AI Cover Letter Writer</h1>
+      <br />
+      <h2 class="subHeading">
+        This application allows you to craft professional cover letters by combining your CV with job descriptions and generating an AI-powered personalized letter.
+      </h2>
+      <div class="feature-card">
+        <h3>Generate Custom Cover Letters</h3>
+        <p>Upload your CV and job description to generate a tailored cover letter that highlights your most relevant skills and experiences.</p>
+      </div>
+    
+      <div class="feature-card">
+        <h3>Customize Your Tone</h3>
+        <p>Choose from professional, enthusiastic, confident, or creative writing styles to match the company culture and position.</p>
+      </div>
+    
+      <div class="feature-card">
+        <h3>Edit and Refine</h3>
+        <p>Easily review, edit, and refine your AI-generated cover letter before finalizing it for your application.</p>
+        </div>
+
+        <h3>Get Started Now</h3>
+        <p>Begin by creating your profile and uploading your CV to generate your first AI-powered cover letter.</p>
+
+        <a href="{{ url_for('app.profile') }}">
+            <button class="cta-button">Create Profile</button>
+        </a>
+        {% if session.get('user_id') %}
+        <a href="{{ url_for('app.cv_details') }}">
+            <button class="cta-button">Upload CV</button>
+        </a>
+        <a href="{{ url_for('app.letter_history') }}">
+            <button class="cta-button">View My Letters</button>
+        </a>
+        {% endif %}
+
+        <div class="progress-container">
+            <h3 style="color: goldenrod; margin-bottom: 20px;">Your Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-line">
+                    <div class="progress-line-fill" id="progressFill"></div>
+                </div>
+                
+                {% set steps = [
+                    {'name': 'Profile', 'description': 'Create your profile', 'url': url_for('app.profile')},
+                    {'name': 'Upload CV', 'description': 'Add your resume', 'url': url_for('app.cv_details')},
+                    {'name': 'Job Details', 'description': 'Enter job info', 'url': url_for('app.job_details')},
+                    {'name': 'Generate', 'description': 'Create letter', 'url': url_for('app.generate_letter')}
+                ] %}
+                
+                {% for step in steps %}
+                    {% set step_number = loop.index %}
+                    {% set is_current_step = request.endpoint == 'app.' + step.url.split('.')[-1] %}
+                    {% set user_has_profile = session.get('user_id') %}
+                    {% set has_cv = session.get('cv_text') %}
+                    {% set has_job = session.get('job_description') %}
+                    
+                    {% set is_completed = false %}
+                    {% if step_number == 1 and user_has_profile %}
+                        {% set is_completed = true %}
+                    {% elif step_number == 2 and user_has_profile and has_cv %}
+                        {% set is_completed = true %}
+                    {% elif step_number == 3 and user_has_profile and has_cv and has_job %}
+                        {% set is_completed = true %}
+                    {% elif step_number == 4 and user_has_profile and has_cv and has_job %}
+                        {% set is_completed = true %}
+                    {% endif %}
+                    
+                    {% set is_active = not is_completed and (
+                        (step_number == 1) or
+                        (step_number == 2 and user_has_profile) or
+                        (step_number == 3 and user_has_profile and has_cv) or
+                        (step_number == 4 and user_has_profile and has_cv and has_job)
+                    ) %}
+                    
+                    <div class="step {{ 'completed' if is_completed else '' }} {{ 'active' if is_active else '' }}">
+                        <div class="step-circle step-icon-{{ step.name.lower().replace(' ', '') }}">
+                            {% if not is_completed %}
+                                {{ step_number }}
+                            {% endif %}
+                        </div>
+                        <div class="step-label">{{ step.name }}</div>
+                        <div class="step-description">{{ step.description }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <script>
+            // Update progress line fill based on completed steps
+            document.addEventListener('DOMContentLoaded', function() {
+                const completedSteps = document.querySelectorAll('.step.completed').length;
+                const totalSteps = document.querySelectorAll('.step').length;
+                const progressFill = document.getElementById('progressFill');
+                
+                if (completedSteps > 0) {
+                    const progressPercentage = (completedSteps / totalSteps) * 100;
+                    progressFill.style.width = progressPercentage + '%';
+                }
+            });
+        </script>
+    </section>
+
+    <footer>
+        <div class="footer">
+            <div class="w-container">
+                <div class="w-row">
+                    <div class="w-col w-col-4">
+                        <h3>About</h3>
+                        <div></div>
+                        <div>Has AI</div>
+                        <div>Website made with Python, Flask & Html</div>
+                        <div>Has AI</div>
+                        <div>AI Projects for all</div>
+                        <div>
+                            Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
+                        </div>
+                    </div>
+                    <div class="w-col w-col-4">
+                        <h3>Useful Links</h3>
+                        <div class="footer-link-row">
+                            <a href="index.html" target="_blank" class="footer-link">Home</a>
+                            <a href="shop.html" target="_blank" class="footer-link">Shop</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="about.html" target="_blank" class="footer-link">About</a>
+                            <a href="#" target="_blank" class="footer-link" id="accountLinkFooter">Account</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="contact.html" target="_blank" class="footer-link">Contact</a>
+                            <a href="cart.html" target="_blank" class="footer-link">Cart</a>
+                        </div>
+                        <div class="footer-link-row">
+                            <a href="login.html" target="_blank" class="footer-link">Login</a>
+                            <a href="register.html" target="_blank" class="footer-link">Sign-up</a>
+                        </div>
+                    </div>
+                    <div class="f-col">
+                        <h3>Socials</h3>
+                        <div>
+                            <img src="https://assets-global.website-files.com/5739f5a49fbb0b705633b84e/5739f5a59fbb0b705633b875_social-18.svg" width="20" alt="" class="info-icon">
+                            <a href="https://twitter.com/PythonPrgrmrYT" class="footer-link with-icon">X (Twitter)</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad80_social-16.svg" width="20" alt="" class="info-icon">
+                            <a href="https://www.youtube.com/channel/UCIkg7kLDRl90fHEb2tFYRwg" class="footer-link with-icon">YouTube</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad88_social-33.svg" width="20" alt="" class="info-icon">
+                            <a href="https://github.com/AkhHas2005" class="footer-link with-icon">GitHub</a>
+                        </div>
+                        <div>
+                            <img src="https://cdn.prod.website-files.com/662001a30f75ce6c5c72acf8/662001a30f75ce6c5c72ad6b_social-07.svg" width="20" alt="" class="info-icon">
+                            <a href="https://www.instagram.com/pythonprogrammeryt/" class="footer-link with-icon">Instagram</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <h1>&copy; Akhtar Hasan (aka Python Programmer) 2025</h1>
+    </footer>
+</body>
+</html>

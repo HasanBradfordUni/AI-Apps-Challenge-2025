@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Has AI - General AI Chatbot Hub</title>
+    <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+</head>
+<body>
+    <header>
+        <h1>
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo">
+            Has AI - General Chatbot Hub
+        </h1>
+        <nav>
+            <ul class="nav">
+                <li><a href="{{ url_for('chatbot_home') }}" class="nav current-page">Chat</a></li>
+                <li><a href="{{ url_for('available_apps') }}" class="nav">Apps</a></li>
+                <li><a href="{{ url_for('prompt_modes') }}" class="nav">Modes</a></li>
+                <li><a href="{{ url_for('chat_history') }}" class="nav">History</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="mode-selector">
+                <h3>🎯 Prompt Mode</h3>
+                <select id="promptMode" onchange="changeMode()">
+                    {% for mode_id, mode in prompt_modes.items() %}
+                    <option value="{{ mode_id }}" {% if mode_id == 'general' %}selected{% endif %}>
+                        {{ mode.icon }} {{ mode.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <p id="modeDescription" class="mode-desc">
+                    {{ prompt_modes.general.description }}
+                </p>
+            </div>
+
+            <div class="quick-apps">
+                <h3>🚀 Quick Apps</h3>
+                {% for app_id, app in available_apps.items() %}
+                <div class="quick-app" onclick="suggestApp('{{ app_id }}')">
+                    <strong>{{ app.name }}</strong>
+                    <p>{{ app.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="chat-actions">
+                <button onclick="clearChat()" class="action-btn">🗑️ Clear Chat</button>
+                <button onclick="exportChat()" class="action-btn">📥 Export</button>
+                <button onclick="showHelp()" class="action-btn">❓ Help</button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-chat">
+            <div class="chat-header">
+                <h2 id="chatTitle">General AI Assistant</h2>
+                <div class="status-indicator">
+                    <span class="status-dot online"></span>
+                    <span>Online</span>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    <div class="message-content">
+                        <strong>🤖 AI Assistant:</strong>
+                        <p>Hello! I'm your AI assistant hub. I can help with general questions or direct you to specific AI apps. What would you like to do today?</p>
+                    </div>
+                    <div class="message-time">{{ moment().format('HH:mm') }}</div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <textarea id="messageInput" placeholder="Type your message here..." rows="2"></textarea>
+                    <button onclick="sendMessage()" id="sendButton">
+                        <span id="sendIcon">📤</span>
+                    </button>
+                </div>
+                <div class="quick-suggestions">
+                    <button onclick="quickMessage('What can you help me with?')" class="suggestion">What can you do?</button>
+                    <button onclick="quickMessage('Show me available apps')" class="suggestion">Available Apps</button>
+                    <button onclick="quickMessage('Help me write something')" class="suggestion">Writing Help</button>
+                    <button onclick="quickMessage('I need coding help')" class="suggestion">Code Help</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Suggestion Modal -->
+    <div id="appSuggestionModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🎯 App Suggestion</h3>
+                <button onclick="closeModal()" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>I think this app might help with your request:</p>
+                <div id="suggestedApp" class="suggested-app">
+                    <!-- App details will be populated here -->
+                </div>
+                <div class="modal-actions">
+                    <button onclick="goToApp()" class="primary-btn">Go to App</button>
+                    <button onclick="continueChat()" class="secondary-btn">Continue in Chat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+</body>
+</html>
