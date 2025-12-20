@@ -103,12 +103,11 @@ except ImportError as e:
 def register_routes(app):
     """Register all chatbot routes"""
     
-    @app.route('/chatbot')
-    @app.route('/chatbot/')
+    @app.route('/')
     def chatbot_home():
         """Main chatbot interface"""
         available_apps = get_available_apps()
-        return render_template('chatbot.html', 
+        return render_template('index.html', 
                              available_apps=available_apps,
                              prompt_modes=prompt_manager.get_modes())
     

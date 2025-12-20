@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Has AI - General AI Chatbot Hub</title>
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
 </head>
 <body>
     <header>
         <h1>
             <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo">
             Has AI - General Chatbot Hub
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo">
         </h1>
         <nav>
             <ul class="nav">
                 <li><a href="{{ url_for('chatbot_home') }}" class="nav current-page">Chat</a></li>
-                <li><a href="{{ url_for('available_apps') }}" class="nav">Apps</a></li>
-                <li><a href="{{ url_for('prompt_modes') }}" class="nav">Modes</a></li>
-                <li><a href="{{ url_for('chat_history') }}" class="nav">History</a></li>
+                
             </ul>
         </nav>
     </header>
@@ -73,7 +73,11 @@
                         <strong>🤖 AI Assistant:</strong>
                         <p>Hello! I'm your AI assistant hub. I can help with general questions or direct you to specific AI apps. What would you like to do today?</p>
                     </div>
-                    <div class="message-time">{{ moment().format('HH:mm') }}</div>
+                    <div class="message-time" id="message-time"></div>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+                    <script>
+                        document.getElementById('message-time').textContent = moment().format('HH:mm');
+                    </script>
                 </div>
             </div>
 

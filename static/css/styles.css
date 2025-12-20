@@ -1,57 +1,5 @@
 /* AI Chatbot Styles */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    color: #ffffff;
-    min-height: 100vh;
-}
-
-header {
-    background: rgba(0, 0, 0, 0.8);
-    padding: 1rem;
-    border-bottom: 3px solid #FFD700;
-}
-
-header h1 {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 10px;
-}
-
-.logo {
-    border: 2px solid #FFD700;
-    border-radius: 50%;
-}
-
-.nav {
-    list-style: none;
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-}
-
-.nav a {
-    color: #FFD700;
-    text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    transition: all 0.3s;
-}
-
-.nav a:hover,
-.nav a.current-page {
-    background: #FFD700;
-    color: #000;
-}
-
 .chat-container {
     display: flex;
     height: calc(100vh - 120px);
