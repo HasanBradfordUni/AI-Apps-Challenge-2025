@@ -39,7 +39,7 @@ Beyond basic transcription, the system supports **custom voice commands** to tri
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 7.July_ai-speech-to-text-app  
+   cd g_july_ai_speech_to_text_app  
    ```  
 3. Install the required dependencies:  
    ```bash  

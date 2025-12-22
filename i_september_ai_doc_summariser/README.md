@@ -39,7 +39,7 @@ It supports **multiple file types**, offers **customisable summary settings**, a
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 9.September_ai-doc-summariser  
+   cd i_september_ai_doc_summariser  
    ```  
 3. Install the required dependencies:  
    ```bash  

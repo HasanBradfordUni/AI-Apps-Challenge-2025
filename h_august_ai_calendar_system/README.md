@@ -41,7 +41,7 @@ The system provides a unified dashboard to manage multiple calendars, understand
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 8.August_ai-calendar-system  
+   cd h_august_ai_calendar_system  
    ```  
 3. Install the required dependencies:  
    ```bash  

@@ -38,7 +38,7 @@ The **General AI Document Search** application is an AI-powered tool designed to
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 1.January_ai-document-search  
+   cd a_january_ai_document_search  
    ```  
 3. Install the required dependencies:  
    ```bash  

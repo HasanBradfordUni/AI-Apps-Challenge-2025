@@ -39,7 +39,7 @@ It’s built for accessibility—no IDE setup required. Just open the app, choos
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 11.November_ai-coding-assistant  
+   cd k_november_ai_coding_assistant  
    ```  
 3. Install the required dependencies:  
    ```bash  

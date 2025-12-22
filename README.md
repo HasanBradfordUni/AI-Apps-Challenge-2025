@@ -4,18 +4,18 @@ Welcome to the AI Apps Challenge 2025! This repository chronicles my ambitious p
 
 ## Challenge Overview
 
-**January:** General AI Doc Search ✅ [Folder: 01_january_ai_document_search]
-**February:** AI Testing Agent ✅ [Folder: 02_february_ai_testing_agent]
-**March:** AI Version of Work Hours Calculator ✅ [Folder: 03_march_ai_work_hours_calculator]
-**April:** AI Document Extractor & Converter ✅ [Folder: 04_april_ai_document_extractor]
-**May:** AI Cover Letter Writer ✅ [Folder: 05_may_ai_cover_letter_writer]
-**June:** AI Job Ad Generator ✅ [Folder: 06_june_ai_job_ad_generator]
-**July:** AI Speech-to-Text App (Including Voice Commands) ✅ [Folder: 07_july_ai_speech_to_text_app]
-**August:** AI Calendar & Scheduling System ✅ [Folder: 08_august_ai_calendar_system]
-**September:** General Document Summarization AI ✅ [Folder: 09_september_ai_doc_summariser]
-**October:** Docs Directory AI Summarizer ✅ [Folder: 10_october_ai_directory_summariser]
-**November:** AI Programming Assistant ✅ [Folder: 11_november_ai_coding_assistant]
-**December:** General Integrated AI Chatbot
+**January:** General AI Doc Search ✅ [Folder: a_january_ai_document_search]
+**February:** AI Testing Agent ✅ [Folder: b_february_ai_testing_agent]
+**March:** AI Version of Work Hours Calculator ✅ [Folder: c_march_ai_work_hours_calculator]
+**April:** AI Document Extractor & Converter ✅ [Folder: d_april_ai_document_extractor]
+**May:** AI Cover Letter Writer ✅ [Folder: e_may_ai_cover_letter_writer]
+**June:** AI Job Ad Generator ✅ [Folder: f_june_ai_job_ad_generator]
+**July:** AI Speech-to-Text App (Including Voice Commands) ✅ [Folder: g_july_ai_speech_to_text_app]
+**August:** AI Calendar & Scheduling System ✅ [Folder: h_august_ai_calendar_system]
+**September:** General Document Summarization AI ✅ [Folder: i_september_ai_doc_summariser]
+**October:** Docs Directory AI Summarizer ✅ [Folder: j_october_ai_directory_summariser]
+**November:** AI Programming Assistant ✅ [Folder: k_november_ai_coding_assistant]
+**December:** General Integrated AI Chatbot [Associated Folder: l_december_ai_chatbot]
 
 ## Project Milestones
 

@@ -41,7 +41,7 @@ The system also features a **template matching module**, allowing users to uploa
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 10.October_ai-directory-summariser  
+   cd j_october_ai_directory_summariser  
    ```  
 3. Install the required dependencies:  
    ```bash  

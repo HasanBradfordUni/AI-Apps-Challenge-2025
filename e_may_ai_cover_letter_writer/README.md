@@ -36,7 +36,7 @@ The **AI Cover Letter Writer** is a web-based application designed to help users
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 5.May_ai-cover-letter-writer  
+   cd e_may_ai_cover_letter_writer  
    ```  
 3. Install the required dependencies:  
    ```bash  

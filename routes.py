@@ -5,76 +5,55 @@ import json
 from datetime import datetime
 import sqlite3
 
-# Add project directories to Python path (using actual folder names from README.md)
-base_path = os.path.dirname(__file__)
-project_paths = [
-    '01_january_ai_document_search',
-    '02_february_ai_testing_agent', 
-    '03_march_ai_work_hours_calculator',
-    '04_april_ai_document_extractor',
-    '05_may_ai_cover_letter_writer',
-    '06_june_ai_job_ad_generator',
-    '07_july_ai_speech_to_text_app',
-    '08_august_ai_calendar_system',
-    '09_september_ai_doc_summariser',
-    '10_october_ai_directory_summariser',
-    '11_ai_coding_assistant'
-]
-
-for project_path in project_paths:
-    full_path = os.path.join(base_path, project_path)
-    if os.path.exists(full_path) and full_path not in sys.path:
-        sys.path.insert(0, full_path)
-
 # Import functions from previous projects
 try:
     # January - General AI Doc Search
-    from src.utils.document_processing import handle_documents as january_handle_documents
-    from src.utils.search_algorithm import search_documents as january_search_documents
-    from src.ai.geminiPrompt import generate_ai_summary as january_generate_summary
+    from a_january_ai_document_search.src.utils.document_processing import handle_documents as january_handle_documents
+    from a_january_ai_document_search.src.utils.search_algorithm import search_documents as january_search_documents
+    from a_january_ai_document_search.src.ai.geminiPrompt import generate_ai_summary as january_generate_summary
     
     # February - AI Testing Agent  
-    from app.utils import process_files as february_process_files
-    from app.utils import generate_ai_comparison as february_generate_comparison
-    from app.utils import generate_summary as february_generate_summary
+    from b_february_ai_testing_agent.app.utils import process_files as february_process_files
+    from b_february_ai_testing_agent.app.utils import generate_ai_comparison as february_generate_comparison
+    from b_february_ai_testing_agent.app.utils import generate_summary as february_generate_summary
     
     # March - AI Work Hours Calculator
-    from src.app import calculate_hours as march_calculate_hours
-    from src.ai.geminiPrompt import generate_work_hours_summary as march_generate_summary
+    from c_march_ai_work_hours_calculator.src.app import calculate_hours as march_calculate_hours
+    from c_march_ai_work_hours_calculator.src.ai.geminiPrompt import generate_work_hours_summary as march_generate_summary
     
     # April - AI Document Extractor & Converter
-    from src.utils.document_processing import get_uploaded_documents as april_get_documents, handle_document_upload as april_handle_upload, process_uploaded_file as april_process_file, get_uploads_folder as april_get_uploads_folder, convert_file_format_from_file_path as april_convert_file_format
-    from src.ai.geminiPrompt import generate_conversion_insights as april_generate_insights
+    from d_april_ai_document_extractor.src.utils.document_processing import get_uploaded_documents as april_get_documents, handle_document_upload as april_handle_upload, process_uploaded_file as april_process_file, get_uploads_folder as april_get_uploads_folder, convert_file_format_from_file_path as april_convert_file_format
+    from d_april_ai_document_extractor.src.ai.geminiPrompt import generate_conversion_insights as april_generate_insights
     
     # May - AI Cover Letter Writer
-    from app.utils import extract_text_from_pdf as may_extract_text, generate_cover_letter as may_generate_letter, refine_cover_letter as may_refine_letter, extract_cv_structure as may_extract_cv_structure
+    from e_may_ai_cover_letter_writer.app.utils import extract_text_from_pdf as may_extract_text, generate_cover_letter as may_generate_letter, refine_cover_letter as may_refine_letter, extract_cv_structure as may_extract_cv_structure
     
     # June - AI Job Ad Generator
-    from app.utils import generate_job_ad as june_generate_ad, refine_job_ad as june_refine_ad, extract_text_from_pdf as june_extract_text, format_for_pdf as june_format_for_pdf
+    from f_june_ai_job_ad_generator.app.utils import generate_job_ad as june_generate_ad, refine_job_ad as june_refine_ad, extract_text_from_pdf as june_extract_text, format_for_pdf as june_format_for_pdf
     
     # July - AI Speech-to-Text App
-    from src.utils.voice_methods import VoiceMethods as july_voice_methods
-    from src.ai.geminiPrompt import generate_transcript_summary as july_generate_transcript, generate_voice_command_response as july_generate_voice_response
+    from g_july_ai_speech_to_text_app.src.utils.voice_methods import VoiceMethods as july_voice_methods
+    from g_july_ai_speech_to_text_app.src.ai.geminiPrompt import generate_transcript_summary as july_generate_transcript, generate_voice_command_response as july_generate_voice_response
     
     # August - AI Calendar & Scheduling System
-    from app.services.ai_parser import AICommandParser as august_ai_parser
-    from app.services.voice_recognition import VoiceRecognitionService as august_voice_recognition
-    from app.services.calendar_sync import GoogleCalendarService as august_google_calendar, OutlookCalendarService as august_outlook_calendar
+    from h_august_ai_calendar_system.app.services.ai_parser import AICommandParser as august_ai_parser
+    from h_august_ai_calendar_system.app.services.voice_recognition import VoiceRecognitionService as august_voice_recognition
+    from h_august_ai_calendar_system.app.services.calendar_sync import GoogleCalendarService as august_google_calendar, OutlookCalendarService as august_outlook_calendar
     
     # September - General Document Summarization AI
-    from src.utils.document_processor import DocumentProcessor as september_document_processor
-    from src.utils.forms import DocumentSummaryForm as september_document_summary_form
-    from src.ai.geminiPrompt import generate_document_summary as september_generate_summmary, analyze_document_content as september_analyze_content
+    from i_september_ai_doc_summariser.src.utils.document_processor import DocumentProcessor as september_document_processor
+    from i_september_ai_doc_summariser.src.utils.forms import DocumentSummaryForm as september_document_summary_form
+    from i_september_ai_doc_summariser.src.ai.geminiPrompt import generate_document_summary as september_generate_summmary, analyze_document_content as september_analyze_content
     
     # October - Docs Directory AI Summarizer
-    from app.services.directory_analyzer import DirectoryAnalyzer as october_directory_analyzer
-    from app.services.file_parser import FileParser as october_file_parser
-    from app.services.template_matcher import TemplateMatcher as october_template_matcher
-    from app.services.ai_parser import AISummarizer as october_ai_summarizer
+    from j_october_ai_directory_summariser.app.services.directory_analyzer import DirectoryAnalyzer as october_directory_analyzer
+    from j_october_ai_directory_summariser.app.services.file_parser import FileParser as october_file_parser
+    from j_october_ai_directory_summariser.app.services.template_matcher import TemplateMatcher as october_template_matcher
+    from j_october_ai_directory_summariser.app.services.ai_parser import AISummarizer as october_ai_summarizer
     
     # November - AI Programming Assistant
-    from src.utils.code_processor import CodeProcessor as november_code_processor
-    from src.ai.geminiPrompt import generate_code_suggestion as november_generate_suggestion, explain_error as november_explain_error, generate_documentation as november_generate_documentation, complete_code as november_complete_code, analyze_code_quality as november_analyze_code_quality, generate_test_cases as november_generate_test_cases, generate_code_completions as november_generate_code_completions, generate_hover_info as november_generate_hover_info, explain_code_functionality as november_explain_code_functionality
+    from k_november_ai_coding_assistant.src.utils.code_processor import CodeProcessor as november_code_processor
+    from k_november_ai_coding_assistant.src.ai.geminiPrompt import generate_code_suggestion as november_generate_suggestion, explain_error as november_explain_error, generate_documentation as november_generate_documentation, complete_code as november_complete_code, analyze_code_quality as november_analyze_code_quality, generate_test_cases as november_generate_test_cases, generate_code_completions as november_generate_code_completions, generate_hover_info as november_generate_hover_info, explain_code_functionality as november_explain_code_functionality
     
     print("Successfully imported all project functions")
     
@@ -83,8 +62,8 @@ except ImportError as e:
 
 # Import from December chatbot modules
 try:
-    from December_ai_chatbot.prompt_modes import PromptModeManager
-    from December_ai_chatbot.ai_parser import AIIntegrationService
+    from l_december_ai_chatbot.prompt_modes import PromptModeManager
+    from l_december_ai_chatbot.ai_parser import AIIntegrationService
 
     # Initialize services
     prompt_manager = PromptModeManager()
@@ -326,7 +305,7 @@ def register_routes(app):
             )
             
             # Save and process audio file
-            filename = secure_filename(audio_file.filename)
+            filename = ""
             filepath = os.path.join(os.path.dirname(__file__), 'temp', filename)
             os.makedirs(os.path.dirname(filepath), exist_ok=True)
             audio_file.save(filepath)
@@ -400,7 +379,7 @@ def register_routes(app):
                 doc_processor = september_document_processor()
                 
                 # Save and process file
-                filename = secure_filename(document_file.filename)
+                filename = ""
                 filepath = os.path.join(os.path.dirname(__file__), 'temp', filename)
                 os.makedirs(os.path.dirname(filepath), exist_ok=True)
                 document_file.save(filepath)
@@ -512,6 +491,14 @@ def register_routes(app):
             })
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+
+    def get_login():
+        """Login page"""
+        return render_template('login.html')
+    
+    def get_logs():
+        """View logs page"""
+        return render_template('logs.html')
 
 # Helper functions
 def get_available_apps():

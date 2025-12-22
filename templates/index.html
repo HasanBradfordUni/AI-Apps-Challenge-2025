@@ -15,15 +15,16 @@
             Has AI - General Chatbot Hub
             <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo">
         </h1>
-        <nav>
+        <div class="menuBar">
             <ul class="nav">
-                <li><a href="{{ url_for('chatbot_home') }}" class="nav current-page">Chat</a></li>
-                
+                <li><a href="{{ url_for('chatbot_home') }}" id="currentPage">Chat</a></li>
+                <li><a href="{{ url_for('get_login') }}">Login</a></li>
+                <li><a href="{{ url_for('get_logs') }}">View Logs</a></li>
             </ul>
         </nav>
     </header>
 
-    <div class="chat-container">
+    <div class="mainBody">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="mode-selector">

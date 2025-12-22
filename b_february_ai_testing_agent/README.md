@@ -32,7 +32,7 @@ The AI Testing Agent is an AI powered web application designed to assist users i
    ```
 2. Navigate to the project directory:
    ```
-   cd 2.February_ai-testing-agent
+   cd b_february_ai_testing_agent
    ```
 3. Install the required dependencies:
    ```

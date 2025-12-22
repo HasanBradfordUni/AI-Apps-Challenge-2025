@@ -17,7 +17,7 @@ This chatbot also supports **prompt modes** (code, writing, Q&A, etc.), making i
 - **Prompt Modes:** Switch between *code*, *writing*, *Q&A*, and more.  
 - **Integration with 11 Apps:** Calls functions from all previous projects.  
 - **Unified Workflow:** Access any app’s functionality from one place.  
-- **Directory Structure:** Root app + `12.December_ai-chatbot` folder for helper functions.  
+- **Directory Structure:** Root app + `l_december_ai_chatbot` folder for helper functions.  
 - **Extensible Design:** Easy to add new apps or modes.  
 
 ### Technical Specifications  
@@ -37,7 +37,7 @@ This chatbot also supports **prompt modes** (code, writing, Q&A, etc.), making i
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 12.December_ai-chatbot  
+   cd l_december_ai_chatbot  
    ```  
 3. Install the required dependencies:  
    ```bash  

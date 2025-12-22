@@ -38,7 +38,7 @@ This tool streamlines the job posting process, ensuring that descriptions are **
    ```  
 2. Navigate to the project directory:  
    ```bash  
-   cd 6.June_ai-job-ad-generator  
+   cd f_june_ai_job_ad_generator  
    ```  
 3. Install the required dependencies:  
    ```bash  
