@@ -11,9 +11,9 @@
   },
   "Python Programmer": {
     "user_name": "Python Programmer",
-    "training_text": "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training.",
-    "created_at": "2025-09-07T18:04:04.530982",
+    "training_text": "The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training. Voice training should be the same as before.\n",
+    "created_at": "2025-12-22T20:17:25.308189",
     "accuracy_improvement": 15,
-    "training_sessions": 1
+    "training_sessions": 2
   }
 }

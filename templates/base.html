@@ -3,25 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Has AI - Directory AI Summariser{% endblock %}</title>
+    <title>{% block title %}Has AI - General AI Chatbot Hub{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAI.css') }}">
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
 </head>
 <body>
     <header>
       <h1>
         <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo" />
-        {% block header_title %}Directory AI Summariser{% endblock %}
+        {% block header_title %}Has AI - General Chatbot Hub{% endblock %}
         <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="50" height="50" class="logo" />
       </h1>
       <hr />
       {% block navigation %}
       <div>
         <ul class="nav">
-          <li><a href="{{ url_for('dashboard') }}" class="nav" {% if request.endpoint == 'dashboard' %}id="currentPage"{% endif %}>Dashboard</a></li>
-          <li><a href="{{ url_for('templates') }}" class="nav" {% if request.endpoint == 'templates' %}id="currentPage"{% endif %}>Templates</a></li>
+          <li><a href="{{ url_for('chatbot_home') }}" class="nav" {% if request.endpoint == 'chatbot_home' %}id="currentPage"{% endif %}>Chat</a></li>
+          <li><a href="{{ url_for('get_login') }}" class="nav" {% if request.endpoint == 'get_login' %}id="currentPage"{% endif %}>Login</a></li>
+          <li><a href="{{ url_for('get_logs') }}" class="nav" {% if request.endpoint == 'get_logs' %}id="currentPage"{% endif %}>View Logs</a></li>
+          {% if session.username %}
           <li><a href="{{ url_for('logout') }}" class="nav">Logout ({{ session.username }})</a></li>
+          {% endif %}
         </ul>
       </div>
       {% endblock %}
@@ -47,9 +50,9 @@
               <h3>About</h3>
               <div></div>
               <div>Has AI</div>
-              <div>Docs Directory AI Summariser</div>
-              <div>Website made with Python, Flask & Html</div>
-              <div>AI Projects for all</div>
+              <div>General AI Chatbot Hub</div>
+              <div>Website made with Python, Flask & HTML</div>
+              <div>Integrated AI Apps for Everyone</div>
               <div>
                 Welcome to Has AI, a sub-brand of Akhtar Hasan Software Solutions
               </div>
@@ -57,12 +60,12 @@
             <div class="w-col w-col-4">
               <h3>Useful Links</h3>
               <div class="footer-link-row">
-                <a href="{{ url_for('dashboard') }}" class="footer-link" target="_blank">Dashboard</a>
-                <a href="{{ url_for('view_analysis') }}" class="footer-link">Analysis Results</a>
+                <a href="{{ url_for('chatbot_home') }}" class="footer-link">Chatbot Hub</a>
+                <a href="{{ url_for('get_logs') }}" class="footer-link">View Logs</a>
               </div>
               <div class="footer-link-row">
-                <a href="{{ url_for('upload_templates') }}" class="footer-link">Template Matching</a>
-                <a href="{{ url_for('dashboard') }}" class="footer-link">Batch Analysis</a>
+                <a href="{{ url_for('get_login') }}" class="footer-link">Login</a>
+                <a href="{{ url_for('chatbot_home') }}" class="footer-link">AI Apps</a>
               </div>
             </div>
             <div class="f-col">

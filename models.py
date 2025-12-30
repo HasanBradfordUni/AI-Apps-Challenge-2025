@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 
-def create_connection(db_file='directory_summariser.db'):
+def create_connection(db_file='ai_chatbot.db'):
     """Create database connection"""
     if not os.path.isabs(db_file):
         # If not absolute path, create in static directory
@@ -21,7 +21,7 @@ def create_connection(db_file='directory_summariser.db'):
         return None
 
 def create_tables(connection):
-    """Create all necessary tables"""
+    """Create all necessary tables for chatbot hub"""
     if not connection:
         return False
         
@@ -34,49 +34,86 @@ def create_tables(connection):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP
             )
         ''')
         
-        # User templates table
+        # User preferences table
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS user_templates (
+            CREATE TABLE IF NOT EXISTS user_preferences (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                category TEXT NOT NULL,
-                filename TEXT NOT NULL,
-                file_content BLOB,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                user_id INTEGER UNIQUE,
+                default_prompt_mode TEXT DEFAULT 'general',
+                theme TEXT DEFAULT 'dark',
+                auto_suggest_apps BOOLEAN DEFAULT 1,
+                save_chat_history BOOLEAN DEFAULT 1,
+                preferences_json TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
         ''')
         
-        # Directory analyses table
+        # Chat sessions table
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS directory_analyses (
+            CREATE TABLE IF NOT EXISTS chat_sessions (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 user_id INTEGER,
-                directory_path TEXT NOT NULL,
-                total_files INTEGER,
-                total_size INTEGER,
-                file_types_json TEXT,
-                ai_insights TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                session_name TEXT,
+                prompt_mode TEXT DEFAULT 'general',
+                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_activity TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT 1,
                 FOREIGN KEY (user_id) REFERENCES users (id)
             )
         ''')
         
-        # Template matches table
+        # Chat messages table
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS template_matches (
+            CREATE TABLE IF NOT EXISTS chat_messages (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                analysis_id INTEGER,
-                template_id INTEGER,
-                category TEXT,
-                match_count INTEGER,
-                matched_files_json TEXT,
-                FOREIGN KEY (analysis_id) REFERENCES directory_analyses (id),
-                FOREIGN KEY (template_id) REFERENCES user_templates (id)
+                session_id INTEGER,
+                user_id INTEGER,
+                message_type TEXT NOT NULL,
+                content TEXT NOT NULL,
+                prompt_mode TEXT,
+                app_referenced TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (session_id) REFERENCES chat_sessions (id),
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        # App usage logs table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS app_usage_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                session_id INTEGER,
+                app_name TEXT NOT NULL,
+                action TEXT,
+                input_data_json TEXT,
+                output_data_json TEXT,
+                success BOOLEAN DEFAULT 1,
+                error_message TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                FOREIGN KEY (session_id) REFERENCES chat_sessions (id)
+            )
+        ''')
+        
+        # Prompt mode history table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS prompt_mode_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                session_id INTEGER,
+                mode TEXT NOT NULL,
+                query TEXT,
+                response TEXT,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                FOREIGN KEY (session_id) REFERENCES chat_sessions (id)
             )
         ''')
         
@@ -100,94 +137,265 @@ def create_or_get_user(connection, username, email):
         user = cursor.fetchone()
         
         if user:
+            # Update last login
+            cursor.execute('UPDATE users SET last_login = ? WHERE id = ?', 
+                         (datetime.now(), user[0]))
+            connection.commit()
             return {'id': user[0], 'username': user[1], 'email': user[2]}
         
         # Create new user
-        cursor.execute('INSERT INTO users (username, email) VALUES (?, ?)', (username, email))
+        cursor.execute('INSERT INTO users (username, email, last_login) VALUES (?, ?, ?)', 
+                      (username, email, datetime.now()))
         connection.commit()
         user_id = cursor.lastrowid
+        
+        # Create default preferences
+        cursor.execute('INSERT INTO user_preferences (user_id) VALUES (?)', (user_id,))
+        connection.commit()
         
         return {'id': user_id, 'username': username, 'email': email}
         
     except sqlite3.Error as e:
         raise Exception(f"Database error creating/getting user: {e}")
 
-def save_user_template(connection, user_id, category, filename, file_content):
-    """Save user template"""
+def get_user_preferences(connection, user_id):
+    """Get user preferences"""
+    if not connection:
+        return None
+        
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT default_prompt_mode, theme, auto_suggest_apps, 
+                   save_chat_history, preferences_json
+            FROM user_preferences 
+            WHERE user_id = ?
+        ''', (user_id,))
+        
+        result = cursor.fetchone()
+        if result:
+            return {
+                'default_prompt_mode': result[0],
+                'theme': result[1],
+                'auto_suggest_apps': bool(result[2]),
+                'save_chat_history': bool(result[3]),
+                'custom_preferences': json.loads(result[4]) if result[4] else {}
+            }
+        return None
+        
+    except sqlite3.Error as e:
+        print(f"Database error getting preferences: {e}")
+        return None
+
+def update_user_preferences(connection, user_id, preferences):
+    """Update user preferences"""
+    if not connection:
+        return False
+        
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute('''
+            UPDATE user_preferences 
+            SET default_prompt_mode = ?, theme = ?, auto_suggest_apps = ?, 
+                save_chat_history = ?, preferences_json = ?, updated_at = ?
+            WHERE user_id = ?
+        ''', (
+            preferences.get('default_prompt_mode', 'general'),
+            preferences.get('theme', 'dark'),
+            preferences.get('auto_suggest_apps', True),
+            preferences.get('save_chat_history', True),
+            json.dumps(preferences.get('custom_preferences', {})),
+            datetime.now(),
+            user_id
+        ))
+        connection.commit()
+        return cursor.rowcount > 0
+        
+    except sqlite3.Error as e:
+        print(f"Database error updating preferences: {e}")
+        return False
+
+def create_chat_session(connection, user_id, session_name=None, prompt_mode='general'):
+    """Create new chat session"""
     if not connection:
         raise Exception("No database connection")
         
     cursor = connection.cursor()
     
     try:
+        if not session_name:
+            session_name = f"Chat {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        
         cursor.execute('''
-            INSERT INTO user_templates (user_id, category, filename, file_content)
-            VALUES (?, ?, ?, ?)
-        ''', (user_id, category, filename, file_content))
+            INSERT INTO chat_sessions (user_id, session_name, prompt_mode)
+            VALUES (?, ?, ?)
+        ''', (user_id, session_name, prompt_mode))
         connection.commit()
         return cursor.lastrowid
         
     except sqlite3.Error as e:
-        raise Exception(f"Database error saving template: {e}")
+        raise Exception(f"Database error creating session: {e}")
 
-def get_user_templates(connection, user_id):
-    """Get all templates for a user"""
+def get_active_session(connection, user_id):
+    """Get or create active chat session"""
     if not connection:
-        return []
+        return None
         
     cursor = connection.cursor()
     
     try:
         cursor.execute('''
-            SELECT id, category, filename, created_at 
-            FROM user_templates 
-            WHERE user_id = ? 
-            ORDER BY created_at DESC
+            SELECT id, session_name, prompt_mode, started_at
+            FROM chat_sessions 
+            WHERE user_id = ? AND is_active = 1
+            ORDER BY last_activity DESC
+            LIMIT 1
         ''', (user_id,))
         
-        # Convert tuples to dictionaries for easier template access
-        templates = []
-        for row in cursor.fetchall():
-            templates.append({
-                'id': row[0],
-                'category': row[1], 
-                'filename': row[2],
-                'created_at': row[3]
-            })
-        return templates
+        result = cursor.fetchone()
+        if result:
+            return {
+                'id': result[0],
+                'session_name': result[1],
+                'prompt_mode': result[2],
+                'started_at': result[3]
+            }
+        
+        # Create new session if none exists
+        session_id = create_chat_session(connection, user_id)
+        return {'id': session_id, 'session_name': 'New Chat', 'prompt_mode': 'general'}
         
     except sqlite3.Error as e:
-        print(f"Database error getting templates: {e}")
-        return []
+        print(f"Database error getting active session: {e}")
+        return None
 
-def save_directory_analysis(connection, user_id, directory_path, analysis_data):
-    """Save directory analysis for user"""
+def save_chat_message(connection, session_id, user_id, message_type, content, 
+                     prompt_mode=None, app_referenced=None):
+    """Save chat message"""
     if not connection:
-        raise Exception("No database connection")
+        return False
         
     cursor = connection.cursor()
     
     try:
         cursor.execute('''
-            INSERT INTO directory_analyses 
-            (user_id, directory_path, total_files, total_size, file_types_json, ai_insights)
+            INSERT INTO chat_messages 
+            (session_id, user_id, message_type, content, prompt_mode, app_referenced)
             VALUES (?, ?, ?, ?, ?, ?)
+        ''', (session_id, user_id, message_type, content, prompt_mode, app_referenced))
+        
+        # Update session last activity
+        cursor.execute('''
+            UPDATE chat_sessions SET last_activity = ? WHERE id = ?
+        ''', (datetime.now(), session_id))
+        
+        connection.commit()
+        return cursor.lastrowid
+        
+    except sqlite3.Error as e:
+        print(f"Database error saving message: {e}")
+        return False
+
+def get_session_messages(connection, session_id, limit=50):
+    """Get messages for a session"""
+    if not connection:
+        return []
+        
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute('''
+            SELECT message_type, content, prompt_mode, app_referenced, timestamp
+            FROM chat_messages 
+            WHERE session_id = ? 
+            ORDER BY timestamp ASC
+            LIMIT ?
+        ''', (session_id, limit))
+        
+        messages = []
+        for row in cursor.fetchall():
+            messages.append({
+                'type': row[0],
+                'content': row[1],
+                'prompt_mode': row[2],
+                'app_referenced': row[3],
+                'timestamp': row[4]
+            })
+        return messages
+        
+    except sqlite3.Error as e:
+        print(f"Database error getting messages: {e}")
+        return []
+
+def log_app_usage(connection, user_id, session_id, app_name, action, 
+                 input_data=None, output_data=None, success=True, error_message=None):
+    """Log app usage"""
+    if not connection:
+        return False
+        
+    cursor = connection.cursor()
+    
+    try:
+        cursor.execute('''
+            INSERT INTO app_usage_logs 
+            (user_id, session_id, app_name, action, input_data_json, 
+             output_data_json, success, error_message)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            user_id,
-            directory_path,
-            analysis_data.get('total_files', 0),
-            analysis_data.get('total_size', 0),
-            json.dumps(analysis_data.get('file_type_categories', {})),
-            analysis_data.get('ai_insights', '')
+            user_id, session_id, app_name, action,
+            json.dumps(input_data) if input_data else None,
+            json.dumps(output_data) if output_data else None,
+            success, error_message
         ))
         connection.commit()
         return cursor.lastrowid
         
     except sqlite3.Error as e:
-        raise Exception(f"Database error saving analysis: {e}")
+        print(f"Database error logging app usage: {e}")
+        return False
 
-def get_user_recent_analyses(connection, user_id, limit=5):
-    """Get recent analyses for user"""
+def get_user_app_stats(connection, user_id):
+    """Get user app usage statistics"""
+    if not connection:
+        return {}
+        
+    cursor = connection.cursor()
+    
+    try:
+        # Most used apps
+        cursor.execute('''
+            SELECT app_name, COUNT(*) as usage_count
+            FROM app_usage_logs 
+            WHERE user_id = ? AND success = 1
+            GROUP BY app_name
+            ORDER BY usage_count DESC
+            LIMIT 5
+        ''', (user_id,))
+        
+        most_used = [{'app': row[0], 'count': row[1]} for row in cursor.fetchall()]
+        
+        # Total sessions
+        cursor.execute('SELECT COUNT(*) FROM chat_sessions WHERE user_id = ?', (user_id,))
+        total_sessions = cursor.fetchone()[0]
+        
+        # Total messages
+        cursor.execute('SELECT COUNT(*) FROM chat_messages WHERE user_id = ?', (user_id,))
+        total_messages = cursor.fetchone()[0]
+        
+        return {
+            'most_used_apps': most_used,
+            'total_sessions': total_sessions,
+            'total_messages': total_messages
+        }
+        
+    except sqlite3.Error as e:
+        print(f"Database error getting app stats: {e}")
+        return {}
+
+def get_user_sessions(connection, user_id, limit=10):
+    """Get user's recent chat sessions"""
     if not connection:
         return []
         
@@ -195,170 +403,90 @@ def get_user_recent_analyses(connection, user_id, limit=5):
     
     try:
         cursor.execute('''
-            SELECT directory_path, total_files, total_size, created_at
-            FROM directory_analyses 
+            SELECT id, session_name, prompt_mode, started_at, last_activity, is_active
+            FROM chat_sessions 
             WHERE user_id = ? 
-            ORDER BY created_at DESC 
+            ORDER BY last_activity DESC 
             LIMIT ?
         ''', (user_id, limit))
-        return cursor.fetchall()
+        
+        sessions = []
+        for row in cursor.fetchall():
+            sessions.append({
+                'id': row[0],
+                'name': row[1],
+                'mode': row[2],
+                'started_at': row[3],
+                'last_activity': row[4],
+                'is_active': bool(row[5])
+            })
+        return sessions
         
     except sqlite3.Error as e:
-        print(f"Database error getting recent analyses: {e}")
+        print(f"Database error getting sessions: {e}")
         return []
 
-def delete_user_template(connection, template_id, user_id):
-    """Delete user template"""
+def end_chat_session(connection, session_id):
+    """Mark session as inactive"""
     if not connection:
         return False
         
     cursor = connection.cursor()
     
     try:
-        cursor.execute('DELETE FROM user_templates WHERE id = ? AND user_id = ?', (template_id, user_id))
+        cursor.execute('UPDATE chat_sessions SET is_active = 0 WHERE id = ?', (session_id,))
         connection.commit()
         return cursor.rowcount > 0
         
     except sqlite3.Error as e:
-        print(f"Database error deleting template: {e}")
+        print(f"Database error ending session: {e}")
         return False
 
-def get_template_content(connection, template_id, user_id):
-    """Get template file content"""
+def save_prompt_mode_query(connection, user_id, session_id, mode, query, response):
+    """Save prompt mode query and response"""
     if not connection:
-        return None
+        return False
         
     cursor = connection.cursor()
     
     try:
         cursor.execute('''
-            SELECT file_content, filename, category 
-            FROM user_templates 
-            WHERE id = ? AND user_id = ?
-        ''', (template_id, user_id))
-        result = cursor.fetchone()
-        
-        if result:
-            return {
-                'content': result[0],
-                'filename': result[1],
-                'category': result[2]
-            }
-        return None
-        
-    except sqlite3.Error as e:
-        print(f"Database error getting template content: {e}")
-        return None
-
-def save_template_matches(connection, analysis_id, template_matches):
-    """Save template matching results"""
-    if not connection:
-        return False
-        
-    cursor = connection.cursor()
-    
-    try:
-        for match in template_matches:
-            cursor.execute('''
-                INSERT INTO template_matches 
-                (analysis_id, template_id, category, match_count, matched_files_json)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (
-                analysis_id,
-                match.get('template_id'),
-                match.get('category'),
-                match.get('match_count', 0),
-                json.dumps(match.get('matched_files', []))
-            ))
-        
+            INSERT INTO prompt_mode_history (user_id, session_id, mode, query, response)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (user_id, session_id, mode, query, response))
         connection.commit()
-        return True
+        return cursor.lastrowid
         
     except sqlite3.Error as e:
-        print(f"Database error saving template matches: {e}")
+        print(f"Database error saving prompt mode query: {e}")
         return False
 
-def get_analysis_with_matches(connection, analysis_id, user_id):
-    """Get analysis with template matches"""
+def get_recent_app_calls(connection, user_id, limit=10):
+    """Get recent app usage for user"""
     if not connection:
-        return None
+        return []
         
     cursor = connection.cursor()
     
     try:
-        # Get analysis data
         cursor.execute('''
-            SELECT directory_path, total_files, total_size, file_types_json, ai_insights, created_at
-            FROM directory_analyses 
-            WHERE id = ? AND user_id = ?
-        ''', (analysis_id, user_id))
+            SELECT app_name, action, success, timestamp
+            FROM app_usage_logs 
+            WHERE user_id = ? 
+            ORDER BY timestamp DESC 
+            LIMIT ?
+        ''', (user_id, limit))
         
-        analysis = cursor.fetchone()
-        if not analysis:
-            return None
-        
-        # Get template matches
-        cursor.execute('''
-            SELECT category, match_count, matched_files_json
-            FROM template_matches 
-            WHERE analysis_id = ?
-        ''', (analysis_id,))
-        
-        matches = cursor.fetchall()
-        
-        return {
-            'id': analysis_id,
-            'directory_path': analysis[0],
-            'total_files': analysis[1],
-            'total_size': analysis[2],
-            'file_type_categories': json.loads(analysis[3]) if analysis[3] else {},
-            'ai_insights': analysis[4],
-            'created_at': analysis[5],
-            'template_matches': [
-                {
-                    'category': match[0],
-                    'match_count': match[1],
-                    'matched_files': json.loads(match[2]) if match[2] else []
-                }
-                for match in matches
-            ]
-        }
+        calls = []
+        for row in cursor.fetchall():
+            calls.append({
+                'app': row[0],
+                'action': row[1],
+                'success': bool(row[2]),
+                'timestamp': row[3]
+            })
+        return calls
         
     except sqlite3.Error as e:
-        print(f"Database error getting analysis with matches: {e}")
-        return None
-
-def get_user_stats(connection, user_id):
-    """Get user statistics"""
-    if not connection:
-        return {}
-        
-    cursor = connection.cursor()
-    
-    try:
-        # Get template count
-        cursor.execute('SELECT COUNT(*) FROM user_templates WHERE user_id = ?', (user_id,))
-        template_count = cursor.fetchone()[0]
-        
-        # Get analysis count
-        cursor.execute('SELECT COUNT(*) FROM directory_analyses WHERE user_id = ?', (user_id,))
-        analysis_count = cursor.fetchone()[0]
-        
-        # Get total files analyzed
-        cursor.execute('SELECT SUM(total_files) FROM directory_analyses WHERE user_id = ?', (user_id,))
-        total_files = cursor.fetchone()[0] or 0
-        
-        # Get total size analyzed
-        cursor.execute('SELECT SUM(total_size) FROM directory_analyses WHERE user_id = ?', (user_id,))
-        total_size = cursor.fetchone()[0] or 0
-        
-        return {
-            'template_count': template_count,
-            'analysis_count': analysis_count,
-            'total_files_analyzed': total_files,
-            'total_size_analyzed': total_size
-        }
-        
-    except sqlite3.Error as e:
-        print(f"Database error getting user stats: {e}")
-        return {}
+        print(f"Database error getting recent app calls: {e}")
+        return []

@@ -492,13 +492,30 @@ def register_routes(app):
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
+    @app.route('/login')
     def get_login():
         """Login page"""
         return render_template('login.html')
     
+    @app.route('/logs')
     def get_logs():
         """View logs page"""
         return render_template('logs.html')
+
+    @app.route('/login', methods=['POST'])
+    def login():
+        """Handle login"""
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        # Simple authentication (for demonstration purposes)
+        if username == 'admin' and password == 'password':
+            session['user_id'] = username
+            flash('Login successful!', 'success')
+            return redirect(url_for('chatbot_home'))
+        else:
+            flash('Invalid credentials', 'danger')
+            return redirect(url_for('get_login'))
 
 # Helper functions
 def get_available_apps():

@@ -144,30 +144,43 @@ def get_current_transcript():
 
 @app.route('/api/voice-command', methods=['POST'])
 def process_voice_command():
-    """Process voice commands"""
+    """Process voice commands with enhanced AI understanding"""
     try:
         data = request.get_json()
         command = data.get('command', '').lower()
         
-        # Use AI to understand and respond to voice commands
-        response = generate_voice_command_response(command)
+        print(f"Processing voice command: {command}")
         
-        # Execute command actions based on AI response
-        if 'start_recording' in response.lower():
-            return start_recording()
-        elif 'stop_recording' in response.lower():
-            return stop_recording()
-        elif 'summarize' in response.lower():
+        # Direct command matching (faster than AI)
+        if 'start recording' in command or 'begin recording' in command:
+            return jsonify({'action': 'start_recording', 'success': True, 'response': 'Starting recording'})
+        
+        elif 'stop recording' in command or 'end recording' in command:
+            return jsonify({'action': 'stop_recording', 'success': True, 'response': 'Stopping recording'})
+        
+        elif 'clear transcript' in command or 'delete transcript' in command:
+            return jsonify({'action': 'clear_transcript', 'success': True, 'response': 'Clearing transcript'})
+        
+        elif 'generate summary' in command or 'summarize' in command or 'create summary' in command:
             if current_transcript:
                 summary = generate_transcript_summary(current_transcript, "quick")
-                return jsonify({'success': True, 'summary': summary, 'response': response})
+                return jsonify({'action': 'generate_summary', 'success': True, 'summary': summary, 'response': 'Summary generated'})
             else:
-                return jsonify({'error': 'No transcript available to summarize', 'response': response}), 400
+                return jsonify({'action': 'generate_summary', 'success': False, 'response': 'No transcript available'}), 400
         
-        return jsonify({'success': True, 'response': response})
+        elif 'export' in command:
+            if 'text' in command or 'txt' in command:
+                return jsonify({'action': 'export_txt', 'success': True, 'response': 'Exporting as text'})
+            elif 'json' in command:
+                return jsonify({'action': 'export_json', 'success': True, 'response': 'Exporting as JSON'})
+        
+        # If no direct match, use AI to understand the command
+        response = generate_voice_command_response(command)
+        return jsonify({'success': True, 'response': response, 'action': 'ai_processed'})
     
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"Voice command error: {str(e)}")
+        return jsonify({'error': str(e), 'success': False}), 500
 
 @app.route('/api/train-voice', methods=['POST'])
 def train_voice():

@@ -12,6 +12,7 @@
         text-align: center;
         color: white;
         font-family: Arial, sans-serif;
+        padding-top: 20px !important; /* Reduced from implied spacing */
       }
 
       header {
@@ -20,10 +21,30 @@
         width: 100%;
         background-color: goldenrod;
         z-index: 1000;
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+
+      header.header-hover {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* Header hover zone - invisible area at top of screen */
+      .header-hover-zone {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        z-index: 999;
+        background: transparent;
+        pointer-events: auto;
       }
 
       .mainBody {
-        margin-top: 150px;
+        margin-top: 20px; /* Reduced from 150px */
         padding: 20px;
       }
 
@@ -46,6 +67,7 @@
         border-radius: 10px;
         max-width: 800px;
         border: 2px solid #333;
+        scroll-margin-top: 70px; /* Account for header when visible */
       }
 
       .section h3 {
@@ -209,6 +231,211 @@
         background-color: #4CAF50;
         transition: width 0.3s ease;
       }
+
+      @media (max-width: 768px) {
+        body {
+          padding-top: 20px !important;
+        }
+        
+        .section {
+          margin: 10px;
+          padding: 15px;
+          scroll-margin-top: 70px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding-top: 20px !important;
+        }
+        
+        .section {
+          scroll-margin-top: 70px;
+        }
+      }
+
+      /* Toggle Switch Styles */
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        border-radius: 50%;
+        transition: .4s;
+      }
+
+      input:checked + .toggle-slider {
+        background-color: #2196F3;
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+      }
+
+      /* Listening Indicator */
+      .listening-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #4CAF50;
+        animation: pulse 1.5s infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.2); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      
+      /* Toggle Switch Styles */
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+    
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+    
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #666;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+    
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+    
+      .toggle-switch input:checked + .toggle-slider {
+        background-color: #28a745;
+      }
+    
+      .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+      }
+    
+      /* Listening Indicator Animation */
+      .listening-indicator {
+        width: 15px;
+        height: 15px;
+        background-color: #90ee90;
+        border-radius: 50%;
+        animation: pulse-green 1.5s infinite;
+      }
+    
+      @keyframes pulse-green {
+        0%, 100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+        50% {
+          opacity: 0.5;
+          transform: scale(1.2);
+        }
+      }
+    
+      /* Voice Command Notification */
+      .voice-notification-show {
+        animation: slideDown 0.3s ease-in-out;
+      }
+    
+      .voice-notification-hide {
+        animation: slideUp 0.3s ease-in-out;
+      }
+    
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    
+      @keyframes slideUp {
+        from {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        to {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+      }
+    
+      /* Command History Styles */
+      .command-history-item {
+        background-color: #1a1a1a;
+        padding: 8px 12px;
+        margin: 5px 0;
+        border-radius: 5px;
+        border-left: 3px solid goldenrod;
+        font-size: 14px;
+      }
+    
+      .command-timestamp {
+        color: #888;
+        font-size: 12px;
+        margin-left: 10px;
+      }
+    
+      .command-success {
+        border-left-color: #28a745;
+      }
+    
+      .command-error {
+        border-left-color: #dc3545;
+      }
     </style>
   </head>
 
@@ -257,7 +484,7 @@
           <span class="status-indicator" id="recording-status"></span>
           <span id="recording-status-text">Ready to record</span>
         </div>
-        <div style="margin: 20px 0;" id="file-upload-section">
+        <div style="margin: 20px 0;">
           <button class="button recording-button" id="record-button" onclick="toggleRecording()">
             Start Recording
           </button>
@@ -269,7 +496,7 @@
       </div>
 
       <!-- File Upload Section -->
-      <div class="section">
+      <div class="section" id="file-upload-section">
         <h3>📁 Upload Audio File</h3>
         <form method="POST" enctype="multipart/form-data" id="upload-form">
           {{ form.hidden_tag() }}
@@ -282,7 +509,7 @@
             <label for="summary_type">{{ form.summary_type.label }}</label>
             {{ form.summary_type(class="form-control", id="summary_type") }}
           </div>
-          <div class="form-group" id="ai-summary-section">
+          <div class="form-group">
             <label for="transcription_quality">Transcription Quality:</label>
             <select id="transcription_quality" class="form-control">
               <option value="standard">Standard (Fast)</option>
@@ -308,8 +535,8 @@
       </div>
 
       <!-- AI Summary Section -->
-      <div class="section">
-        <h3 id="voice-commands-section">🤖 AI Summary</h3>
+      <div class="section" id="ai-summary-section">
+        <h3>🤖 AI Summary</h3>
         {% if ai_summary %}
         <div class="ai-summary">
           {{ ai_summary|safe }}
@@ -323,20 +550,53 @@
       
 
       <!-- Voice Commands Section -->
-      <div class="section">
-        <h3>🗣️ Voice Commands</h3>
-        <p>Try saying: "Start recording", "Stop recording", "Summarize transcript", "Clear transcript"</p>
-        <div class="form-group" id="voice-training-section">
-          <input type="text" id="voice-command-input" placeholder="Or type your command here..." />
-          <button class="button" onclick="processVoiceCommand()">Process Command</button>
+      <div class="section" id="voice-commands-section">
+        <h3>🎙️ Voice Assistant</h3>
+        <p>Enable voice commands to control the app with your voice - just like Siri or Alexa!</p>
+        
+        <div style="display: flex; align-items: center; justify-content: center; gap: 20px; margin: 20px 0;">
+          <label class="toggle-switch">
+            <input type="checkbox" id="voice-assistant-toggle" onchange="toggleVoiceAssistant()">
+            <span class="toggle-slider"></span>
+          </label>
+          <span id="voice-assistant-status" style="font-size: 18px; font-weight: bold; color: goldenrod;">
+            Voice Assistant: Disabled
+          </span>
         </div>
-        <div id="voice-command-response" class="transcript-display" style="min-height: 80px;">
-          Voice command responses will appear here...
+        
+        <!-- Voice Command Notification -->
+        <div id="voice-command-notification" style="display: none; background-color: #2a4a2a; padding: 15px; border-radius: 5px; margin: 15px 0; border: 2px solid #4a7c59;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="listening-indicator"></div>
+            <span id="notification-text" style="color: #90ee90; font-weight: bold;">Listening for commands...</span>
+          </div>
+        </div>
+        
+        <!-- Available Commands Info -->
+        <div style="background-color: #2a2a2a; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          <h4 style="color: goldenrod; margin-bottom: 10px;">Available Voice Commands:</h4>
+          <ul style="text-align: left; color: white; line-height: 1.8;">
+            <li>"Start recording" - Begin audio transcription</li>
+            <li>"Stop recording" - End audio transcription</li>
+            <li>"Clear transcript" - Clear current transcript</li>
+            <li>"Generate summary" or "Summarize" - Create AI summary</li>
+            <li>"Export as text" or "Export as JSON" - Export transcript</li>
+            <li>"Show sessions" - Display session list</li>
+            <li>"Help" - Show available commands</li>
+          </ul>
+        </div>
+        
+        <!-- Command History -->
+        <div id="command-history" style="background-color: #2a2a2a; padding: 15px; border-radius: 5px; margin: 15px 0; display: none;">
+          <h4 style="color: goldenrod; margin-bottom: 10px;">Recent Commands:</h4>
+          <div id="command-history-list" style="text-align: left; color: #ccc; max-height: 150px; overflow-y: auto;">
+            <!-- Command history will be added here -->
+          </div>
         </div>
       </div>
 
       <!-- Voice Training Section -->
-      <div class="section voice-training">
+      <div class="section voice-training"  id="voice-training-section">
         <h3>🎯 Voice Training</h3>
         <p>Train the app to better recognize your voice for improved accuracy</p>
         <div class="form-group">
@@ -347,7 +607,7 @@
           <label>Training Text (read this aloud):</label>
           <textarea id="training-text" rows="4" onchange="updateTrainingDuration()">The quick brown fox jumps over the lazy dog. This sentence contains every letter of the alphabet and is perfect for voice training. Please read this clearly and at a normal pace.</textarea>
         </div>
-        <div style="text-align: center; margin: 20px 0;" id="export-section">
+        <div style="text-align: center; margin: 20px 0;">
           <p id="training-duration-info">Estimated training time: <span id="training-duration">15</span> seconds</p>
           <button class="button" onclick="startVoiceTraining()">Start Voice Training</button>
         </div>
@@ -360,7 +620,7 @@
       </div>
 
       <!-- Export & Session Management -->
-      <div class="section">
+      <div class="section" id="export-section">
         <h3>💾 Export & Session Management</h3>
         <div style="margin: 15px 0;">
           <button class="button" onclick="exportCurrentTranscript('txt')" id="export-current-txt">Export Current as TXT</button>
@@ -1072,6 +1332,316 @@
           }
         }
       }
+
+      // Hoverable header functionality
+      document.addEventListener('DOMContentLoaded', function() {
+        const header = document.querySelector('header');
+        const hoverZoneHeight = 50; // pixels from top to trigger header
+
+        // Show header when mouse is near top
+        document.addEventListener('mousemove', function(e) {
+          if (e.clientY <= hoverZoneHeight) {
+            header.classList.add('header-hover');
+          } else if (!header.matches(':hover')) {
+            header.classList.remove('header-hover');
+          }
+        });
+
+        // Keep header visible while hovering over it
+        header.addEventListener('mouseenter', function() {
+          header.classList.add('header-hover');
+        });
+
+        header.addEventListener('mouseleave', function() {
+          header.classList.remove('header-hover');
+        });
+      });
+
+      // Voice Assistant Variables
+      let voiceAssistantEnabled = false;
+      let voiceAssistantRecognition = null;
+      let commandHistory = [];
+
+      // Initialize Voice Assistant
+      function initializeVoiceAssistant() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+          alert('Voice commands are not supported in this browser. Please use Chrome, Edge, or Safari.');
+          return false;
+        }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        voiceAssistantRecognition = new SpeechRecognition();
+        
+        voiceAssistantRecognition.continuous = true;
+        voiceAssistantRecognition.interimResults = false;
+        voiceAssistantRecognition.lang = 'en-US';
+        voiceAssistantRecognition.maxAlternatives = 1;
+
+        voiceAssistantRecognition.onstart = function() {
+          console.log('Voice assistant started listening');
+          updateVoiceNotification('Listening for commands...', true);
+        };
+
+        voiceAssistantRecognition.onresult = function(event) {
+          const last = event.results.length - 1;
+          const command = event.results[last][0].transcript.trim().toLowerCase();
+          
+          console.log('Voice command detected:', command);
+          updateVoiceNotification(`Command: "${command}"`, true);
+          
+          // Process the voice command
+          processDetectedVoiceCommand(command);
+        };
+
+        voiceAssistantRecognition.onerror = function(event) {
+          console.error('Voice recognition error:', event.error);
+          if (event.error === 'no-speech') {
+            // Silently restart - no speech detected
+            if (voiceAssistantEnabled) {
+              setTimeout(() => {
+                try {
+                  voiceAssistantRecognition.start();
+                } catch (e) {
+                  console.log('Recognition already started');
+                }
+              }, 100);
+            }
+          } else {
+            updateVoiceNotification(`Error: ${event.error}`, true);
+            setTimeout(() => {
+              if (voiceAssistantEnabled) {
+                updateVoiceNotification('Listening for commands...', true);
+              }
+            }, 2000);
+          }
+        };
+
+        voiceAssistantRecognition.onend = function() {
+          console.log('Voice recognition ended');
+          // Restart if still enabled
+          if (voiceAssistantEnabled) {
+            try {
+              voiceAssistantRecognition.start();
+            } catch (e) {
+              console.log('Recognition restart failed:', e);
+            }
+          }
+        };
+
+        return true;
+      }
+
+      // Toggle Voice Assistant
+      function toggleVoiceAssistant() {
+        const toggle = document.getElementById('voice-assistant-toggle');
+        const statusText = document.getElementById('voice-assistant-status');
+        
+        voiceAssistantEnabled = toggle.checked;
+
+        if (voiceAssistantEnabled) {
+          // Initialize if not already done
+          if (!voiceAssistantRecognition) {
+            if (!initializeVoiceAssistant()) {
+              toggle.checked = false;
+              return;
+            }
+          }
+
+          // Start listening
+          try {
+            voiceAssistantRecognition.start();
+            statusText.textContent = 'Voice Assistant: Enabled';
+            statusText.style.color = '#28a745';
+            showVoiceNotification('Voice commands enabled - Ready to listen!');
+            
+            // Show command history
+            document.getElementById('command-history').style.display = 'block';
+          } catch (e) {
+            console.error('Error starting voice assistant:', e);
+            toggle.checked = false;
+            voiceAssistantEnabled = false;
+            statusText.textContent = 'Voice Assistant: Error';
+            statusText.style.color = '#dc3545';
+          }
+        } else {
+          // Stop listening
+          if (voiceAssistantRecognition) {
+            voiceAssistantRecognition.stop();
+          }
+          statusText.textContent = 'Voice Assistant: Disabled';
+          statusText.style.color = '#666';
+          hideVoiceNotification();
+          
+          // Optionally hide command history when disabled
+          setTimeout(() => {
+            document.getElementById('command-history').style.display = 'none';
+          }, 300);
+        }
+      }
+
+      // Update Voice Notification
+      function updateVoiceNotification(message, show) {
+        const notification = document.getElementById('voice-command-notification');
+        const notificationText = document.getElementById('notification-text');
+        
+        notificationText.textContent = message;
+        
+        if (show && !notification.style.display || notification.style.display === 'none') {
+          notification.style.display = 'block';
+          notification.classList.remove('voice-notification-hide');
+          notification.classList.add('voice-notification-show');
+        }
+      }
+
+      // Show Voice Notification
+      function showVoiceNotification(message) {
+        updateVoiceNotification(message, true);
+      }
+
+      // Hide Voice Notification
+      function hideVoiceNotification() {
+        const notification = document.getElementById('voice-command-notification');
+        notification.classList.remove('voice-notification-show');
+        notification.classList.add('voice-notification-hide');
+        
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 300);
+      }
+
+      // Process Detected Voice Command
+      function processDetectedVoiceCommand(command) {
+        console.log('Processing voice command:', command);
+        
+        let action = null;
+        let success = false;
+        let response = '';
+
+        // Command matching
+        if (command.includes('start recording') || command.includes('begin recording')) {
+          action = 'start_recording';
+          if (!isRecording) {
+            startRecording();
+            response = 'Starting recording';
+            success = true;
+          } else {
+            response = 'Already recording';
+          }
+        } 
+        else if (command.includes('stop recording') || command.includes('end recording')) {
+          action = 'stop_recording';
+          if (isRecording) {
+            stopRecording();
+            response = 'Stopping recording';
+            success = true;
+          } else {
+            response = 'Not currently recording';
+          }
+        } 
+        else if (command.includes('clear transcript') || command.includes('delete transcript')) {
+          action = 'clear_transcript';
+          clearTranscript();
+          response = 'Transcript cleared';
+          success = true;
+        } 
+        else if (command.includes('generate summary') || command.includes('summarize') || command.includes('create summary')) {
+          action = 'generate_summary';
+          generateSummary();
+          response = 'Generating summary';
+          success = true;
+        } 
+        else if (command.includes('export as text') || command.includes('export txt')) {
+          action = 'export_txt';
+          exportCurrentTranscript('txt');
+          response = 'Exporting as text file';
+          success = true;
+        } 
+        else if (command.includes('export as json') || command.includes('export json')) {
+          action = 'export_json';
+          exportCurrentTranscript('json');
+          response = 'Exporting as JSON file';
+          success = true;
+        } 
+        else if (command.includes('show sessions') || command.includes('view sessions')) {
+          action = 'show_sessions';
+          document.getElementById('export-section').scrollIntoView({ behavior: 'smooth' });
+          response = 'Showing sessions';
+          success = true;
+        } 
+        else if (command.includes('help') || command.includes('what can you do')) {
+          action = 'help';
+          response = 'Available commands shown below';
+          document.getElementById('voice-commands-section').scrollIntoView({ behavior: 'smooth' });
+          success = true;
+        }
+        else {
+          action = 'unknown';
+          response = 'Command not recognized. Say "help" for available commands.';
+        }
+
+        // Update notification
+        updateVoiceNotification(response, true);
+        
+        // Add to command history
+        addCommandToHistory(command, response, success);
+        
+        // Clear notification after 3 seconds
+        setTimeout(() => {
+          if (voiceAssistantEnabled) {
+            updateVoiceNotification('Listening for commands...', true);
+          }
+        }, 3000);
+      }
+
+      // Add Command to History
+      function addCommandToHistory(command, response, success) {
+        const timestamp = new Date().toLocaleTimeString();
+        const historyItem = {
+          command: command,
+          response: response,
+          success: success,
+          timestamp: timestamp
+        };
+        
+        commandHistory.unshift(historyItem);
+        
+        // Keep only last 10 commands
+        if (commandHistory.length > 10) {
+          commandHistory.pop();
+        }
+        
+        // Update UI
+        updateCommandHistoryUI();
+      }
+
+      // Update Command History UI
+      function updateCommandHistoryUI() {
+        const historyList = document.getElementById('command-history-list');
+        
+        if (commandHistory.length === 0) {
+          historyList.innerHTML = '<div style="color: #888; padding: 10px;">No commands yet</div>';
+          return;
+        }
+        
+        historyList.innerHTML = commandHistory.map(item => `
+          <div class="command-history-item ${item.success ? 'command-success' : 'command-error'}">
+            <strong>"${item.command}"</strong>
+            <span class="command-timestamp">${item.timestamp}</span>
+            <br>
+            <small style="color: #aaa;">${item.response}</small>
+          </div>
+        `).join('');
+      }
+
+      // Initialize on page load
+      document.addEventListener('DOMContentLoaded', function() {
+        updateTrainingDuration();
+        loadSessions();
+        updateRecordingUI();
+        
+        // Initialize voice assistant (but don't start it)
+        initializeVoiceAssistant();
+      });
     </script>
   </body>
 </html>

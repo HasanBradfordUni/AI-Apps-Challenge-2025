@@ -1,0 +1,40 @@
+Transcript - live_20251222_201537
+Generated: 2025-12-22 20:17:38
+==================================================
+
+TRANSCRIPT:
+recording installing how are you doing recording I'm just text testing the a to text application AI speech to text this is speech to text is Portland dead apps challenge 2025 in the transcription is when are we stop recording
+
+==================================================
+
+AI SUMMARY:
+## Meeting Transcript Analysis: Speech-to-Text Application Testing
+
+Here's an analysis of the provided meeting transcript:
+
+**1. Meeting Overview:**
+
+This meeting appears to be a brief, informal session focused on testing an AI speech-to-text application. The purpose is to evaluate its performance in a specific context related to the "Portland Dead Apps Challenge 2025." It's a quick check to see how well the application transcribes spoken words.
+
+**2. Key Discussion Points:**
+
+*   Testing the accuracy of an AI speech-to-text application.
+*   Context: "Portland Dead Apps Challenge 2025."
+*   Focus on transcription quality and performance.
+*   The question of when to stop recording was raised.
+
+**3. Action Items and Decisions Made:**
+
+*   **Action Item:** Continue testing the speech-to-text application.
+*   **Decision:** None explicitly stated, but implicitly, the decision is to continue testing.
+
+**4. Next Steps or Follow-ups:**
+
+*   Analyze the transcribed text for accuracy against the spoken words.
+*   Potentially run more tests to improve the application's performance.
+*   Compare the results to other speech-to-text solutions.
+
+**5. Key Participants and Their Contributions:**
+
+*   **Participant 1 (Initiator):** Started the recording and initiated the test, stating "recording installing how are you doing".
+*   **Participant 2 (Tester/Narrator):** Provided the test phrases: "I'm just text testing the a to text application AI speech to text this is speech to text is Portland dead apps challenge 2025 in the transcription is when are we stop recording" thereby creating the test data for the application. Their contribution is providing the audio input for transcription.
