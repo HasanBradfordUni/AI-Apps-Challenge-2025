@@ -56,7 +56,7 @@
             <div class="dashboard-card">
                 <h3 class="subHeading">Today's AI Summary</h3>
                 <div class="summary-content">
-                    {{ daily_summary if daily_summary else "No events scheduled for today." }}
+                    {{ daily_summary|markdown|safe if daily_summary else "No events scheduled for today." }}
                 </div>
             </div>
 

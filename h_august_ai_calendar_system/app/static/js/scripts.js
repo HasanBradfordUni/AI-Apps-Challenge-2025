@@ -316,174 +316,123 @@ function closeQuickEventModal() {
     }
 }
 
-// Edit Event Functionality
+// Edit event modal functions
 function editEvent(eventId) {
+    console.log('Opening edit modal for event:', eventId);
+    
     fetch(`/api/get_event/${eventId}`)
-        .then(response => response.json())
-        .then(event => {
-            showEditEventModal(event);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch event');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Event data received:', data);
+            
+            // Populate the edit form
+            document.getElementById('edit_event_id').value = data.id;
+            document.getElementById('edit_title').value = data.title || '';
+            document.getElementById('edit_description').value = data.description || '';
+            document.getElementById('edit_date').value = data.date || '';
+            document.getElementById('edit_start_time').value = data.start_time || '';
+            document.getElementById('edit_duration').value = data.duration || '1h';
+            document.getElementById('edit_platform').value = data.platform || 'In Person';
+            document.getElementById('edit_location').value = data.location || '';
+            document.getElementById('edit_attendees').value = data.attendees || '';
+            
+            // Show the modal
+            document.getElementById('editEventModal').style.display = 'block';
         })
         .catch(error => {
-            console.error('Error fetching event:', error);
-            showNotification('Error loading event details.', 'error');
+            console.error('Error loading event:', error);
+            alert('Error loading event details: ' + error.message);
         });
 }
 
-// Enhanced edit event modal with proper field population
-function showEditEventModal(event) {
-    const startDate = event.start_time ? event.start_time.split(' ')[0] : '';
-    const startTime = event.start_time ? event.start_time.split(' ')[1] : '';
-    
-    const modalHTML = `
-        <div id="editEventModal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 class="subHeading">✏️ Edit Event</h3>
-                    <button onclick="closeEditEventModal()" class="close-btn">&times;</button>
-                </div>
-                <form id="editEventForm" class="edit-event-form">
-                    <input type="hidden" name="event_id" value="${event.id}">
-                    <input type="text" name="title" placeholder="Event Title" class="form-input" value="${event.title || ''}" required>
-                    <textarea name="description" placeholder="Description" class="form-textarea" rows="3">${event.description || ''}</textarea>
-                    
-                    <div class="form-row">
-                        <input type="date" name="date" class="form-input" value="${startDate}">
-                        <input type="time" name="start_time" class="form-input" value="${startTime}">
-                    </div>
-                    
-                    <div class="form-row">
-                        <input type="text" name="duration" placeholder="Duration" class="form-input" value="${event.duration || '1h'}">
-                        <select name="platform" class="form-input">
-                            <option value="">Select Platform</option>
-                            <option value="In Person" ${event.platform === 'In Person' ? 'selected' : ''}>In Person</option>
-                            <option value="Microsoft Teams" ${event.platform === 'Microsoft Teams' ? 'selected' : ''}>Microsoft Teams</option>
-                            <option value="Zoom" ${event.platform === 'Zoom' ? 'selected' : ''}>Zoom</option>
-                            <option value="Google Meet" ${event.platform === 'Google Meet' ? 'selected' : ''}>Google Meet</option>
-                            <option value="Phone Call" ${event.platform === 'Phone Call' ? 'selected' : ''}>Phone Call</option>
-                            <option value="Other" ${event.platform === 'Other' ? 'selected' : ''}>Other</option>
-                        </select>
-                    </div>
-                    
-                    <input type="text" name="location" placeholder="Location/Meeting Link" class="form-input" value="${event.location || ''}">
-                    <input type="text" name="attendees" placeholder="Attendees" class="form-input" value="${event.attendees || ''}">
-                    
-                    <div class="form-actions">
-                        <button type="button" onclick="deleteEvent(${event.id})" class="delete-btn">Delete</button>
-                        <button type="button" onclick="closeEditEventModal()" class="cancel-btn">Cancel</button>
-                        <button type="submit" class="submit-btn">Update Event</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    document.getElementById('editEventForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        submitEditEvent(this);
-    });
+function closeEditModal() {
+    document.getElementById('editEventModal').style.display = 'none';
 }
 
-function submitEditEvent(form) {
-    const formData = new FormData(form);
-    const eventId = formData.get('event_id');
-    
-    // Show loading state
-    const submitBtn = form.querySelector('.submit-btn');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Updating...';
-    submitBtn.disabled = true;
-    
-    const eventData = {
-        'title': formData.get('title'),
-        'description': formData.get('description'),
-        'date': formData.get('date'),
-        'start_time': formData.get('start_time'),
-        'duration': formData.get('duration'),
-        'platform': formData.get('platform'),
-        'location': formData.get('location'),
-        'attendees': formData.get('attendees')
-    };
-    
-    fetch(`/edit_event/${eventId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify(eventData)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-        
-        if (data.success) {
-            showNotification(data.message, 'success');
-            closeEditEventModal();
+// Handle edit form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const editForm = document.getElementById('editEventForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            // Update UI in real-time
-            updateTodaysSchedule();
-            setTimeout(() => {
-                if (window.location.pathname.includes('calendar_view')) {
-                    location.reload();
+            const eventId = document.getElementById('edit_event_id').value;
+            const formData = new FormData(editForm);
+            
+            // Convert FormData to JSON
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            console.log('Updating event:', eventId, data);
+            
+            fetch(`/edit_event/${eventId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert(result.message || 'Event updated successfully!');
+                    closeEditModal();
+                    // Reload the page to show updated event
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + (result.error || 'Failed to update event'));
                 }
-            }, 1000);
+            })
+            .catch(error => {
+                console.error('Error updating event:', error);
+                alert('Error updating event: ' + error.message);
+            });
+        });
+    }
+});
+
+function deleteEventFromModal() {
+    const eventId = document.getElementById('edit_event_id').value;
+    
+    if (!confirm('Are you sure you want to delete this event?')) {
+        return;
+    }
+    
+    fetch(`/delete_event/${eventId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert(result.message || 'Event deleted successfully!');
+            closeEditModal();
+            window.location.reload();
         } else {
-            showNotification(data.error || 'Failed to update event.', 'error');
+            alert('Error: ' + (result.error || 'Failed to delete event'));
         }
     })
     .catch(error => {
-        console.error('Error updating event:', error);
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-        showNotification('Error updating event. Please try again.', 'error');
+        console.error('Error deleting event:', error);
+        alert('Error deleting event: ' + error.message);
     });
 }
 
-function deleteEvent(eventId) {
-    if (confirm('Are you sure you want to delete this event?')) {
-        // Show loading notification
-        showNotification('Deleting event...', 'info');
-        
-        fetch(`/delete_event/${eventId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification(data.message, 'success');
-                closeEditEventModal();
-                
-                // Remove event from UI immediately
-                removeEventFromUI(eventId);
-                
-                // Update today's schedule
-                updateTodaysSchedule();
-            } else {
-                showNotification(data.error || 'Failed to delete event.', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('Error deleting event.', 'error');
-        });
-    }
-}
-
-function closeEditEventModal() {
+// Close modal when clicking outside
+window.onclick = function(event) {
     const modal = document.getElementById('editEventModal');
-    if (modal) {
-        modal.remove();
+    if (event.target === modal) {
+        closeEditModal();
     }
 }
 

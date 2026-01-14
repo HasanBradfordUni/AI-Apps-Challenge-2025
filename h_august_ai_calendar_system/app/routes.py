@@ -8,6 +8,7 @@ from .models import (create_connection, create_calendar_tables, parse_duration_t
 from .services.ai_parser import AICommandParser
 from .services.voice_recognition import VoiceRecognitionService
 from .services.calendar_sync import GoogleCalendarService, OutlookCalendarService
+import markdown
 
 calendar_bp = Blueprint('calendar', __name__)
 
@@ -19,6 +20,14 @@ create_calendar_tables(connection)
 # Initialize services
 ai_parser = AICommandParser()
 voice_service = VoiceRecognitionService()
+
+# Add markdown filter
+@calendar_bp.app_template_filter('markdown')
+def markdown_filter(text):
+    """Convert markdown to HTML"""
+    if not text:
+        return ""
+    return markdown.markdown(text, extensions=['nl2br', 'fenced_code'])
 
 @calendar_bp.route('/')
 def dashboard():
@@ -246,86 +255,137 @@ def calendar_view_month(year, month):
     if 'user_id' not in session:
         return redirect(url_for('calendar.login'))
     
-    try:
-        # Create date for the specified month
-        current_month = datetime(year, month, 1).date()
-        
-        # Calculate calendar boundaries
-        start_of_month = current_month
-        end_of_month = (start_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
-        
-        # Get the first day of the calendar grid (previous month's days)
-        start_weekday = start_of_month.weekday()
-        # Adjust for Sunday start (0=Monday in Python, we want 0=Sunday)
-        start_weekday = (start_weekday + 1) % 7
-        start_of_calendar = start_of_month - timedelta(days=start_weekday)
-        
-        # Get events for the entire calendar view (6 weeks)
-        end_of_calendar = start_of_calendar + timedelta(days=41)
-        events = get_user_events(connection, session['user_id'], start_of_calendar, end_of_calendar)  # Add connection parameter
-        
-        # Generate 42 days for the calendar grid
-        calendar_days = []
-        for i in range(42):
-            day = start_of_calendar + timedelta(days=i)
-            calendar_days.append({
-                'date': day,
-                'date_string': day.strftime('%Y-%m-%d'),
-                'day_number': day.day,
-                'is_current_month': day.month == current_month.month,
-                'is_today': day == datetime.now().date()
-            })
-        
-        return render_template('calendar_view.html', 
-                             events=events, 
-                             current_month=current_month,
-                             calendar_days=calendar_days,
-                             timedelta=timedelta)
+    # Get first and last day of the month
+    first_day = datetime(year, month, 1)
+    if month == 12:
+        last_day = datetime(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        last_day = datetime(year, month + 1, 1) - timedelta(days=1)
     
-    except ValueError:
-        flash('Invalid month/year specified', 'error')
-        return redirect(url_for('calendar.calendar_view'))
+    # Debug: Print date range
+    print(f"=== CALENDAR VIEW DEBUG ===")
+    print(f"Fetching events for user {session['user_id']}")
+    print(f"Date range: {first_day.strftime('%Y-%m-%d')} to {last_day.strftime('%Y-%m-%d')}")
+    
+    # Get events for the month
+    events = get_user_events(connection, session['user_id'], 
+                            first_day.strftime('%Y-%m-%d'), 
+                            last_day.strftime('%Y-%m-%d'))
+    
+    print(f"Total events found: {len(events) if events else 0}")
+    if events:
+        for event in events:
+            print(f"Event: ID={event[0]}, Title={event[2]}, Start={event[4]}")
+    
+    # Create calendar grid - 6 weeks (42 days) starting from Monday
+    calendar_days = []
+    
+    # Find the Monday of the week containing the first day of the month
+    # weekday() returns 0=Monday, 6=Sunday
+    days_from_monday = first_day.weekday()
+    calendar_start = first_day - timedelta(days=days_from_monday)
+    
+    print(f"First day of month: {first_day.strftime('%Y-%m-%d')} ({first_day.strftime('%A')})")
+    print(f"Calendar starts on: {calendar_start.strftime('%Y-%m-%d')} ({calendar_start.strftime('%A')})")
+    
+    # Generate 6 weeks (42 days)
+    current_date = calendar_start
+    today = datetime.now().date()
+    
+    for i in range(42):
+        date_str = current_date.strftime('%Y-%m-%d')
+        is_current_month = current_date.month == month and current_date.year == year
+        is_today = current_date == today
+        
+        # Find events for this day
+        day_events = []
+        if events:
+            for event in events:
+                event_date = event[4][:10] if event[4] else ''
+                if event_date == date_str:
+                    day_events.append({
+                        'id': event[0],
+                        'title': event[2],
+                        'start_time': event[4],
+                        'end_time': event[5],
+                        'location': event[6] if len(event) > 6 else '',
+                        'description': event[3] if len(event) > 3 else ''
+                    })
+        
+        calendar_days.append({
+            'date': current_date,
+            'date_string': date_str,
+            'day_number': current_date.day,
+            'is_current_month': is_current_month,
+            'is_today': is_today,
+            'events': day_events
+        })
+        
+        current_date += timedelta(days=1)
+    
+    print(f"Calendar days created: {len(calendar_days)}")
+    print(f"Days with events: {sum(1 for day in calendar_days if day['events'])}")
+    print(f"=== END DEBUG ===")
+    
+    current_month = first_day
+    
+    return render_template('calendar_view.html',
+                         events=events,
+                         current_month=current_month,
+                         calendar_days=calendar_days,
+                         timedelta=timedelta,
+                         datetime=datetime)
 
 # Update the existing calendar_view route
 @calendar_bp.route('/calendar_view')
 def calendar_view():
-    """Calendar view page - current month"""
-    if 'user_id' not in session:
-        return redirect(url_for('calendar.login'))
-    
-    # Redirect to current month view
-    today = datetime.now().date()
-    return redirect(url_for('calendar.calendar_view_month', year=today.year, month=today.month))
+    """Redirect to current month's calendar view"""
+    now = datetime.now()
+    return redirect(url_for('calendar.calendar_view_month', year=now.year, month=now.month))
 
 @calendar_bp.route('/api/get_event/<int:event_id>')
 def get_event(event_id):
     """Get event details for editing"""
     if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
+        return jsonify({'error': 'Not logged in'}), 401
     
     try:
         event = get_event_by_id(connection, event_id, session['user_id'])
-        if event:
-            # Determine platform from location/platform data
-            platform, clean_location = parse_platform_and_location(event[6], event[8] if len(event) > 8 else '')
-            
-            return jsonify({
-                'id': event[0],
-                'title': event[2],
-                'description': event[3],
-                'start_time': event[4],
-                'end_time': event[5],
-                'location': clean_location,
-                'attendees': event[7] if len(event) > 7 else '',
-                'platform': platform,
-                'duration': minutes_to_duration_string(event[9] if len(event) > 9 else 60),
-                'duration_minutes': event[9] if len(event) > 9 else 60,
-                'is_all_day': bool(event[10]) if len(event) > 10 else False
-            })
-        else:
+        
+        if not event:
             return jsonify({'error': 'Event not found'}), 404
+        
+        # Parse platform and location correctly
+        platform_parsed, location_parsed = parse_platform_and_location(
+            event[6] if len(event) > 6 else '',  # location (index 6)
+            event[11] if len(event) > 11 else ''  # platform (index 11)
+        )
+        
+        # Parse duration
+        duration_minutes = event[9] if len(event) > 9 else 60
+        duration_str = minutes_to_duration_string(duration_minutes)
+        
+        # Parse start_time to separate date and time
+        start_datetime = datetime.strptime(event[4], '%Y-%m-%d %H:%M')
+        
+        event_data = {
+            'id': event[0],
+            'title': event[2],
+            'description': event[3] or '',
+            'date': start_datetime.strftime('%Y-%m-%d'),
+            'start_time': start_datetime.strftime('%H:%M'),
+            'duration': duration_str,
+            'platform': platform_parsed,
+            'location': location_parsed,
+            'attendees': event[7] or ''
+        }
+        
+        return jsonify(event_data)
+        
     except Exception as e:
         print(f"Error getting event: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @calendar_bp.route('/edit_event/<int:event_id>', methods=['POST'])
@@ -333,7 +393,7 @@ def edit_event(event_id):
     """Edit existing event"""
     if 'user_id' not in session:
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'error': 'Unauthorized'}), 401
+            return jsonify({'error': 'Not logged in'}), 401
         return redirect(url_for('calendar.login'))
     
     try:
@@ -345,12 +405,28 @@ def edit_event(event_id):
         
         title = data.get('title')
         description = data.get('description', '')
-        date = data.get('date')
-        start_time = data.get('start_time')
-        duration = data.get('duration', '1h')
         location = data.get('location', '')
         attendees = data.get('attendees', '')
         platform = data.get('platform', '')
+        
+        # Get date and time - handle both date-only and datetime inputs
+        date_input = data.get('date')
+        start_time_input = data.get('start_time')
+        duration = data.get('duration', '1h')
+        
+        # Extract just the date if it contains time info
+        if 'T' in str(date_input):
+            date = date_input.split('T')[0]
+        else:
+            date = date_input
+        
+        # Extract just the time if it contains date info
+        if 'T' in str(start_time_input):
+            start_time = start_time_input.split('T')[1][:5]  # Get HH:MM
+        elif ' ' in str(start_time_input):
+            start_time = start_time_input.split(' ')[1][:5]
+        else:
+            start_time = str(start_time_input)[:5]  # Ensure it's HH:MM
         
         # Parse duration and calculate end time
         duration_minutes = parse_duration_to_minutes(duration)
@@ -358,13 +434,10 @@ def edit_event(event_id):
         
         if duration == 'All Day' or duration_minutes >= 1440:
             end_datetime = f"{date} 23:59"
-            is_all_day = True
         else:
-            from datetime import datetime, timedelta
-            start = datetime.strptime(start_datetime, '%Y-%m-%d %H:%M')
-            end = start + timedelta(minutes=duration_minutes)
-            end_datetime = end.strftime('%Y-%m-%d %H:%M')
-            is_all_day = False
+            start_dt = datetime.strptime(start_datetime, '%Y-%m-%d %H:%M')
+            end_dt = start_dt + timedelta(minutes=duration_minutes)
+            end_datetime = end_dt.strftime('%Y-%m-%d %H:%M')
         
         # Combine platform and location properly
         final_location, final_platform = combine_platform_location(platform, location)
@@ -375,21 +448,20 @@ def edit_event(event_id):
                              final_platform, duration_minutes)
         
         if success:
-            # Return JSON for AJAX requests
             if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({
-                    'success': True, 
-                    'message': 'Event updated successfully!',
-                    'event_id': event_id
-                })
-            
+                return jsonify({'success': True, 'message': 'Event updated successfully!'})
             flash('Event updated successfully!', 'success')
-            return redirect(url_for('calendar.calendar_view'))
+            return redirect(url_for('calendar.dashboard'))
         else:
-            raise Exception("Event not found or permission denied")
+            if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'error': 'Failed to update event'}), 400
+            flash('Failed to update event', 'error')
+            return redirect(url_for('calendar.calendar_view'))
         
     except Exception as e:
         print(f"Error updating event: {e}")
+        import traceback
+        traceback.print_exc()
         if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'error': f'Error updating event: {str(e)}'}), 500
         
@@ -412,26 +484,67 @@ def create_event():
             else:
                 data = request.form
             
-            # Parse duration
+            # Debug logging
+            print(f"=== CREATE EVENT DEBUG ===")
+            print(f"Raw data received: {dict(data)}")
+            
+            # Get the simple fields
+            start_time_raw = data.get('start_time')  # Could be HH:MM or YYYY-MM-DD HH:MM
+            end_time_raw = data.get('end_time')
             duration = data.get('duration', '1h')
+            
+            # Parse start_time - check if it contains date
+            if start_time_raw and ' ' in start_time_raw:
+                # Format is YYYY-MM-DD HH:MM
+                date, start_time = start_time_raw.split(' ', 1)
+            else:
+                # Separate date field
+                date = data.get('date')
+                start_time = start_time_raw
+            
+            # Parse duration to minutes
             duration_minutes = parse_duration_to_minutes(duration)
             
-            # Combine platform and location
-            platform = data.get('platform', '')
+            print(f"Date: {date}")
+            print(f"Start time: {start_time}")
+            print(f"Duration: {duration} = {duration_minutes} minutes")
+            
+            # Calculate start and end datetime
+            start_datetime_str = f"{date} {start_time}"
+            
+            # Calculate end time based on duration
+            if duration == 'All Day' or duration_minutes >= 1440:
+                end_datetime_str = f"{date} 23:59"
+                is_all_day = True
+            else:
+                start_dt = datetime.strptime(start_datetime_str, '%Y-%m-%d %H:%M')
+                end_dt = start_dt + timedelta(minutes=duration_minutes)
+                end_datetime_str = end_dt.strftime('%Y-%m-%d %H:%M')
+                is_all_day = False
+            
+            print(f"Start datetime: {start_datetime_str}")
+            print(f"End datetime: {end_datetime_str}")
+            
+            # Get platform and location
+            platform = data.get('platform', 'In Person')
             location = data.get('location', '')
+            
             final_location, final_platform = combine_platform_location(platform, location)
             
             event_data = {
                 'title': data.get('title'),
                 'description': data.get('description', ''),
-                'start_time': data.get('start_time'),
-                'end_time': data.get('end_time'),
+                'start_time': start_datetime_str,
+                'end_time': end_datetime_str,
                 'location': final_location,
                 'platform': final_platform,
                 'attendees': data.get('attendees', ''),
                 'duration_minutes': duration_minutes,
-                'is_all_day': data.get('is_all_day', 'false').lower() == 'true'
+                'is_all_day': is_all_day
             }
+            
+            print(f"Event data to be saved: {event_data}")
+            print(f"=== END DEBUG ===")
             
             event_id = create_calendar_event(connection, session['user_id'], event_data)
             
@@ -449,13 +562,15 @@ def create_event():
             
         except Exception as e:
             print(f"Error creating event: {e}")
+            import traceback
+            traceback.print_exc()
             if request.is_json or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'error': f'Error creating event: {str(e)}'}), 500
             
             flash(f'Error creating event: {str(e)}', 'error')
             return redirect(url_for('calendar.dashboard'))
     
-    return render_template('create_event.html')
+    return render_template('create_event.html', datetime=datetime)
 
 @calendar_bp.route('/auth/google')
 def auth_google():
@@ -596,40 +711,40 @@ def parse_platform_and_location(location_field, platform_field):
     """Parse platform and location from stored data"""
     platforms = ['Microsoft Teams', 'Zoom', 'Google Meet', 'Phone Call']
     
-    # If platform field exists, use it
-    if platform_field:
-        if platform_field == 'In Person':
-            return 'In Person', location_field
-        elif platform_field in platforms:
+    # Ensure both fields are strings
+    location_field = str(location_field) if location_field else ''
+    platform_field = str(platform_field) if platform_field else ''
+    
+    # If platform field exists and is valid, use it
+    if platform_field and platform_field != 'None':
+        if platform_field in platforms:
             return platform_field, location_field
+        elif platform_field == 'In Person':
+            return 'In Person', location_field
         else:
+            # Platform is "Other" or custom value
             return 'Other', platform_field + (' - ' + location_field if location_field else '')
     
-    # Check if location contains platform info
+    # Check if location contains platform info (legacy format)
     if location_field:
-        location_lower = location_field.lower()
-        if 'teams' in location_lower or 'microsoft teams' in location_lower:
-            return 'Microsoft Teams', location_field
-        elif 'zoom' in location_lower:
-            return 'Zoom', location_field
-        elif 'google meet' in location_lower or 'meet.google' in location_lower:
-            return 'Google Meet', location_field
-        elif any(word in location_lower for word in ['phone', 'call', 'dial']):
-            return 'Phone Call', location_field
-        elif any(word in location_lower for word in ['http', 'www', '.com', '.org']):
-            return 'Other', location_field
-        else:
-            return 'In Person', location_field
+        for platform in platforms:
+            if platform in location_field:
+                # Extract just the meeting link/location
+                location_clean = location_field.replace(platform + ': ', '').strip()
+                return platform, location_clean
+        
+        # If no platform found in location, assume In Person
+        return 'In Person', location_field
     
     return 'In Person', ''
 
 def combine_platform_location(platform, location):
     """Combine platform and location for storage"""
     if platform == 'In Person':
-        return location, platform
+        return location, 'In Person'
     elif platform in ['Microsoft Teams', 'Zoom', 'Google Meet', 'Phone Call']:
         return location, platform
     elif platform == 'Other':
         return location, 'Other'
     else:
-        return location, 'In Person'
+        return location, platform

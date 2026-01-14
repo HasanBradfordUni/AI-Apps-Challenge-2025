@@ -694,3 +694,739 @@ window.addEventListener('error', function(e) {
 window.addEventListener('unhandledrejection', function(e) {
     console.error('[ERROR] Unhandled promise rejection:', e.reason);
 });
+
+// Global variables
+let currentMode = 'general';
+let suggestedAppId = null;
+let chatHistory = [];
+
+// Get data from window object (passed from HTML template)
+const PROMPT_MODES = window.PROMPT_MODES || {};
+const AVAILABLE_APPS = window.AVAILABLE_APPS || {};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Chatbot initialized');
+    
+    // Load chat history from localStorage
+    loadChatHistory();
+    
+    // Setup Enter key to send message
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+    
+    // Update mode description
+    updateModeDescription();
+});
+
+// Change prompt mode - FIXED
+function changeMode() {
+    const modeSelect = document.getElementById('promptMode');
+    currentMode = modeSelect.value;
+    updateModeDescription();
+    
+    // Add system message about mode change
+    const mode = PROMPT_MODES[currentMode];
+    if (mode) {
+        addSystemMessage(`Switched to ${mode.name} mode`);
+    }
+}
+
+// Update mode description - FIXED
+function updateModeDescription() {
+    const modeDesc = document.getElementById('modeDescription');
+    const mode = PROMPT_MODES[currentMode];
+    
+    if (modeDesc && mode) {
+        modeDesc.textContent = mode.description;
+    }
+}
+
+// Send message to chatbot
+async function sendMessage() {
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message) {
+        showNotification('Please enter a message', 'warning');
+        return;
+    }
+    
+    // Add user message to chat
+    addMessage('user', message);
+    
+    // Clear input
+    messageInput.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    // Disable send button
+    const sendButton = document.getElementById('sendButton');
+    sendButton.disabled = true;
+    
+    try {
+        const response = await fetch('/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: message,
+                mode: currentMode
+            })
+        });
+        
+        const data = await response.json();
+        
+        // Remove typing indicator
+        removeTypingIndicator();
+        
+        if (data.error) {
+            addMessage('error', data.error);
+            showNotification('Error: ' + data.error, 'error');
+        } else {
+            // Add bot response
+            addMessage('bot', data.response);
+            
+            // Check for app suggestion
+            if (data.app_suggestion) {
+                showAppSuggestion(data.app_suggestion);
+            }
+            
+            // Save to history
+            saveChatHistory();
+        }
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        removeTypingIndicator();
+        addMessage('error', 'Failed to send message. Please try again.');
+        showNotification('Connection error', 'error');
+    } finally {
+        // Re-enable send button
+        sendButton.disabled = false;
+        messageInput.focus();
+    }
+}
+
+// Quick message
+function quickMessage(text) {
+    const messageInput = document.getElementById('messageInput');
+    messageInput.value = text;
+    sendMessage();
+}
+
+// Add message to chat
+function addMessage(type, content) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    
+    let icon = '🤖';
+    let sender = 'AI Assistant';
+    
+    if (type === 'user') {
+        icon = '👤';
+        sender = 'You';
+    } else if (type === 'error') {
+        icon = '⚠️';
+        sender = 'System';
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <strong>${icon} ${sender}:</strong>
+            <p>${formatMessage(content)}</p>
+        </div>
+        <div class="message-time">${time}</div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Add to history
+    chatHistory.push({
+        type: type,
+        content: content,
+        timestamp: now.toISOString()
+    });
+}
+
+// Add system message
+function addSystemMessage(content) {
+    const chatMessages = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message system-message';
+    messageDiv.style.textAlign = 'center';
+    messageDiv.style.color = '#FFD700';
+    messageDiv.style.fontStyle = 'italic';
+    messageDiv.style.padding = '10px';
+    
+    messageDiv.innerHTML = `<p>ℹ️ ${content}</p>`;
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Format message (handle markdown-like formatting)
+function formatMessage(content) {
+    // Convert **bold** to <strong>
+    content = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert *italic* to <em>
+    content = content.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    
+    // Convert line breaks
+    content = content.replace(/\n/g, '<br>');
+    
+    // Convert URLs to links
+    content = content.replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank" style="color: #FFD700;">$1</a>'
+    );
+    
+    return content;
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+    const chatMessages = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'message bot-message';
+    typingDiv.innerHTML = `
+        <div class="message-content">
+            <div class="typing-indicator">
+                <strong>🤖 AI Assistant is typing</strong>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Remove typing indicator
+function removeTypingIndicator() {
+    const typingIndicator = document.getElementById('typingIndicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+}
+
+// Show app suggestion
+function showAppSuggestion(suggestion) {
+    const modal = document.getElementById('appSuggestionModal');
+    const suggestedAppDiv = document.getElementById('suggestedApp');
+    
+    suggestedAppId = suggestion.app_id;
+    
+    suggestedAppDiv.innerHTML = `
+        <h4>${suggestion.app_name}</h4>
+        <p>${suggestion.description}</p>
+        <p style="margin-top: 10px;">
+            <strong>Confidence:</strong> ${Math.round(suggestion.confidence * 100)}%
+        </p>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+// Suggest app (from sidebar) - FIXED
+function suggestApp(appId) {
+    const app = AVAILABLE_APPS[appId];
+    
+    if (app) {
+        showAppSuggestion({
+            app_id: appId,
+            app_name: app.name,
+            description: app.description,
+            confidence: 1.0
+        });
+    }
+}
+
+// Go to app
+function goToApp() {
+    if (suggestedAppId) {
+        // Open app interface based on app_id
+        openAppInterface(suggestedAppId);
+        closeModal();
+    }
+}
+
+// Continue chat
+function continueChat() {
+    closeModal();
+    document.getElementById('messageInput').focus();
+}
+
+// Close modal
+function closeModal() {
+    document.getElementById('appSuggestionModal').style.display = 'none';
+    suggestedAppId = null;
+}
+
+// Open app interface - FIXED
+async function openAppInterface(appId) {
+    const app = AVAILABLE_APPS[appId];
+    
+    if (!app) return;
+    
+    // Create modal for app interface
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.id = 'appInterfaceModal';
+    modal.style.display = 'flex';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>${app.icon} ${app.name}</h3>
+                <button onclick="closeAppInterface()" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="appInterfaceBody">
+                ${getAppInterface(appId)}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// Get app interface HTML
+function getAppInterface(appId) {
+    const interfaces = {
+        'document_search': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Search Query</label>
+                    <input type="text" id="searchQuery" class="form-control" placeholder="Enter search query...">
+                </div>
+                <div class="form-group">
+                    <label>Directory</label>
+                    <input type="text" id="searchDirectory" class="form-control" value="default">
+                </div>
+                <button onclick="executeDocumentSearch()" class="primary-btn">Search</button>
+                <div id="searchResults" class="results-area"></div>
+            </div>
+        `,
+        'cover_letter_writer': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>CV/Resume Text</label>
+                    <textarea id="cvText" rows="5" class="form-control" placeholder="Paste your CV text..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Job Description</label>
+                    <textarea id="jobDescription" rows="5" class="form-control" placeholder="Paste job description..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tone</label>
+                    <select id="toneSelect" class="form-control">
+                        <option value="professional">Professional</option>
+                        <option value="friendly">Friendly</option>
+                        <option value="formal">Formal</option>
+                    </select>
+                </div>
+                <button onclick="generateCoverLetter()" class="primary-btn">Generate Cover Letter</button>
+                <div id="coverLetterResult" class="results-area"></div>
+            </div>
+        `,
+        'work_hours_calculator': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Contracted Hours</label>
+                    <input type="number" id="contractedHours" class="form-control" placeholder="e.g., 40">
+                </div>
+                <div class="form-group">
+                    <label>Time Frame</label>
+                    <select id="timeFrame" class="form-control">
+                        <option value="week">Per Week</option>
+                        <option value="month">Per Month</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Work Description</label>
+                    <textarea id="workDescription" rows="4" class="form-control" placeholder="Describe your work hours..."></textarea>
+                </div>
+                <button onclick="calculateWorkHours()" class="primary-btn">Calculate</button>
+                <div id="workHoursResult" class="results-area"></div>
+            </div>
+        `,
+        'coding_assistant': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Code</label>
+                    <textarea id="codeInput" rows="10" class="form-control" placeholder="Paste your code here..." style="font-family: monospace;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Language</label>
+                    <select id="languageSelect" class="form-control">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="java">Java</option>
+                        <option value="csharp">C#</option>
+                        <option value="cpp">C++</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Request Type</label>
+                    <select id="requestType" class="form-control">
+                        <option value="suggestion">Code Suggestions</option>
+                        <option value="explain">Explain Code</option>
+                        <option value="documentation">Generate Documentation</option>
+                        <option value="quality_analysis">Quality Analysis</option>
+                        <option value="test_cases">Generate Tests</option>
+                    </select>
+                </div>
+                <button onclick="getCodeAssistance()" class="primary-btn">Get Assistance</button>
+                <div id="codeAssistanceResult" class="results-area"></div>
+            </div>
+        `
+    };
+    
+    return interfaces[appId] || '<p>App interface not yet implemented. Please use the main chat to interact with this feature.</p>';
+}
+
+// Close app interface
+function closeAppInterface() {
+    const modal = document.getElementById('appInterfaceModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// API Functions
+
+// Document Search
+async function executeDocumentSearch() {
+    const query = document.getElementById('searchQuery').value;
+    const directory = document.getElementById('searchDirectory').value;
+    const resultsDiv = document.getElementById('searchResults');
+    
+    if (!query) {
+        showNotification('Please enter a search query', 'warning');
+        return;
+    }
+    
+    resultsDiv.innerHTML = '<div class="spinner"></div> Searching...';
+    
+    try {
+        const response = await fetch('/api/search-documents', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, directory })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultsDiv.innerHTML = `
+                <h4>Search Results:</h4>
+                <div class="results-list">${formatSearchResults(data.results)}</div>
+                <h4 style="margin-top: 20px;">AI Summary:</h4>
+                <div class="ai-summary">${data.ai_summary}</div>
+            `;
+            showNotification('Search completed successfully', 'success');
+        } else {
+            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
+            showNotification(data.error, 'error');
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
+        showNotification('Search failed', 'error');
+    }
+}
+
+// Format search results
+function formatSearchResults(results) {
+    if (!results || results.length === 0) {
+        return '<p>No results found</p>';
+    }
+    
+    return results.map(result => `
+        <div class="result-item" style="padding: 10px; margin: 10px 0; background: rgba(255,255,255,0.1); border-radius: 5px;">
+            <strong>${result.filename || result.title || 'Document'}</strong>
+            <p>${result.content || result.excerpt || 'No preview available'}</p>
+        </div>
+    `).join('');
+}
+
+// Generate Cover Letter
+async function generateCoverLetter() {
+    const cvText = document.getElementById('cvText').value;
+    const jobDescription = document.getElementById('jobDescription').value;
+    const tone = document.getElementById('toneSelect').value;
+    const resultsDiv = document.getElementById('coverLetterResult');
+    
+    if (!cvText || !jobDescription) {
+        showNotification('Please fill in both CV text and job description', 'warning');
+        return;
+    }
+    
+    resultsDiv.innerHTML = '<div class="spinner"></div> Generating cover letter...';
+    
+    try {
+        const response = await fetch('/api/generate-cover-letter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cv_text: cvText, job_description: jobDescription, tone })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const escapedLetter = escapeHtml(data.cover_letter);
+            resultsDiv.innerHTML = `
+                <h4>Generated Cover Letter:</h4>
+                <div class="cover-letter-content" style="white-space: pre-wrap; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                    ${data.cover_letter}
+                </div>
+                <button onclick="copyToClipboard(\`${escapedLetter}\`)" class="secondary-btn" style="margin-top: 10px;">
+                    📋 Copy to Clipboard
+                </button>
+            `;
+            showNotification('Cover letter generated successfully', 'success');
+        } else {
+            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
+            showNotification(data.error, 'error');
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
+        showNotification('Generation failed', 'error');
+    }
+}
+
+// Calculate Work Hours
+async function calculateWorkHours() {
+    const contractedHours = document.getElementById('contractedHours').value;
+    const timeFrame = document.getElementById('timeFrame').value;
+    const workDescription = document.getElementById('workDescription').value;
+    const resultsDiv = document.getElementById('workHoursResult');
+    
+    resultsDiv.innerHTML = '<div class="spinner"></div> Calculating...';
+    
+    try {
+        const response = await fetch('/api/calculate-hours', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contracted_hours: contractedHours,
+                time_frame: timeFrame,
+                work_hours_description: workDescription
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultsDiv.innerHTML = `
+                <h4>Analysis:</h4>
+                <div class="summary-content" style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                    ${data.summary}
+                </div>
+            `;
+            showNotification('Calculation completed', 'success');
+        } else {
+            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
+            showNotification(data.error, 'error');
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
+        showNotification('Calculation failed', 'error');
+    }
+}
+
+// Get Code Assistance
+async function getCodeAssistance() {
+    const code = document.getElementById('codeInput').value;
+    const language = document.getElementById('languageSelect').value;
+    const requestType = document.getElementById('requestType').value;
+    const resultsDiv = document.getElementById('codeAssistanceResult');
+    
+    if (!code) {
+        showNotification('Please enter some code', 'warning');
+        return;
+    }
+    
+    resultsDiv.innerHTML = '<div class="spinner"></div> Analyzing code...';
+    
+    try {
+        const response = await fetch('/api/code-assistance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code: code,
+                language: language,
+                request_type: requestType
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            resultsDiv.innerHTML = `
+                <h4>Assistance (${data.assistance_type}):</h4>
+                <div class="code-assistance-content" style="white-space: pre-wrap; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px; font-family: monospace;">
+                    ${escapeHtml(data.assistance)}
+                </div>
+            `;
+            showNotification('Analysis completed', 'success');
+        } else {
+            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
+            showNotification(data.error, 'error');
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
+        showNotification('Analysis failed', 'error');
+    }
+}
+
+// Chat actions
+function clearChat() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        chatHistory = [];
+        localStorage.removeItem('chatHistory');
+        
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = `
+            <div class="message bot-message">
+                <div class="message-content">
+                    <strong>🤖 AI Assistant:</strong>
+                    <p>Chat cleared. How can I help you today?</p>
+                </div>
+                <div class="message-time">${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+            </div>
+        `;
+        
+        showNotification('Chat history cleared', 'success');
+    }
+}
+
+function exportChat() {
+    if (chatHistory.length === 0) {
+        showNotification('No chat history to export', 'warning');
+        return;
+    }
+    
+    const exportData = {
+        exported_at: new Date().toISOString(),
+        mode: currentMode,
+        messages: chatHistory
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chat-export-${Date.now()}.json`;
+    a.click();
+    
+    showNotification('Chat exported successfully', 'success');
+}
+
+function showHelp() {
+    const helpMessage = `
+        <h4>How to use the AI Chatbot Hub:</h4>
+        <ul style="text-align: left;">
+            <li>Select a prompt mode from the dropdown to change the AI's behavior</li>
+            <li>Type your message and press Enter or click the send button</li>
+            <li>Click on Quick Apps to access specific AI tools</li>
+            <li>Use quick suggestions for common queries</li>
+            <li>The AI will suggest relevant apps based on your questions</li>
+        </ul>
+    `;
+    
+    addMessage('bot', helpMessage);
+}
+
+// Helper functions
+function saveChatHistory() {
+    try {
+        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+    } catch (e) {
+        console.error('Failed to save chat history:', e);
+    }
+}
+
+function loadChatHistory() {
+    try {
+        const saved = localStorage.getItem('chatHistory');
+        if (saved) {
+            chatHistory = JSON.parse(saved);
+        }
+    } catch (e) {
+        console.error('Failed to load chat history:', e);
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Add CSS for form controls and app interfaces
+const appInterfaceStyle = document.createElement('style');
+appInterfaceStyle.textContent = `
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #fff;
+        margin-bottom: 15px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #FFD700;
+        font-weight: bold;
+    }
+    .results-area {
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(0,0,0,0.3);
+        border-radius: 8px;
+        min-height: 100px;
+    }
+    .app-interface {
+        color: #fff;
+    }
+    .spinner {
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top: 3px solid #FFD700;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(appInterfaceStyle);

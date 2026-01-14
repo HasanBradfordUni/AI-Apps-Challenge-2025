@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <<title>Has AI - AI Calendar and Scheduling System (Calendar View)</title>
+    <title>Has AI - AI Calendar and Scheduling System (Calendar View)</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/hasAi.css') }}">
     <link rel="icon" href="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png">
@@ -63,58 +63,188 @@
 
             <!-- Calendar Grid -->
             <div class="calendar-grid">
-                <!-- Day Headers -->
-                <div class="calendar-header">Sun</div>
+                <!-- Day Headers - Monday to Sunday -->
                 <div class="calendar-header">Mon</div>
                 <div class="calendar-header">Tue</div>
                 <div class="calendar-header">Wed</div>
                 <div class="calendar-header">Thu</div>
                 <div class="calendar-header">Fri</div>
                 <div class="calendar-header">Sat</div>
+                <div class="calendar-header">Sun</div>
 
-                <!-- Calendar Days -->
-                {% set today = current_month %}
-                {% set start_of_month = today.replace(day=1) %}
-                {% set start_of_calendar = start_of_month - (start_of_month.weekday() + 1) * timedelta(days=1) %}
-                
-                {% if calendar_days %}
-                    {% for day in calendar_days %}
-                        <div class="calendar-day {{ 'other-month' if not day.is_current_month else '' }} {{ 'today' if day.is_today else '' }}" 
-                             data-date="{{ day.date_string }}">
-                            <div class="day-number">{{ day.day_number }}</div>
-                            <div class="day-events">
-                                {% for event in events %}
-                                    {% if event[4][:10] == day.date_string %}
-                                        <div class="day-event" data-event-id="{{ event[0] }}" title="Click to edit">
-                                            {% if event[2]|length > 15 %}
-                                                {{ event[2][:15] }}...
-                                            {% else %}
-                                                {{ event[2] }}
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
+                <!-- Calendar Days - 6 rows of 7 days = 42 days -->
+                {% for day in calendar_days %}
+                    <div class="calendar-day 
+                                {% if not day.is_current_month %}other-month{% endif %} 
+                                {% if day.is_today %}today{% endif %}" 
+                         data-date="{{ day.date_string }}">
+                        <div class="day-number">{{ day.day_number }}</div>
+                        <div class="day-events">
+                            {% for event in day.events %}
+                                <div class="day-event" 
+                                     data-event-id="{{ event.id }}" 
+                                     onclick='editEvent("{{ event.id }}")'
+                                     title="{{ event.title }} - {{ event.start_time.split(' ')[1][:5] if event.start_time else 'TBD' }}">
+                                    {{ event.title[:20] }}{% if event.title|length > 20 %}...{% endif %}
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
-                {% endif %}
+                    </div>
+                {% endfor %}
             </div>
 
             <!-- Create Event Form -->
             <div class="create-event-section">
                 <h3 class="subHeading">Create New Event</h3>
-                <form action="{{ url_for('calendar.create_event') }}" method="POST" class="event-form">
-                    <input type="text" name="title" placeholder="Event Title" class="form-input" required>
-                    <textarea name="description" placeholder="Description" class="form-textarea" rows="3"></textarea>
-                    <input type="datetime-local" name="start_time" class="form-input" required>
-                    <input type="datetime-local" name="end_time" class="form-input" required>
-                    <input type="text" name="location" placeholder="Location" class="form-input">
-                    <input type="text" name="attendees" placeholder="Attendees (comma-separated emails)" class="form-input">
-                    <button type="submit" class="submit-btn">Create Event</button>
+                <form method="POST" action="{{ url_for('calendar.create_event') }}" class="event-form">
+                    <div class="form-group">
+                        <label for="title">Event Title *</label>
+                        <input type="text" id="title" name="title" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" class="form-textarea" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="date">Date *</label>
+                            <input type="date" id="date" name="date" class="form-input" required 
+                                   value="{{ datetime.now().strftime('%Y-%m-%d') }}">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="start_time">Start Time *</label>
+                            <input type="time" id="start_time" name="start_time" class="form-input" required value="09:00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="duration">Duration *</label>
+                            <select id="duration" name="duration" class="form-input" required>
+                                <option value="15m">15 minutes</option>
+                                <option value="30m">30 minutes</option>
+                                <option value="45m">45 minutes</option>
+                                <option value="1h" selected>1 hour</option>
+                                <option value="1h30m">1.5 hours</option>
+                                <option value="2h">2 hours</option>
+                                <option value="3h">3 hours</option>
+                                <option value="4h">4 hours</option>
+                                <option value="All Day">All Day</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="platform">Select Platform</label>
+                        <select id="platform" name="platform" class="form-input">
+                            <option value="In Person" selected>In Person</option>
+                            <option value="Microsoft Teams">Microsoft Teams</option>
+                            <option value="Zoom">Zoom</option>
+                            <option value="Google Meet">Google Meet</option>
+                            <option value="Phone Call">Phone Call</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="location">Location/Meeting Link</label>
+                        <input type="text" id="location" name="location" class="form-input"
+                               placeholder="Enter location or meeting link">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="attendees">Attendees</label>
+                        <input type="text" id="attendees" name="attendees" class="form-input"
+                               placeholder="Comma-separated names or emails">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Event</button>
+                        <a href="{{ url_for('calendar.dashboard') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
                 </form>
             </div>
         </div>
     </section>
+
+    <!-- Edit Event Modal -->
+    <div id="editEventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✏️ Edit Event</h2>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editEventForm" class="event-form">
+                <input type="hidden" id="edit_event_id" name="event_id">
+                
+                <div class="form-group">
+                    <label for="edit_title">Event Title *</label>
+                    <input type="text" id="edit_title" name="title" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_description">Description</label>
+                    <textarea id="edit_description" name="description" class="form-textarea" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="edit_date">Date *</label>
+                        <input type="date" id="edit_date" name="date" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_start_time">Start Time *</label>
+                        <input type="time" id="edit_start_time" name="start_time" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="edit_duration">Duration *</label>
+                        <select id="edit_duration" name="duration" class="form-input" required>
+                            <option value="15m">15 minutes</option>
+                            <option value="30m">30 minutes</option>
+                            <option value="45m">45 minutes</option>
+                            <option value="1h">1 hour</option>
+                            <option value="1h30m">1.5 hours</option>
+                            <option value="2h">2 hours</option>
+                            <option value="3h">3 hours</option>
+                            <option value="4h">4 hours</option>
+                            <option value="All Day">All Day</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_platform">Select Platform</label>
+                    <select id="edit_platform" name="platform" class="form-input">
+                        <option value="In Person">In Person</option>
+                        <option value="Microsoft Teams">Microsoft Teams</option>
+                        <option value="Zoom">Zoom</option>
+                        <option value="Google Meet">Google Meet</option>
+                        <option value="Phone Call">Phone Call</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_location">Location/Meeting Link</label>
+                    <input type="text" id="edit_location" name="location" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="edit_attendees">Attendees</label>
+                    <input type="text" id="edit_attendees" name="attendees" class="form-input">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" onclick="deleteEventFromModal()" class="btn btn-danger">Delete</button>
+                    <button type="button" onclick="closeEditModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <footer>
         <div class="footer">

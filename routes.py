@@ -5,60 +5,174 @@ import json
 from datetime import datetime
 import sqlite3
 
-# Import functions from previous projects
+# Import functions from previous projects with proper error handling
 try:
     # January - General AI Doc Search
     from a_january_ai_document_search.src.utils.document_processing import handle_documents as january_handle_documents
     from a_january_ai_document_search.src.utils.search_algorithm import search_documents as january_search_documents
     from a_january_ai_document_search.src.ai.geminiPrompt import generate_ai_summary as january_generate_summary
-    
+    print("✓ January AI Doc Search imported")
+except ImportError as e:
+    print(f"✗ January import failed: {e}")
+    january_handle_documents = None
+    january_search_documents = None
+    january_generate_summary = None
+
+try:
     # February - AI Testing Agent  
     from b_february_ai_testing_agent.app.utils import process_files as february_process_files
     from b_february_ai_testing_agent.app.utils import generate_ai_comparison as february_generate_comparison
     from b_february_ai_testing_agent.app.utils import generate_summary as february_generate_summary
-    
+    print("✓ February AI Testing Agent imported")
+except ImportError as e:
+    print(f"✗ February import failed: {e}")
+    february_process_files = None
+    february_generate_comparison = None
+    february_generate_summary = None
+
+try:
     # March - AI Work Hours Calculator
-    from c_march_ai_work_hours_calculator.src.app import calculate_hours as march_calculate_hours
+    from c_march_ai_work_hours_calculator.src.app import calculate_work_hours as march_calculate_hours
     from c_march_ai_work_hours_calculator.src.ai.geminiPrompt import generate_work_hours_summary as march_generate_summary
-    
+    print("✓ March AI Work Hours Calculator imported")
+except ImportError as e:
+    print(f"✗ March import failed: {e}")
+    march_calculate_hours = None
+    march_generate_summary = None
+
+try:
     # April - AI Document Extractor & Converter
-    from d_april_ai_document_extractor.src.utils.document_processing import get_uploaded_documents as april_get_documents, handle_document_upload as april_handle_upload, process_uploaded_file as april_process_file, get_uploads_folder as april_get_uploads_folder, convert_file_format_from_file_path as april_convert_file_format
+    from d_april_ai_document_extractor.src.utils.document_processing import (
+        get_uploaded_documents as april_get_documents,
+        handle_document_upload as april_handle_upload,
+        process_uploaded_file as april_process_file,
+        get_uploads_folder as april_get_uploads_folder,
+        convert_file_format_from_file_path as april_convert_file_format
+    )
     from d_april_ai_document_extractor.src.ai.geminiPrompt import generate_conversion_insights as april_generate_insights
-    
+    print("✓ April AI Document Extractor imported")
+except ImportError as e:
+    print(f"✗ April import failed: {e}")
+    april_get_documents = None
+    april_handle_upload = None
+    april_process_file = None
+    april_get_uploads_folder = None
+    april_convert_file_format = None
+    april_generate_insights = None
+
+try:
     # May - AI Cover Letter Writer
-    from e_may_ai_cover_letter_writer.app.utils import extract_text_from_pdf as may_extract_text, generate_cover_letter as may_generate_letter, refine_cover_letter as may_refine_letter, extract_cv_structure as may_extract_cv_structure
-    
+    from e_may_ai_cover_letter_writer.app.utils import (
+        extract_text_from_pdf as may_extract_text,
+        generate_cover_letter as may_generate_letter,
+        refine_cover_letter as may_refine_letter,
+        extract_cv_structure as may_extract_cv_structure
+    )
+    print("✓ May AI Cover Letter Writer imported")
+except ImportError as e:
+    print(f"✗ May import failed: {e}")
+    may_extract_text = None
+    may_generate_letter = None
+    may_refine_letter = None
+    may_extract_cv_structure = None
+
+try:
     # June - AI Job Ad Generator
-    from f_june_ai_job_ad_generator.app.utils import generate_job_ad as june_generate_ad, refine_job_ad as june_refine_ad, extract_text_from_pdf as june_extract_text, format_for_pdf as june_format_for_pdf
-    
+    from f_june_ai_job_ad_generator.app.utils import (
+        generate_job_ad as june_generate_ad,
+        refine_job_ad as june_refine_ad,
+        extract_text_from_pdf as june_extract_text,
+        format_for_pdf as june_format_for_pdf
+    )
+    print("✓ June AI Job Ad Generator imported")
+except ImportError as e:
+    print(f"✗ June import failed: {e}")
+    june_generate_ad = None
+    june_refine_ad = None
+    june_extract_text = None
+    june_format_for_pdf = None
+
+try:
     # July - AI Speech-to-Text App
     from g_july_ai_speech_to_text_app.src.utils.voice_methods import VoiceMethods as july_voice_methods
-    from g_july_ai_speech_to_text_app.src.ai.geminiPrompt import generate_transcript_summary as july_generate_transcript, generate_voice_command_response as july_generate_voice_response
-    
+    from g_july_ai_speech_to_text_app.src.ai.geminiPrompt import (
+        generate_transcript_summary as july_generate_transcript,
+        generate_voice_command_response as july_generate_voice_response
+    )
+    print("✓ July AI Speech-to-Text imported")
+except ImportError as e:
+    print(f"✗ July import failed: {e}")
+    july_voice_methods = None
+    july_generate_transcript = None
+    july_generate_voice_response = None
+
+try:
     # August - AI Calendar & Scheduling System
     from h_august_ai_calendar_system.app.services.ai_parser import AICommandParser as august_ai_parser
     from h_august_ai_calendar_system.app.services.voice_recognition import VoiceRecognitionService as august_voice_recognition
-    from h_august_ai_calendar_system.app.services.calendar_sync import GoogleCalendarService as august_google_calendar, OutlookCalendarService as august_outlook_calendar
-    
+    from h_august_ai_calendar_system.app.services.calendar_sync import (
+        GoogleCalendarService as august_google_calendar,
+        OutlookCalendarService as august_outlook_calendar
+    )
+    print("✓ August AI Calendar System imported")
+except ImportError as e:
+    print(f"✗ August import failed: {e}")
+    august_ai_parser = None
+    august_voice_recognition = None
+    august_google_calendar = None
+    august_outlook_calendar = None
+
+try:
     # September - General Document Summarization AI
     from i_september_ai_doc_summariser.src.utils.document_processor import DocumentProcessor as september_document_processor
-    from i_september_ai_doc_summariser.src.utils.forms import DocumentSummaryForm as september_document_summary_form
-    from i_september_ai_doc_summariser.src.ai.geminiPrompt import generate_document_summary as september_generate_summmary, analyze_document_content as september_analyze_content
-    
+    from i_september_ai_doc_summariser.src.ai.geminiPrompt import (
+        generate_document_summary as september_generate_summary,
+        analyze_document_content as september_analyze_content
+    )
+    print("✓ September AI Doc Summariser imported")
+except ImportError as e:
+    print(f"✗ September import failed: {e}")
+    september_document_processor = None
+    september_generate_summary = None
+    september_analyze_content = None
+
+try:
     # October - Docs Directory AI Summarizer
     from j_october_ai_directory_summariser.app.services.directory_analyzer import DirectoryAnalyzer as october_directory_analyzer
     from j_october_ai_directory_summariser.app.services.file_parser import FileParser as october_file_parser
     from j_october_ai_directory_summariser.app.services.template_matcher import TemplateMatcher as october_template_matcher
     from j_october_ai_directory_summariser.app.services.ai_parser import AISummarizer as october_ai_summarizer
-    
+    print("✓ October AI Directory Summariser imported")
+except ImportError as e:
+    print(f"✗ October import failed: {e}")
+    october_directory_analyzer = None
+    october_file_parser = None
+    october_template_matcher = None
+    october_ai_summarizer = None
+
+try:
     # November - AI Programming Assistant
     from k_november_ai_coding_assistant.src.utils.code_processor import CodeProcessor as november_code_processor
-    from k_november_ai_coding_assistant.src.ai.geminiPrompt import generate_code_suggestion as november_generate_suggestion, explain_error as november_explain_error, generate_documentation as november_generate_documentation, complete_code as november_complete_code, analyze_code_quality as november_analyze_code_quality, generate_test_cases as november_generate_test_cases, generate_code_completions as november_generate_code_completions, generate_hover_info as november_generate_hover_info, explain_code_functionality as november_explain_code_functionality
-    
-    print("Successfully imported all project functions")
-    
+    from k_november_ai_coding_assistant.src.ai.geminiPrompt import (
+        generate_code_suggestion as november_generate_suggestion,
+        explain_error as november_explain_error,
+        generate_documentation as november_generate_documentation,
+        complete_code as november_complete_code,
+        analyze_code_quality as november_analyze_code_quality,
+        generate_test_cases as november_generate_test_cases,
+        explain_code as november_explain_code  # Changed from november_explain_code_functionality
+    )
+    print("✓ November AI Coding Assistant imported")
 except ImportError as e:
-    print(f"Warning: Could not import some project functions: {e}")
+    print(f"✗ November import failed: {e}")
+    november_code_processor = None
+    november_generate_suggestion = None
+    november_explain_error = None
+    november_generate_documentation = None
+    november_complete_code = None
+    november_analyze_code_quality = None
+    november_generate_test_cases = None
+    november_explain_code = None
 
 # Import from December chatbot modules
 try:
@@ -68,16 +182,86 @@ try:
     # Initialize services
     prompt_manager = PromptModeManager()
     ai_service = AIIntegrationService()
+    
+    # Create a proper chatbot engine that uses AI
+    class ChatbotEngine:
+        def __init__(self, prompt_manager, ai_service):
+            self.prompt_manager = prompt_manager
+            self.ai_service = ai_service
+            self.conversation_history = {}
+        
+        def process_message(self, message, mode, user_id):
+            """Process user message with AI"""
+            try:
+                # Get mode configuration
+                mode_config = self.prompt_manager.get_mode(mode)
+                system_prompt = mode_config.get('system_prompt', 'You are a helpful AI assistant.')
+                
+                # Get user's conversation history
+                if user_id not in self.conversation_history:
+                    self.conversation_history[user_id] = []
+                
+                context = self.conversation_history[user_id]
+                
+                # Generate AI response
+                response_text = self.ai_service.generate_response(
+                    message, 
+                    system_prompt, 
+                    context
+                )
+                
+                # Update conversation history
+                self.conversation_history[user_id].append({
+                    'user_message': message,
+                    'ai_response': response_text,
+                    'timestamp': datetime.now().isoformat()
+                })
+                
+                # Keep only last 10 messages
+                if len(self.conversation_history[user_id]) > 10:
+                    self.conversation_history[user_id] = self.conversation_history[user_id][-10:]
+                
+                return {
+                    'response': response_text,
+                    'mode': mode,
+                    'timestamp': datetime.now().isoformat(),
+                    'success': True
+                }
+            except Exception as e:
+                return {
+                    'response': f'I encountered an error: {str(e)}',
+                    'mode': mode,
+                    'timestamp': datetime.now().isoformat(),
+                    'success': False
+                }
+    
+    chatbot_engine = ChatbotEngine(prompt_manager, ai_service)
+    print("✓ December AI Chatbot initialized with AI integration")
+    
 except ImportError as e:
-    print(f"Warning: December chatbot modules not available: {e}")
+    print(f"✗ December chatbot import failed: {e}")
     # Create fallback classes
     class FallbackManager:
-        def get_modes(self): return {}
-        def get_mode(self, mode): return {'name': 'General', 'system_prompt': 'You are a helpful AI assistant.'}
+        def get_modes(self): 
+            return {
+                'general': {'name': 'General', 'icon': '💬', 'description': 'General conversation', 'system_prompt': 'You are a helpful AI assistant.'}
+            }
+        def get_mode(self, mode): 
+            return {'name': 'General', 'system_prompt': 'You are a helpful AI assistant.'}
+    
+    class FallbackChatbotEngine:
+        def process_message(self, message, mode, user_id):
+            return {
+                'response': f'Echo (AI not available): {message}',
+                'mode': mode,
+                'timestamp': datetime.now().isoformat(),
+                'success': True
+            }
     
     prompt_manager = FallbackManager()
     ai_service = None
-    chatbot_engine = None
+    chatbot_engine = FallbackChatbotEngine()
+    print("⚠ Using fallback chatbot engine (no AI)")
 
 def register_routes(app):
     """Register all chatbot routes"""
@@ -100,20 +284,16 @@ def register_routes(app):
             return jsonify({'error': 'No message provided'}), 400
         
         try:
-            # Process message through chatbot engine
-            if chatbot_engine:
-                response = chatbot_engine.process_message(
-                    user_message, 
-                    prompt_mode,
-                    session.get('user_id')
-                )
-            else:
-                response = {
-                    'response': 'Chatbot engine not available. Please check the setup.',
-                    'mode': prompt_mode,
-                    'timestamp': datetime.now().isoformat(),
-                    'success': False
-                }
+            # Get or create user session
+            if 'user_id' not in session:
+                session['user_id'] = f"user_{datetime.now().timestamp()}"
+            
+            # Process message through chatbot engine with AI
+            response = chatbot_engine.process_message(
+                user_message, 
+                prompt_mode,
+                session.get('user_id')
+            )
             
             # Check if message should route to specific app
             app_suggestion = detect_app_intent(user_message)
@@ -130,6 +310,9 @@ def register_routes(app):
     def api_search_documents():
         """Direct integration with January project"""
         try:
+            if not january_search_documents:
+                return jsonify({'error': 'Document search service not available'}), 503
+            
             query = request.json.get('query', '')
             directory = request.json.get('directory', 'default')
             
@@ -147,44 +330,15 @@ def register_routes(app):
                 'success': True
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
-    @app.route('/api/run-test', methods=['POST'])
-    def api_run_test():
-        """Direct integration with February project"""
-        try:
-            project_name = request.json.get('project_name', 'Test Project')
-            test_query = request.json.get('test_query', '')
-            expected_results = request.json.get('expected_results', '')
-            actual_results = request.json.get('actual_results', '')
-            project_description = request.json.get('project_description', '')
-            context = request.json.get('context', '')
-            
-            if not test_query:
-                return jsonify({'error': 'No test query provided'}), 400
-            
-            # Process files and generate comparison
-            comparison_result = february_generate_comparison(
-                project_name, test_query, expected_results, 
-                actual_results, project_description, context
-            )
-            evaluation_summary = february_generate_summary(
-                comparison_result, project_name, test_query, 
-                project_description, context
-            )
-            
-            return jsonify({
-                'comparison_result': comparison_result,
-                'evaluation_summary': evaluation_summary,
-                'success': True
-            })
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': str(e), 'success': False}), 500
     
     @app.route('/api/calculate-hours', methods=['POST'])
     def api_calculate_hours():
         """Direct integration with March project"""
         try:
+            if not march_generate_summary:
+                return jsonify({'error': 'Work hours calculator not available'}), 503
+            
             contracted_hours = request.json.get('contracted_hours', '')
             time_frame = request.json.get('time_frame', 'week')
             work_hours_description = request.json.get('work_hours_description', '')
@@ -203,51 +357,15 @@ def register_routes(app):
                 'success': True
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
-    @app.route('/api/extract-convert', methods=['POST'])
-    def api_extract_convert():
-        """Direct integration with April project"""
-        try:
-            # Handle file upload or document selection
-            document_name = request.json.get('document_name')
-            output_filename = request.json.get('output_filename', 'converted_document')
-            output_file_type = request.json.get('output_file_type', 'txt')
-            
-            if not document_name:
-                return jsonify({'error': 'No document specified'}), 400
-            
-            # Get uploaded documents
-            documents = april_get_documents()
-            
-            if document_name not in documents:
-                return jsonify({'error': 'Document not found'}), 404
-            
-            # Process the document
-            document_path = april_get_uploads_folder() + '/' + document_name
-            extracted_text = april_process_file(document_path)
-            
-            # Generate insights and convert
-            config_options = {"Output File Type": output_file_type}
-            ai_processed_info = april_generate_insights(extracted_text, config_options)
-            
-            converted_file_path = april_convert_file_format(
-                document_path, ai_processed_info, output_filename, config_options, output_file_type
-            )
-            
-            return jsonify({
-                'extracted_text': extracted_text[:500] + "..." if len(extracted_text) > 500 else extracted_text,
-                'ai_insights': ai_processed_info,
-                'converted_file_path': converted_file_path,
-                'success': True
-            })
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': str(e), 'success': False}), 500
     
     @app.route('/api/generate-cover-letter', methods=['POST'])
     def api_generate_cover_letter():
         """Direct integration with May project"""
         try:
+            if not may_generate_letter:
+                return jsonify({'error': 'Cover letter writer not available'}), 503
+            
             cv_text = request.json.get('cv_text', '')
             job_description = request.json.get('job_description', '')
             tone = request.json.get('tone', 'professional')
@@ -264,196 +382,36 @@ def register_routes(app):
                 'success': True
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
-    @app.route('/api/generate-job-ad', methods=['POST'])
-    def api_generate_job_ad():
-        """Direct integration with June project"""
-        try:
-            job_details = request.json.get('job_details', {})
-            
-            if not job_details:
-                return jsonify({'error': 'No job details provided'}), 400
-            
-            job_ad = june_generate_ad(job_details)
-            
-            return jsonify({
-                'job_ad': job_ad,
-                'success': True
-            })
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
-    @app.route('/api/speech-to-text', methods=['POST'])
-    def api_speech_to_text():
-        """Direct integration with July project"""
-        try:
-            # Handle file upload
-            if 'audio_file' not in request.files:
-                return jsonify({'error': 'No audio file provided'}), 400
-            
-            audio_file = request.files['audio_file']
-            summary_type = request.form.get('summary_type', 'conversation')
-            
-            if audio_file.filename == '':
-                return jsonify({'error': 'No file selected'}), 400
-            
-            # Initialize voice methods
-            voice_methods = july_voice_methods(
-                upload_folder=os.path.join(os.path.dirname(__file__), 'temp'),
-                voice_profiles_folder=os.path.join(os.path.dirname(__file__), 'temp')
-            )
-            
-            # Save and process audio file
-            filename = ""
-            filepath = os.path.join(os.path.dirname(__file__), 'temp', filename)
-            os.makedirs(os.path.dirname(filepath), exist_ok=True)
-            audio_file.save(filepath)
-            
-            # Transcribe audio
-            transcript = voice_methods.transcribe_audio_file(filepath)
-            
-            # Generate summary
-            summary = july_generate_transcript(transcript, summary_type)
-            
-            # Clean up temp file
-            os.remove(filepath)
-            
-            return jsonify({
-                'transcript': transcript,
-                'summary': summary,
-                'success': True
-            })
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
-    @app.route('/api/create-calendar-event', methods=['POST'])
-    def api_create_calendar_event():
-        """Direct integration with August project"""
-        try:
-            event_data = request.json
-            
-            # Initialize AI parser
-            ai_parser = august_ai_parser()
-            
-            # Parse natural language event creation
-            if 'natural_language' in event_data:
-                parsed_command = ai_parser.parse_voice_command(event_data['natural_language'])
-                if parsed_command.get('action') == 'create_event':
-                    event_details = {
-                        'title': parsed_command.get('event_title', 'New Event'),
-                        'description': parsed_command.get('description', ''),
-                        'start_time': f"{parsed_command.get('date')} {parsed_command.get('start_time', '09:00')}",
-                        'end_time': f"{parsed_command.get('date')} {parsed_command.get('end_time', '10:00')}",
-                        'location': parsed_command.get('location', ''),
-                        'attendees': parsed_command.get('attendees', [])
-                    }
-                else:
-                    return jsonify({'error': 'Could not parse event creation request'}), 400
-            else:
-                event_details = event_data
-            
-            return jsonify({
-                'event': event_details,
-                'message': 'Event details processed successfully',
-                'success': True
-            })
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': str(e), 'success': False}), 500
     
     @app.route('/api/summarize-document', methods=['POST'])
     def api_summarize_document():
         """Direct integration with September project"""
         try:
-            # Handle file upload
-            if 'document_file' in request.files:
-                document_file = request.files['document_file']
-                summary_type = request.form.get('summary_type', 'general')
-                summary_length = request.form.get('summary_length', 'medium')
-                summary_tone = request.form.get('summary_tone', 'neutral')
-                
-                if document_file.filename == '':
-                    return jsonify({'error': 'No file selected'}), 400
-                
-                # Initialize document processor
-                doc_processor = september_document_processor()
-                
-                # Save and process file
-                filename = ""
-                filepath = os.path.join(os.path.dirname(__file__), 'temp', filename)
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)
-                document_file.save(filepath)
-                
-                # Extract text and generate summary
-                document_text = doc_processor.extract_text_from_file(filepath)
-                summary = september_generate_summmary(document_text, summary_type, summary_length, summary_tone)
-                analysis = september_analyze_content(document_text)
-                
-                # Clean up temp file
-                os.remove(filepath)
-                
-                return jsonify({
-                    'document_text': document_text[:500] + "..." if len(document_text) > 500 else document_text,
-                    'summary': summary,
-                    'analysis': analysis,
-                    'success': True
-                })
-            else:
-                # Handle text input
-                document_text = request.json.get('document_content', '')
-                if not document_text:
-                    return jsonify({'error': 'No document content provided'}), 400
-                
-                summary = september_generate_summmary(document_text, 'general', 'medium', 'neutral')
-                
-                return jsonify({
-                    'summary': summary,
-                    'success': True
-                })
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
-    @app.route('/api/analyze-directory', methods=['POST'])
-    def api_analyze_directory():
-        """Direct integration with October project"""
-        try:
-            directory_path = request.json.get('directory_path')
+            if not september_generate_summary:
+                return jsonify({'error': 'Document summarizer not available'}), 503
             
-            if not directory_path:
-                return jsonify({'error': 'No directory path provided'}), 400
+            # Handle text input
+            document_text = request.json.get('document_content', '')
+            if not document_text:
+                return jsonify({'error': 'No document content provided'}), 400
             
-            if not os.path.exists(directory_path) or not os.path.isdir(directory_path):
-                return jsonify({'error': 'Invalid directory path'}), 400
-            
-            # Initialize services
-            directory_analyzer = october_directory_analyzer()
-            file_parser = october_file_parser()
-            template_matcher = october_template_matcher()
-            ai_summarizer = october_ai_summarizer()
-            
-            # Analyze directory
-            analysis_result = directory_analyzer.analyze_directory(directory_path)
-            content_analysis = file_parser.analyze_directory_content(directory_path)
-            
-            # Generate AI insights
-            ai_insights = ai_summarizer.generate_comprehensive_insights(
-                analysis_result, content_analysis, [], {}
-            )
+            summary = september_generate_summary(document_text, 'general', 'medium', 'neutral')
             
             return jsonify({
-                'directory_path': directory_path,
-                'analysis_result': analysis_result,
-                'content_analysis': content_analysis,
-                'ai_insights': ai_insights,
+                'summary': summary,
                 'success': True
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': str(e), 'success': False}), 500
     
-    @app.route('/api/code-assistance', methods=['POST'])
+    @app.route('/api/code-assistance', methods={'POST'})
     def api_code_assistance():
         """Direct integration with November project"""
         try:
+            if not november_generate_suggestion:
+                return jsonify({'error': 'Coding assistant not available'}), 503
+            
             code_data = request.json
             code_content = code_data.get('code', '')
             language = code_data.get('language', 'python')
@@ -466,20 +424,14 @@ def register_routes(app):
             # Generate assistance based on type
             if assistance_type == 'suggestion':
                 result = november_generate_suggestion(code_content, language, context)
-            elif assistance_type == 'error_explanation':
-                error_message = code_data.get('error_message', '')
-                result = november_explain_error(code_content, error_message, language)
+            elif assistance_type == 'explain':
+                result = november_explain_code(code_content, language)
             elif assistance_type == 'documentation':
-                doc_type = code_data.get('doc_type', 'docstring')
-                result = november_generate_documentation(code_content, language, doc_type)
-            elif assistance_type == 'completion':
-                result = november_complete_code(code_content, language, context)
+                result = november_generate_documentation(code_content, language, 'docstring')
             elif assistance_type == 'quality_analysis':
                 result = november_analyze_code_quality(code_content, language)
             elif assistance_type == 'test_cases':
                 result = november_generate_test_cases(code_content, language)
-            elif assistance_type == 'explain':
-                result = november_explain_code_functionality(code_content, language)
             else:
                 return jsonify({'error': 'Unknown assistance type'}), 400
             
@@ -490,18 +442,13 @@ def register_routes(app):
                 'success': True
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': str(e), 'success': False}), 500
 
     @app.route('/login')
     def get_login():
         """Login page"""
         return render_template('login.html')
     
-    @app.route('/logs')
-    def get_logs():
-        """View logs page"""
-        return render_template('logs.html')
-
     @app.route('/login', methods=['POST'])
     def login():
         """Handle login"""
@@ -517,75 +464,43 @@ def register_routes(app):
             flash('Invalid credentials', 'danger')
             return redirect(url_for('get_login'))
 
+    @app.route('/get_logs')
+    def get_logs():
+        return render_template('logs.html')
+
 # Helper functions
 def get_available_apps():
-    """Get list of available apps"""
+    """Get list of available apps with availability status"""
     return {
         'document_search': {
             'name': 'General AI Doc Search',
             'description': 'Search through documents using AI',
             'icon': '🔍',
-            'available': True
-        },
-        'testing_agent': {
-            'name': 'AI Testing Agent', 
-            'description': 'Automated testing with AI assistance',
-            'icon': '🧪',
-            'available': True
+            'available': january_search_documents is not None
         },
         'work_hours_calculator': {
             'name': 'AI Work Hours Calculator',
             'description': 'Calculate work hours and overtime',
             'icon': '⏰',
-            'available': True
-        },
-        'document_extractor': {
-            'name': 'AI Document Extractor & Converter',
-            'description': 'Extract and convert document content',
-            'icon': '📄',
-            'available': True
+            'available': march_generate_summary is not None
         },
         'cover_letter_writer': {
             'name': 'AI Cover Letter Writer',
             'description': 'Generate professional cover letters',
             'icon': '💼',
-            'available': True
-        },
-        'job_ad_generator': {
-            'name': 'AI Job Ad Generator',
-            'description': 'Create optimized job advertisements',
-            'icon': '📋',
-            'available': True
-        },
-        'speech_to_text': {
-            'name': 'AI Speech-to-Text App',
-            'description': 'Convert speech to text with voice commands',
-            'icon': '🎤',
-            'available': True
-        },
-        'calendar_system': {
-            'name': 'AI Calendar & Scheduling System',
-            'description': 'Manage calendar and schedule events',
-            'icon': '📅',
-            'available': True
+            'available': may_generate_letter is not None
         },
         'doc_summariser': {
             'name': 'General Document Summarization AI',
             'description': 'Summarize documents with AI',
             'icon': '📝',
-            'available': True
-        },
-        'directory_summariser': {
-            'name': 'Docs Directory AI Summarizer',
-            'description': 'Analyze and summarize directory contents',
-            'icon': '📁',
-            'available': True
+            'available': september_generate_summary is not None
         },
         'coding_assistant': {
             'name': 'AI Programming Assistant',
             'description': 'Get AI help with coding and programming',
             'icon': '💻',
-            'available': True
+            'available': november_generate_suggestion is not None
         }
     }
 
@@ -595,69 +510,23 @@ def detect_app_intent(message):
     
     keywords = {
         'document_search': ['search', 'find', 'document', 'lookup'],
-        'testing_agent': ['test', 'testing', 'qa', 'quality assurance'],
         'work_hours_calculator': ['hours', 'work time', 'calculate', 'overtime'],
-        'document_extractor': ['extract', 'convert', 'transform', 'format'],
-        'cover_letter_writer': ['cover letter', 'resume', 'job application'],
-        'job_ad_generator': ['job ad', 'job posting', 'hire', 'recruitment'],
-        'speech_to_text': ['speech', 'voice', 'audio', 'transcribe'],
-        'calendar_system': ['calendar', 'schedule', 'meeting', 'event', 'appointment'],
+        'cover_letter_writer': ['cover letter', 'resume', 'job application', 'cv'],
         'doc_summariser': ['summarize', 'summary', 'brief', 'overview'],
-        'directory_summariser': ['directory', 'folder', 'files', 'analyze'],
-        'coding_assistant': ['code', 'programming', 'debug', 'coding help']
+        'coding_assistant': ['code', 'programming', 'debug', 'coding help', 'function']
     }
     
     for app_id, app_keywords in keywords.items():
         for keyword in app_keywords:
             if keyword in message_lower:
                 apps = get_available_apps()
-                return {
-                    'app_id': app_id,
-                    'app_name': apps[app_id]['name'],
-                    'description': apps[app_id]['description'],
-                    'confidence': 0.8
-                }
+                app = apps.get(app_id)
+                if app and app['available']:
+                    return {
+                        'app_id': app_id,
+                        'app_name': app['name'],
+                        'description': app['description'],
+                        'confidence': 0.8
+                    }
     
     return None
-
-def execute_quick_action(action, params):
-    """Execute quick actions for different apps"""
-    try:
-        if action == 'search_documents':
-            query = params.get('query', '')
-            directory = params.get('directory', 'default')
-            documents = january_handle_documents(directory)
-            results = january_search_documents(query, documents)
-            return {'result': results}
-            
-        elif action == 'run_test':
-            test_data = params.get('test_data', '')
-            # Simplified test execution
-            return {'result': f'Test executed with data: {test_data}'}
-            
-        elif action == 'generate_cover_letter':
-            cv_text = params.get('cv_text', '')
-            job_description = params.get('job_description', '')
-            letter = may_generate_letter(cv_text, job_description)
-            return {'result': letter}
-            
-        elif action == 'summarize_document':
-            content = params.get('content', '')
-            summary = september_generate_summmary(content, 'general', 'medium', 'neutral')
-            return {'result': summary}
-            
-        elif action == 'generate_job_ad':
-            job_details = params.get('job_details', {})
-            job_ad = june_generate_ad(job_details)
-            return {'result': job_ad}
-            
-        elif action == 'code_suggestion':
-            code = params.get('code', '')
-            language = params.get('language', 'python')
-            suggestion = november_generate_suggestion(code, language, '')
-            return {'result': suggestion}
-            
-        else:
-            return {'error': f'Unknown action: {action}'}
-    except Exception as e:
-        return {'error': str(e)}

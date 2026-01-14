@@ -5,6 +5,13 @@
 {% block header_title %}General AI Chatbot Hub - Home{% endblock %}
 
 {% block content %}
+<!-- Pass data from Flask to JavaScript -->
+<script type="text/javascript">
+    // Make Flask data available to JavaScript
+    window.PROMPT_MODES = JSON.parse(`{{ prompt_modes | tojson | safe | replace("'", "\\'") }}`);
+    window.AVAILABLE_APPS = JSON.parse(`{{ available_apps | tojson | safe | replace("'", "\\'") }}`);
+</script>
+
 <!-- Sidebar -->
 <div class="sidebar">
     <div class="mode-selector">
@@ -100,5 +107,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/chatbot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 {% endblock %}
