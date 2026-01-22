@@ -6,11 +6,6 @@ from google.genai import Client
 class AIIntegrationService:
     """Integration with Google Generative AI"""
     
-    def __init__(self):
-        self.client = None
-        self.model_name = "gemini-2.0-flash"
-        self._initialize_client()
-    
     def _initialize_client(self):
         """Initialize Google GenAI client"""
         try:
@@ -20,34 +15,45 @@ class AIIntegrationService:
             print(f"Warning: AI service not available: {e}")
             self.client = None
     
-    def generate_response(self, user_message, system_prompt, context=None):
-        """Generate AI response to user message"""
+    def generate_response(self, user_message, system_prompt, conversation_history=None, available_apps=None):
+        """Generate AI response with app context"""
         if not self.client:
-            return "I apologize, but AI services are currently unavailable."
+            return "AI service is currently unavailable."
         
         try:
-            # Build conversation context
-            full_prompt = system_prompt + "\n\n"
+            # Build context with available apps
+            context_parts = [system_prompt]
             
-            if context:
-                full_prompt += "Recent conversation:\n"
-                for msg in context[-5:]:  # Last 5 messages for context
-                    full_prompt += f"User: {msg['user_message']}\n"
-                    full_prompt += f"Assistant: {msg['ai_response']}\n"
-                full_prompt += "\n"
+            if available_apps:
+                apps_info = "\n\nAvailable Applications:\n"
+                for app_id, app_info in available_apps.items():
+                    if app_info['available']:
+                        apps_info += f"- {app_info['name']}: {app_info['description']}\n"
+                context_parts.append(apps_info)
             
-            full_prompt += f"User: {user_message}\nAssistant:"
+            # Add conversation history
+            if conversation_history:
+                history_text = "\n\nPrevious Conversation:\n"
+                for msg in conversation_history[-5:]:  # Last 5 messages
+                    history_text += f"User: {msg['user_message']}\n"
+                    history_text += f"Assistant: {msg['ai_response']}\n"
+                context_parts.append(history_text)
             
-            # Generate response
+            # Add current user message
+            context_parts.append(f"\n\nUser: {user_message}\nAssistant:")
+            
+            full_prompt = "".join(context_parts)
+            
             response = self.client.models.generate_content(
                 model=self.model_name,
-                contents=[full_prompt]
+                contents=full_prompt
             )
             
-            return response.text.strip()
+            return response.text
             
         except Exception as e:
-            return f"I encountered an error while processing your request: {str(e)}"
+            print(f"Error generating AI response: {e}")
+            return f"I encountered an error: {str(e)}"
     
     def analyze_intent(self, message):
         """Analyze user intent from message"""

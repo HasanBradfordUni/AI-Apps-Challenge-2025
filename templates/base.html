@@ -19,11 +19,11 @@
       {% block navigation %}
       <div>
         <ul class="nav">
-          <li><a href="{{ url_for('chatbot_home') }}" class="nav" {% if request.endpoint == 'chatbot_home' %}id="currentPage"{% endif %}>Chat</a></li>
-          <li><a href="{{ url_for('get_login') }}" class="nav" {% if request.endpoint == 'get_login' %}id="currentPage"{% endif %}>Login</a></li>
-          <li><a href="{{ url_for('get_logs') }}" class="nav" {% if request.endpoint == 'get_logs' %}id="currentPage"{% endif %}>View Logs</a></li>
-          {% if session.username %}
-          <li><a href="{{ url_for('logout') }}" class="nav">Logout ({{ session.username }})</a></li>
+          <li><a href="{{ url_for('chatbot_home') }}" class="nav" {% if request.endpoint == 'chatbot_home' %}id="currentPage"{% endif %}>🏠 Chat</a></li>
+          <li><a href="{{ url_for('get_login') }}" class="nav" {% if request.endpoint == 'get_login' %}id="currentPage"{% endif %}>🔐 Login</a></li>
+          <li><a href="{{ url_for('get_logs') }}" class="nav" {% if request.endpoint == 'get_logs' or request.endpoint == 'search_logs' %}id="currentPage"{% endif %}>📋 View Logs</a></li>
+          {% if session.get('user_id') %}
+          <li><span class="nav" style="color: #FFD700;">👤 {{ session.user_id }}</span></li>
           {% endif %}
         </ul>
       </div>
@@ -33,9 +33,20 @@
     <section class="mainBody">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            <span class="flash-icon">
+                                {% if category == 'success' %}✅
+                                {% elif category == 'error' or category == 'danger' %}❌
+                                {% elif category == 'warning' %}⚠️
+                                {% else %}ℹ️{% endif %}
+                            </span>
+                            <span class="flash-text">{{ message }}</span>
+                            <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
             {% endif %}
         {% endwith %}
 
@@ -131,3 +142,78 @@
     {% block scripts %}{% endblock %}
 </body>
 </html>
+
+<style>
+.flash-messages {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+}
+
+.flash-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.flash-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+}
+
+.flash-error, .flash-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.flash-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+    color: #212529;
+}
+
+.flash-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.flash-icon {
+    font-size: 20px;
+}
+
+.flash-text {
+    flex: 1;
+}
+
+.flash-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: inherit;
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.flash-close:hover {
+    background: rgba(255,255,255,0.3);
+}
+</style>

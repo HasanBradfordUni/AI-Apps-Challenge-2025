@@ -6,6 +6,7 @@ from datetime import datetime
 from utils.document_processor import DocumentProcessor
 from utils.forms import DocumentSummaryForm
 from ai.geminiPrompt import generate_document_summary, analyze_document_content
+import markdown
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -25,6 +26,14 @@ doc_processor = DocumentProcessor()
 document_sessions = {}
 current_document = ""
 current_summary = ""
+
+# Register markdown filter
+@app.template_filter('markdown')
+def markdown_filter(text):
+    """Convert markdown text to HTML"""
+    if not text:
+        return ""
+    return markdown.markdown(text, extensions=['extra', 'codehilite'])
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -293,10 +302,22 @@ def export_summary_direct(session_id, export_format):
         
         if session_id not in document_sessions:
             print(f"Session {session_id} not found in {list(document_sessions.keys())}")
-            return jsonify({'error': 'Session not found'}), 404
+            return jsonify({'error': 'Session not found. Please upload a document first.'}), 404
         
         session_data = document_sessions[session_id]
         print(f"Session data found: {session_data.keys()}")
+        
+        # Validate export format
+        if export_format not in ['txt', 'json', 'pdf']:
+            return jsonify({'error': f'Invalid export format: {export_format}'}), 400
+        
+        # Check if document text exists
+        if not session_data.get('document_text'):
+            return jsonify({'error': 'No document text available in this session'}), 400
+        
+        # Check if summary exists
+        if not session_data.get('summary'):
+            return jsonify({'error': 'No summary available in this session'}), 400
         
         file_path = doc_processor.export_summary(
             session_data['document_text'],
@@ -311,24 +332,31 @@ def export_summary_direct(session_id, export_format):
         
         if not os.path.exists(file_path):
             print(f"File not found at: {file_path}")
-            return jsonify({'error': 'Export file was not created successfully'}), 500
+            return jsonify({'error': 'Export file was not created successfully. Check server logs for details.'}), 500
         
         print(f"File size: {os.path.getsize(file_path)} bytes")
         filename = os.path.basename(file_path)
         print(f"Sending file: {filename}")
         
+        # Set correct mimetype based on format
+        mimetypes = {
+            'txt': 'text/plain',
+            'json': 'application/json',
+            'pdf': 'application/pdf'
+        }
+        
         return send_file(
             file_path, 
             as_attachment=True,
             download_name=filename,
-            mimetype='application/octet-stream'
+            mimetype=mimetypes.get(export_format, 'application/octet-stream')
         )
     
     except Exception as e:
         print(f"Export error details: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Export failed: {str(e)}'}), 500
 
 @app.route('/api/get-sessions', methods=['GET'])
 def get_sessions():
@@ -387,6 +415,48 @@ def get_document_stats():
         'summary_type_distribution': summary_types,
         'average_words_per_document': total_words / total_documents if total_documents > 0 else 0
     })
+
+@app.route('/api/download-session/<session_id>', methods=['GET'])
+def download_session(session_id):
+    """Download complete session data as JSON"""
+    try:
+        if session_id not in document_sessions:
+            return jsonify({'error': 'Session not found'}), 404
+        
+        session_data = document_sessions[session_id]
+        
+        # Create JSON file
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"session_{session_id}_{timestamp}.json"
+        filepath = os.path.join(app.config['SUMMARIES_FOLDER'], filename)
+        
+        # Prepare session data for export
+        export_data = {
+            'session_id': session_id,
+            'filename': session_data.get('filename', 'unknown'),
+            'timestamp': session_data.get('timestamp', ''),
+            'summary_settings': session_data.get('summary_settings', {}),
+            'document_text': session_data.get('document_text', ''),
+            'summary': session_data.get('summary', ''),
+            'word_count': session_data.get('word_count', 0),
+            'file_size_mb': session_data.get('file_size_mb', 0)
+        }
+        
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(export_data, f, indent=2, ensure_ascii=False)
+        
+        return send_file(
+            filepath,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/json'
+        )
+    
+    except Exception as e:
+        print(f"Download session error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='localhost', port=6922, debug=True)

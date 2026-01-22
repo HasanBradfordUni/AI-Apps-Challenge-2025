@@ -1,0 +1,23 @@
+Log file created: 2026-01-15T16:10:50.111320
+
+[2026-01-15 16:12:58] Error:
+500 error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+
+[2026-01-15 16:12:58] Error:
+404 error: http://localhost:6922/favicon.ico
+
+[2026-01-15 16:21:39] Error:
+Error loading logs page: Object of type Undefined is not JSON serializable
+
+[2026-01-15 16:22:15] Error:
+Error loading logs page: Object of type Undefined is not JSON serializable
+
+[2026-01-15 16:28:46] Error:
+Error loading logs page: Object of type Undefined is not JSON serializable
+
+[2026-01-18 23:32:51] Error:
+Error loading logs page: object of type 'NoneType' has no len()
+
+[2026-01-18 23:32:59] Error:
+Error loading logs page: object of type 'NoneType' has no len()
+

@@ -484,3 +484,96 @@ input[type="submit"]:disabled {
     cursor: not-allowed !important;
     opacity: 0.6 !important;
 }
+
+.ai-result-text {
+    color: black;
+    font-size: 18px;
+    text-align: left;
+}
+
+.ai-result-text h1, .ai-result-text h2, .ai-result-text h3 {
+    color: rebeccapurple;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.ai-result-text p {
+    margin-bottom: 15px;
+    line-height: 1.6;
+}
+
+.ai-result-text ul, .ai-result-text ol {
+    margin: 0 0 15px 0;
+    padding-left: 30px;
+}
+
+.ai-result-text li {
+    margin-bottom: 8px;
+}
+
+.ai-result-text strong {
+    color: black;
+    font-weight: bold;
+}
+
+.ai-result-text em {
+    font-style: italic;
+}
+
+.ai-result-text code {
+    background-color: #333;
+    color: crimson;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.ai-result-text pre {
+    background-color: #1e1e1e;
+    color: goldenrod;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+
+/* Floating Header Styles */
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background-color: goldenrod;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    transform: translateY(0);
+    opacity: 1;
+}
+
+header.scrolled {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+header.scrolled:hover,
+header.scrolled.show-on-hover {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Add padding to body to account for fixed header */
+body {
+    padding-top: 120px; /* Adjust based on your header height */
+}
+
+/* Smooth scrolling for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Section padding for proper anchor positioning */
+section[id] {
+    scroll-margin-top: 140px; /* Adjust based on header height */
+}

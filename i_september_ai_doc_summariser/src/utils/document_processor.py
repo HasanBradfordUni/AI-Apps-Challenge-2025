@@ -184,65 +184,137 @@ class DocumentProcessor:
         
         return sections
     
-    def export_summary(self, document_text, summary, format_type, session_id, summary_settings=None):
-        """Export summary to file"""
+    def export_summary(self, document_text, summary, format_type, session_id, settings=None):
+        """Export summary to specified format"""
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             
-            # Use the Flask app's configured summaries folder
-            summaries_dir = os.path.join(os.getcwd(), "summaries")
-            
-            # Make sure the directory exists
-            os.makedirs(summaries_dir, exist_ok=True)
-            
             if format_type == 'txt':
                 filename = f"summary_{session_id}_{timestamp}.txt"
-                filepath = os.path.join(summaries_dir, filename)
+                filepath = os.path.join(self.summaries_folder, filename)
                 
                 with open(filepath, 'w', encoding='utf-8') as f:
-                    f.write(f"Document Summary - {session_id}\n")
+                    f.write(f"Document Summary\n")
+                    f.write(f"{'=' * 50}\n\n")
                     f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    if summary_settings:
-                        f.write(f"Summary Type: {summary_settings.get('type', 'N/A')}\n")
-                        f.write(f"Summary Length: {summary_settings.get('length', 'N/A')}\n")
-                        f.write(f"Summary Tone: {summary_settings.get('tone', 'N/A')}\n")
-                    f.write("=" * 50 + "\n\n")
-                    f.write("SUMMARY:\n")
-                    f.write(summary if summary else "No summary available")
-                    f.write("\n\n" + "=" * 50 + "\n\n")
-                    f.write("ORIGINAL DOCUMENT:\n")
-                    f.write(document_text if document_text else "No document text available")
+                    f.write(f"Session ID: {session_id}\n\n")
+                    
+                    if settings:
+                        f.write(f"Summary Settings:\n")
+                        f.write(f"- Type: {settings.get('type', 'N/A')}\n")
+                        f.write(f"- Length: {settings.get('length', 'N/A')}\n")
+                        f.write(f"- Tone: {settings.get('tone', 'N/A')}\n\n")
+                    
+                    f.write(f"Summary:\n")
+                    f.write(f"{'-' * 50}\n")
+                    f.write(summary)
+                    f.write(f"\n\n{'=' * 50}\n")
+                    f.write(f"Original Document Length: {len(document_text)} characters\n")
+                    f.write(f"Summary Length: {len(summary)} characters\n")
+                
+                return filepath
             
             elif format_type == 'json':
                 filename = f"summary_{session_id}_{timestamp}.json"
-                filepath = os.path.join(summaries_dir, filename)
+                filepath = os.path.join(self.summaries_folder, filename)
                 
-                data = {
+                export_data = {
                     'session_id': session_id,
                     'timestamp': datetime.now().isoformat(),
-                    'summary': summary if summary else "",
-                    'document_text': document_text if document_text else "",
-                    'summary_settings': summary_settings or {},
-                    'export_format': format_type,
-                    'word_count': len(document_text.split()) if document_text else 0,
-                    'character_count': len(document_text) if document_text else 0
+                    'summary': summary,
+                    'document_length': len(document_text),
+                    'summary_length': len(summary),
+                    'settings': settings or {}
                 }
                 
                 with open(filepath, 'w', encoding='utf-8') as f:
-                    json.dump(data, f, indent=2, ensure_ascii=False)
-        
+                    json.dump(export_data, f, indent=2, ensure_ascii=False)
+                
+                return filepath
+            
+            elif format_type == 'pdf':
+                try:
+                    from reportlab.lib.pagesizes import letter
+                    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+                    from reportlab.lib.units import inch
+                    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak
+                    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+                except ImportError:
+                    # If reportlab is not installed, create a simple text file instead
+                    print("Warning: reportlab not installed. Creating TXT file instead of PDF.")
+                    return self.export_summary(document_text, summary, 'txt', session_id, settings)
+                
+                filename = f"summary_{session_id}_{timestamp}.pdf"
+                filepath = os.path.join(self.summaries_folder, filename)
+                
+                # Create PDF
+                doc = SimpleDocTemplate(filepath, pagesize=letter)
+                story = []
+                styles = getSampleStyleSheet()
+                
+                # Title style
+                title_style = ParagraphStyle(
+                    'CustomTitle',
+                    parent=styles['Heading1'],
+                    fontSize=24,
+                    textColor='darkblue',
+                    spaceAfter=30,
+                    alignment=TA_CENTER
+                )
+                
+                # Add title
+                title = Paragraph("Document Summary", title_style)
+                story.append(title)
+                story.append(Spacer(1, 0.2*inch))
+                
+                # Add metadata
+                metadata_style = styles['Normal']
+                story.append(Paragraph(f"<b>Generated:</b> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", metadata_style))
+                story.append(Paragraph(f"<b>Session ID:</b> {session_id}", metadata_style))
+                story.append(Spacer(1, 0.1*inch))
+                
+                if settings:
+                    story.append(Paragraph(f"<b>Summary Type:</b> {settings.get('type', 'N/A')}", metadata_style))
+                    story.append(Paragraph(f"<b>Length:</b> {settings.get('length', 'N/A')}", metadata_style))
+                    story.append(Paragraph(f"<b>Tone:</b> {settings.get('tone', 'N/A')}", metadata_style))
+                
+                story.append(Spacer(1, 0.3*inch))
+                
+                # Add summary heading
+                summary_heading = Paragraph("<b>Summary:</b>", styles['Heading2'])
+                story.append(summary_heading)
+                story.append(Spacer(1, 0.1*inch))
+                
+                # Add summary content (handle line breaks and formatting)
+                summary_paragraphs = summary.split('\n')
+                for para in summary_paragraphs:
+                    if para.strip():
+                        # Handle markdown-style formatting
+                        para_text = para.replace('**', '<b>').replace('**', '</b>')
+                        para_text = para_text.replace('*', '<i>').replace('*', '</i>')
+                        story.append(Paragraph(para_text, styles['Normal']))
+                        story.append(Spacer(1, 0.1*inch))
+                
+                story.append(Spacer(1, 0.2*inch))
+                
+                # Add statistics
+                story.append(Paragraph(f"<b>Statistics:</b>", styles['Heading3']))
+                story.append(Paragraph(f"Original Document: {len(document_text)} characters", metadata_style))
+                story.append(Paragraph(f"Summary: {len(summary)} characters", metadata_style))
+                story.append(Paragraph(f"Compression Ratio: {(1 - len(summary)/len(document_text))*100:.1f}%", metadata_style))
+                
+                # Build PDF
+                doc.build(story)
+                
+                return filepath
+            
             else:
                 raise Exception(f"Unsupported export format: {format_type}")
-            
-            # Verify file was created and has content
-            if os.path.exists(filepath) and os.path.getsize(filepath) > 0:
-                print(f"Export successful: {filepath}")
-                return filepath
-            else:
-                raise Exception("File was not created successfully or is empty")
-            
+        
         except Exception as e:
-            print(f"Export error details: {str(e)}")
+            print(f"Export error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             raise Exception(f"Error exporting summary: {str(e)}")
     
     def get_file_info(self, file_path):

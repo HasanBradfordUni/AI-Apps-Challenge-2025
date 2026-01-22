@@ -1,42 +1,35 @@
 import os
 import sys
 
-# Debug current working directory and file location
-current_file = os.path.abspath(__file__)
-current_dir = os.path.dirname(current_file)
+# Get the root directory (repository root)
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-print(f"[PATH DEBUG] Current file: {current_file}")
-print(f"[PATH DEBUG] Current directory: {current_dir}")
-print(f"[PATH DEBUG] Working directory: {os.getcwd()}")
-
-# Use current working directory as root (same as your successful test)
-root_dir = os.path.abspath('.')
-print(f"[PATH DEBUG] Using root directory: {root_dir}")
-
-# Check if autoLogger exists
-autologger_path = os.path.join(root_dir, 'autoLogger.py')
-print(f"[PATH DEBUG] Looking for autoLogger at: {autologger_path}")
-print(f"[PATH DEBUG] autoLogger exists: {os.path.exists(autologger_path)}")
-
-if os.path.exists(root_dir):
-    files_in_root = [f for f in os.listdir(root_dir) if f.endswith('.py')]
-    print(f"[PATH DEBUG] Python files in root: {files_in_root}")
-
-# Add to path
+# Add root to path if not already there
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
-    print(f"[PATH DEBUG] Added to sys.path: {root_dir}")
-else:
-    print(f"[PATH DEBUG] Root already in sys.path")
 
 try:
-    # Now import autoLogger
     from autoLogger import general_logger
-    print(f"[PATH DEBUG] ✅ Successfully imported autoLogger from: {root_dir}")
+    print(f"[LOGGER] ✅ Successfully imported autoLogger from: {root_dir}")
 except ImportError as e:
-    print(f"[PATH DEBUG] ❌ Failed to import autoLogger: {e}")
-    print(f"[PATH DEBUG] sys.path contents: {sys.path}")
-    raise
+    print(f"[LOGGER] ❌ Failed to import autoLogger: {e}")
+    # Fallback logger
+    class DummyLogger:
+        def __init__(self, filename):
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            self.file = filename
+        def addToLogs(self, msg): print(f"[LOG] {msg}")
+        def addToErrorLogs(self, msg): print(f"[ERROR] {msg}")
+        def addToInputLogs(self, prompt, msg): print(f"[INPUT] {prompt}: {msg}")
+    general_logger = DummyLogger
 
-# Export it for other modules to use
-__all__ = ['general_logger']
+# Create logs directory in December project
+december_logs_dir = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(december_logs_dir, exist_ok=True)
+
+# Initialize logger for December project
+chatbot_logger = general_logger(os.path.join(december_logs_dir, 'chatbot.txt'))
+api_logger = general_logger(os.path.join(december_logs_dir, 'api_requests.txt'))
+error_logger = general_logger(os.path.join(december_logs_dir, 'errors.txt'))
+
+__all__ = ['chatbot_logger', 'api_logger', 'error_logger', 'general_logger']

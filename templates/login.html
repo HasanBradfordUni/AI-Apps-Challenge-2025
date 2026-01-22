@@ -4,23 +4,55 @@
 
 {% block header_title %}General AI Chatbot Hub - Login{% endblock %}
 
-{% block navigation %}{% endblock %}
-
 {% block content %}
-<h1 class="mainHeading">Welcome to the Has AI General Chatbot Hub, please login or register here.</h1>
+<div class="login-container">
+    <div class="login-box">
+        <div class="login-header">
+            <img src="https://i.postimg.cc/PqP5VwNZ/Has-AI-logo.png" alt="Has AI logo" width="80" height="80" class="login-logo" />
+            <h1 class="login-title">🔐 Login / Register</h1>
+            <p class="login-subtitle">Welcome to the Has AI General Chatbot Hub, please login or register here.</p>
+        </div>
 
-<div class="dashboard-container">
-    <div class="dashboard-card" style="max-width: 400px; margin: 0 auto;">
-        <h3 class="subHeading">🔐 Login / Register</h3>
-        <form action="{{ url_for('login') }}" method="POST" class="email-form">
-            <input type="text" name="username" placeholder="Username" class="email-input" required>
-            <input type="email" name="email" placeholder="Email Address" class="email-input" required>
-            <button type="submit" class="submit-btn">Login / Create Account</button>
+        <form method="POST" action="{{ url_for('login') }}" class="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" 
+                       id="username" 
+                       name="username" 
+                       class="form-control" 
+                       placeholder="Enter username" 
+                       required 
+                       autocomplete="username">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" 
+                       id="email" 
+                       name="email" 
+                       class="form-control" 
+                       placeholder="Enter email" 
+                       required 
+                       autocomplete="email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" 
+                       id="password" 
+                       name="password" 
+                       class="form-control" 
+                       placeholder="Enter password" 
+                       required 
+                       autocomplete="current-password">
+            </div>
+
+            <button type="submit" class="btn-login">Login / Create Account</button>
         </form>
-        
-        <div class="summary-content">
-            <p><strong>New User?</strong> We'll create your account automatically!</p>
-            <p><strong>Your templates and analysis history will be saved.</strong></p>
+
+        <div class="login-footer">
+            <p>By logging in, you agree to our Terms of Service and Privacy Policy</p>
+            <a href="{{ url_for('chatbot_home') }}" class="back-link">← Back to Chat</a>
         </div>
     </div>
 </div>

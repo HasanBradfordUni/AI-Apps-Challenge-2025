@@ -29,24 +29,25 @@
     </div>
 
     <div class="quick-apps">
-        <h3>🚀 Quick Apps</h3>
+        <h3 style="grid-column: 1 / -1;">🚀 Quick Apps</h3>
         {% for app_id, app in available_apps.items() %}
         <div class="quick-app" onclick="suggestApp('{{ app_id }}')">
-            <strong>{{ app.name }}</strong>
+            <strong>{{ app.icon }} {{ app.name }}</strong>
             <p>{{ app.description }}</p>
         </div>
         {% endfor %}
-    </div>
-
-    <div class="chat-actions">
-        <button onclick="clearChat()" class="action-btn">🗑️ Clear Chat</button>
-        <button onclick="exportChat()" class="action-btn">📥 Export</button>
-        <button onclick="showHelp()" class="action-btn">❓ Help</button>
     </div>
 </div>
 
 <!-- Main Chat Area -->
 <div class="main-chat">
+    <!-- Chat Actions moved above chat header -->
+    <div class="chat-actions">
+        <button onclick="clearChat()" class="action-btn">🗑️ Clear Chat</button>
+        <button onclick="exportChat()" class="action-btn">📥 Export</button>
+        <button onclick="showHelp()" class="action-btn">❓ Help</button>
+    </div>
+
     <div class="chat-header">
         <h2 class="mainHeading">General AI Assistant</h2>
         <div class="status-indicator">
@@ -71,11 +72,41 @@
 
     <div class="chat-input-container">
         <div class="chat-input">
+            <!-- File upload button -->
+            <button onclick="openFileUpload()" class="input-action-btn" title="Upload files">
+                📎 <span id="fileCount" style="display:none;"></span>
+            </button>
+            
+            <!-- Voice recording button -->
+            <button onclick="toggleVoiceRecording()" id="voiceBtn" class="input-action-btn" title="Voice input">
+                🎤
+            </button>
+            
             <textarea id="messageInput" placeholder="Type your message here..." rows="2"></textarea>
+            
             <button onclick="sendMessage()" id="sendButton">
                 <span id="sendIcon">📤</span>
             </button>
         </div>
+        
+        <!-- Voice transcript display -->
+        <div id="voiceTranscript" class="voice-transcript" style="display:none;">
+            <div class="transcript-header">
+                <span>🎤 Recording...</span>
+                <button onclick="stopVoiceRecording()" class="stop-recording-btn">Stop</button>
+            </div>
+            <div id="transcriptText" class="transcript-text"></div>
+        </div>
+        
+        <!-- File upload preview -->
+        <div id="fileUploadPreview" class="file-upload-preview" style="display:none;">
+            <div class="preview-header">
+                <span>📎 Attached Files (<span id="uploadedCount">0</span>/10)</span>
+                <span id="totalSize">0 MB / 1024 MB</span>
+            </div>
+            <div id="fileList" class="file-list"></div>
+        </div>
+        
         <div class="quick-suggestions">
             <button onclick="quickMessage('What can you help me with?')" class="suggestion">What can you do?</button>
             <button onclick="quickMessage('Show me available apps')" class="suggestion">Available Apps</button>
@@ -83,6 +114,9 @@
             <button onclick="quickMessage('I need coding help')" class="suggestion">Code Help</button>
         </div>
     </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" multiple accept="*/*" style="display:none;" onchange="handleFileSelection(event)">
 </div>
 
 <!-- App Suggestion Modal -->

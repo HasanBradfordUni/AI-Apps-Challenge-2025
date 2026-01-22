@@ -754,263 +754,524 @@ async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value.trim();
     
-    if (!message) {
-        showNotification('Please enter a message', 'warning');
+    if (!message && uploadedFiles.length === 0) {
+        showNotification('Please enter a message or upload files', 'warning');
         return;
     }
     
-    // Add user message to chat
-    addMessage('user', message);
-    
-    // Clear input
-    messageInput.value = '';
-    
-    // Show typing indicator
-    showTypingIndicator();
-    
-    // Disable send button
-    const sendButton = document.getElementById('sendButton');
-    sendButton.disabled = true;
-    
-    try {
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: message,
-                mode: currentMode
-            })
+    // Create form data if files are present
+    if (uploadedFiles.length > 0) {
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('mode', currentMode);
+        
+        uploadedFiles.forEach((file, index) => {
+            formData.append(`file_${index}`, file);
         });
         
-        const data = await response.json();
+        formData.append('file_count', uploadedFiles.length);
         
-        // Remove typing indicator
-        removeTypingIndicator();
+        // Add message to chat
+        addMessage('user', message + ` [${uploadedFiles.length} file(s) attached]`);
         
-        if (data.error) {
-            addMessage('error', data.error);
-            showNotification('Error: ' + data.error, 'error');
-        } else {
-            // Add bot response
-            addMessage('bot', data.response);
+        // Clear input and files
+        messageInput.value = '';
+        uploadedFiles = [];
+        document.getElementById('fileList').innerHTML = '';
+        updateFilePreview();
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
+        // Disable send button
+        const sendButton = document.getElementById('sendButton');
+        sendButton.disabled = true;
+        
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                body: formData
+            });
             
-            // Check for app suggestion
-            if (data.app_suggestion) {
-                showAppSuggestion(data.app_suggestion);
+            const data = await response.json();
+            
+            removeTypingIndicator();
+            
+            if (data.error) {
+                addMessage('error', data.error);
+                showNotification('Error: ' + data.error, 'error');
+            } else {
+                addMessage('bot', data.response);
+                if (data.app_suggestion) {
+                    showAppSuggestion(data.app_suggestion);
+                }
+                saveChatHistory();
             }
             
-            // Save to history
-            saveChatHistory();
+        } catch (error) {
+            console.error('Error sending message:', error);
+            removeTypingIndicator();
+            addMessage('error', 'Failed to send message. Please try again.');
+            showNotification('Connection error', 'error');
+        } finally {
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+    } else {
+        // Call original sendMessage if no files
+        await originalSendMessage();
+    }
+};
+
+// Voice Recording Variables
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let recognition = null;
+
+// File Upload Variables
+let uploadedFiles = [];
+const MAX_FILES = 10;
+const MAX_TOTAL_SIZE = 1024 * 1024 * 1024; // 1GB in bytes
+
+// Initialize Speech Recognition
+function initSpeechRecognition() {
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        recognition.onresult = function(event) {
+            let interimTranscript = '';
+            let finalTranscript = '';
+            
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript + ' ';
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+            
+            const transcriptDiv = document.getElementById('transcriptText');
+            transcriptDiv.innerHTML = `
+                <div style="color: #fff;">${finalTranscript}</div>
+                <div style="color: #aaa; font-style: italic;">${interimTranscript}</div>
+            `;
+            
+            // Update message input with final transcript
+            if (finalTranscript) {
+                const messageInput = document.getElementById('messageInput');
+                messageInput.value = (messageInput.value + ' ' + finalTranscript).trim();
+            }
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            showNotification('Speech recognition error: ' + event.error, 'error');
+            stopVoiceRecording();
+        };
+    } else {
+        console.warn('Speech recognition not supported');
+    }
+}
+
+// Toggle voice recording
+async function toggleVoiceRecording() {
+    if (isRecording) {
+        stopVoiceRecording();
+    } else {
+        startVoiceRecording();
+    }
+}
+
+// Start voice recording
+async function startVoiceRecording() {
+    try {
+        // Initialize speech recognition if not already done
+        if (!recognition) {
+            initSpeechRecognition();
         }
         
+        if (!recognition) {
+            showNotification('Speech recognition not supported in this browser', 'error');
+            return;
+        }
+        
+        // Start recording
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            // Could upload audio blob to server for processing if needed
+        };
+        
+        mediaRecorder.start();
+        recognition.start();
+        isRecording = true;
+        
+        // Update UI
+        const voiceBtn = document.getElementById('voiceBtn');
+        voiceBtn.innerHTML = '🔴';
+        voiceBtn.title = 'Recording... Click to stop';
+        
+        const transcriptDiv = document.getElementById('voiceTranscript');
+        transcriptDiv.style.display = 'block';
+        
+        showNotification('Voice recording started', 'success');
+        
     } catch (error) {
-        console.error('Error sending message:', error);
-        removeTypingIndicator();
-        addMessage('error', 'Failed to send message. Please try again.');
-        showNotification('Connection error', 'error');
-    } finally {
-        // Re-enable send button
-        sendButton.disabled = false;
-        messageInput.focus();
+        console.error('Error starting voice recording:', error);
+        showNotification('Could not access microphone', 'error');
     }
 }
 
-// Quick message
-function quickMessage(text) {
-    const messageInput = document.getElementById('messageInput');
-    messageInput.value = text;
-    sendMessage();
-}
-
-// Add message to chat
-function addMessage(type, content) {
-    const chatMessages = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${type}-message`;
-    
-    const now = new Date();
-    const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    
-    let icon = '🤖';
-    let sender = 'AI Assistant';
-    
-    if (type === 'user') {
-        icon = '👤';
-        sender = 'You';
-    } else if (type === 'error') {
-        icon = '⚠️';
-        sender = 'System';
+// Stop voice recording
+function stopVoiceRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
     }
     
-    messageDiv.innerHTML = `
-        <div class="message-content">
-            <strong>${icon} ${sender}:</strong>
-            <p>${formatMessage(content)}</p>
+    if (recognition) {
+        recognition.stop();
+    }
+    
+    isRecording = false;
+    
+    // Update UI
+    const voiceBtn = document.getElementById('voiceBtn');
+    voiceBtn.innerHTML = '🎤';
+    voiceBtn.title = 'Voice input';
+    
+    const transcriptDiv = document.getElementById('voiceTranscript');
+    transcriptDiv.style.display = 'none';
+    
+    showNotification('Voice recording stopped', 'info');
+}
+
+// Open file upload dialog
+function openFileUpload() {
+    const fileInput = document.getElementById('fileInput');
+    fileInput.click();
+}
+
+// Handle file selection
+function handleFileSelection(event) {
+    const files = Array.from(event.target.files);
+    
+    // Check file count
+    if (uploadedFiles.length + files.length > MAX_FILES) {
+        showNotification(`Maximum ${MAX_FILES} files allowed`, 'warning');
+        return;
+    }
+    
+    // Check total size
+    let totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
+    const newFilesSize = files.reduce((sum, f) => sum + f.size, 0);
+    
+    if (totalSize + newFilesSize > MAX_TOTAL_SIZE) {
+        showNotification('Total file size exceeds 1GB limit', 'warning');
+        return;
+    }
+    
+    // Add files
+    files.forEach(file => {
+        uploadedFiles.push(file);
+        addFileToPreview(file);
+    });
+    
+    updateFilePreview();
+    
+    // Clear input for next selection
+    event.target.value = '';
+}
+
+// Add file to preview
+function addFileToPreview(file) {
+    const fileList = document.getElementById('fileList');
+    const fileId = `file-${Date.now()}-${Math.random()}`;
+    
+    const fileItem = document.createElement('div');
+    fileItem.className = 'file-item';
+    fileItem.id = fileId;
+    fileItem.innerHTML = `
+        <div class="file-info">
+            <span class="file-icon">${getFileIcon(file.type)}</span>
+            <div class="file-details">
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+            </div>
         </div>
-        <div class="message-time">${time}</div>
+        <button onclick="removeFile('${fileId}')" class="remove-file-btn">&times;</button>
     `;
     
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    fileList.appendChild(fileItem);
+}
+
+// Get file icon based on type
+function getFileIcon(type) {
+    if (type.startsWith('image/')) return '🖼️';
+    if (type.startsWith('video/')) return '🎥';
+    if (type.startsWith('audio/')) return '🎵';
+    if (type.includes('pdf')) return '📄';
+    if (type.includes('word')) return '📝';
+    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
+    if (type.includes('powerpoint') || type.includes('presentation')) return '📽️';
+    if (type.includes('zip') || type.includes('rar')) return '🗜️';
+    if (type.includes('code') || type.includes('text')) return '💻';
+    return '📎';
+}
+
+// Remove file
+function removeFile(fileId) {
+    const fileItem = document.getElementById(fileId);
+    if (fileItem) {
+        const index = Array.from(fileItem.parentNode.children).indexOf(fileItem);
+        uploadedFiles.splice(index, 1);
+        fileItem.remove();
+        updateFilePreview();
+    }
+}
+
+// Update file preview display
+function updateFilePreview() {
+    const preview = document.getElementById('fileUploadPreview');
+    const uploadedCount = document.getElementById('uploadedCount');
+    const totalSizeSpan = document.getElementById('totalSize');
+    const fileCount = document.getElementById('fileCount');
     
-    // Add to history
+    if (uploadedFiles.length > 0) {
+        preview.style.display = 'block';
+        uploadedCount.textContent = uploadedFiles.length;
+        
+        const totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
+        const totalMB = (totalSize / (1024 * 1024)).toFixed(2);
+        totalSizeSpan.textContent = `${totalMB} MB / 1024 MB`;
+        
+        fileCount.textContent = uploadedFiles.length;
+        fileCount.style.display = 'inline';
+    } else {
+        preview.style.display = 'none';
+        fileCount.style.display = 'none';
+    }
+}
+
+// Modify sendMessage to include uploaded files
+const originalSendMessage = sendMessage;
+sendMessage = async function() {
+    const messageInput = document.getElementById('messageInput');
+    const message = messageInput.value.trim();
+    
+    if (!message && uploadedFiles.length === 0) {
+        showNotification('Please enter a message or upload files', 'warning');
+        return;
+    }
+    
+    // Create form data if files are present
+    if (uploadedFiles.length > 0) {
+        const formData = new FormData();
+        formData.append('message', message);
+        formData.append('mode', currentMode);
+        
+        uploadedFiles.forEach((file, index) => {
+            formData.append(`file_${index}`, file);
+        });
+        
+        formData.append('file_count', uploadedFiles.length);
+        
+        // Add message to chat
+        addMessage('user', message + ` [${uploadedFiles.length} file(s) attached]`);
+        
+        // Clear input and files
+        messageInput.value = '';
+        uploadedFiles = [];
+        document.getElementById('fileList').innerHTML = '';
+        updateFilePreview();
+        
+        // Show typing indicator
+        showTypingIndicator();
+        
+        // Disable send button
+        const sendButton = document.getElementById('sendButton');
+        sendButton.disabled = true;
+        
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            removeTypingIndicator();
+            
+            if (data.error) {
+                addMessage('error', data.error);
+                showNotification('Error: ' + data.error, 'error');
+            } else {
+                addMessage('bot', data.response);
+                if (data.app_suggestion) {
+                    showAppSuggestion(data.app_suggestion);
+                }
+                saveChatHistory();
+            }
+            
+        } catch (error) {
+            console.error('Error sending message:', error);
+            removeTypingIndicator();
+            addMessage('error', 'Failed to send message. Please try again.');
+            showNotification('Connection error', 'error');
+        } finally {
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+    } else {
+        // Call original sendMessage if no files
+        await originalSendMessage();
+    }
+};
+
+// Add message to chat
+function addMessage(sender, content) {
+    const messagesDiv = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}-message`;
+    
+    const currentTime = new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    
+    if (sender === 'bot') {
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <strong>🤖 AI Assistant:</strong>
+                <p>${content}</p>
+            </div>
+            <div class="message-time">${currentTime}</div>
+        `;
+    } else if (sender === 'user') {
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <strong>You:</strong>
+                <p>${content}</p>
+            </div>
+            <div class="message-time">${currentTime}</div>
+        `;
+    } else if (sender === 'error') {
+        messageDiv.innerHTML = `
+            <div class="message-content" style="background: rgba(220, 53, 69, 0.2); border: 1px solid #dc3545;">
+                <strong>❌ Error:</strong>
+                <p>${content}</p>
+            </div>
+            <div class="message-time">${currentTime}</div>
+        `;
+    }
+    
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    
+    // Add to chat history
     chatHistory.push({
-        type: type,
+        sender: sender,
         content: content,
-        timestamp: now.toISOString()
+        timestamp: currentTime
     });
 }
 
 // Add system message
 function addSystemMessage(content) {
-    const chatMessages = document.getElementById('chatMessages');
+    const messagesDiv = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message system-message';
     messageDiv.style.textAlign = 'center';
-    messageDiv.style.color = '#FFD700';
-    messageDiv.style.fontStyle = 'italic';
-    messageDiv.style.padding = '10px';
+    messageDiv.style.opacity = '0.7';
     
-    messageDiv.innerHTML = `<p>ℹ️ ${content}</p>`;
+    messageDiv.innerHTML = `
+        <div class="message-content" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <p style="margin: 0; font-style: italic;">ℹ️ ${content}</p>
+        </div>
+    `;
     
-    chatMessages.appendChild(messageDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    messagesDiv.appendChild(messageDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Format message (handle markdown-like formatting)
-function formatMessage(content) {
-    // Convert **bold** to <strong>
-    content = content.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    
-    // Convert *italic* to <em>
-    content = content.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    
-    // Convert line breaks
-    content = content.replace(/\n/g, '<br>');
-    
-    // Convert URLs to links
-    content = content.replace(
-        /(https?:\/\/[^\s]+)/g,
-        '<a href="$1" target="_blank" style="color: #FFD700;">$1</a>'
-    );
-    
-    return content;
+// Quick message function
+function quickMessage(message) {
+    const messageInput = document.getElementById('messageInput');
+    messageInput.value = message;
+    messageInput.focus();
 }
 
-// Show typing indicator
-function showTypingIndicator() {
-    const chatMessages = document.getElementById('chatMessages');
-    const typingDiv = document.createElement('div');
-    typingDiv.id = 'typingIndicator';
-    typingDiv.className = 'message bot-message';
-    typingDiv.innerHTML = `
-        <div class="message-content">
-            <div class="typing-indicator">
-                <strong>🤖 AI Assistant is typing</strong>
-                <div class="typing-dots">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+// Suggest app function - FIXED
+function suggestApp(appId) {
+    debugLog(`Suggesting app: ${appId}`);
+    
+    const app = AVAILABLE_APPS[appId];
+    if (!app) {
+        errorLog(`App not found: ${appId}`);
+        showNotification('App not found', 'error');
+        return;
+    }
+    
+    if (!app.available) {
+        showNotification(`${app.name} is not currently available`, 'warning');
+        return;
+    }
+    
+    // Show app interface modal
+    showAppInterface(appId, app);
+}
+
+// Show app interface - NEW FUNCTION
+function showAppInterface(appId, appInfo) {
+    debugLog(`Showing app interface for: ${appId}`);
+    
+    // Create modal
+    const modalHTML = `
+        <div id="appInterfaceModal" class="modal" style="display: flex;">
+            <div class="modal-content" style="max-width: 800px; width: 90%;">
+                <div class="modal-header">
+                    <h3>${appInfo.icon} ${appInfo.name}</h3>
+                    <button onclick="closeAppModal()" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="app-description">${appInfo.description}</p>
+                    ${getAppInterface(appId)}
                 </div>
             </div>
         </div>
     `;
     
-    chatMessages.appendChild(typingDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    // Remove existing modal if present
+    const existingModal = document.getElementById('appInterfaceModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    infoLog(`App interface shown: ${appInfo.name}`);
 }
 
-// Remove typing indicator
-function removeTypingIndicator() {
-    const typingIndicator = document.getElementById('typingIndicator');
-    if (typingIndicator) {
-        typingIndicator.remove();
+// Close app modal
+function closeAppModal() {
+    const modal = document.getElementById('appInterfaceModal');
+    if (modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => modal.remove(), 300);
     }
 }
 
-// Show app suggestion
-function showAppSuggestion(suggestion) {
-    const modal = document.getElementById('appSuggestionModal');
-    const suggestedAppDiv = document.getElementById('suggestedApp');
-    
-    suggestedAppId = suggestion.app_id;
-    
-    suggestedAppDiv.innerHTML = `
-        <h4>${suggestion.app_name}</h4>
-        <p>${suggestion.description}</p>
-        <p style="margin-top: 10px;">
-            <strong>Confidence:</strong> ${Math.round(suggestion.confidence * 100)}%
-        </p>
-    `;
-    
-    modal.style.display = 'flex';
-}
-
-// Suggest app (from sidebar) - FIXED
-function suggestApp(appId) {
-    const app = AVAILABLE_APPS[appId];
-    
-    if (app) {
-        showAppSuggestion({
-            app_id: appId,
-            app_name: app.name,
-            description: app.description,
-            confidence: 1.0
-        });
-    }
-}
-
-// Go to app
-function goToApp() {
-    if (suggestedAppId) {
-        // Open app interface based on app_id
-        openAppInterface(suggestedAppId);
-        closeModal();
-    }
-}
-
-// Continue chat
-function continueChat() {
-    closeModal();
-    document.getElementById('messageInput').focus();
-}
-
-// Close modal
-function closeModal() {
-    document.getElementById('appSuggestionModal').style.display = 'none';
-    suggestedAppId = null;
-}
-
-// Open app interface - FIXED
-async function openAppInterface(appId) {
-    const app = AVAILABLE_APPS[appId];
-    
-    if (!app) return;
-    
-    // Create modal for app interface
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.id = 'appInterfaceModal';
-    modal.style.display = 'flex';
-    
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 800px;">
-            <div class="modal-header">
-                <h3>${app.icon} ${app.name}</h3>
-                <button onclick="closeAppInterface()" class="close-btn">&times;</button>
-            </div>
-            <div class="modal-body" id="appInterfaceBody">
-                ${getAppInterface(appId)}
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(modal);
-}
-
-// Get app interface HTML
+// Get app interface HTML - COMPLETE IMPLEMENTATION
 function getAppInterface(appId) {
     const interfaces = {
         'document_search': `
@@ -1027,26 +1288,18 @@ function getAppInterface(appId) {
                 <div id="searchResults" class="results-area"></div>
             </div>
         `,
-        'cover_letter_writer': `
+        'testing_agent': `
             <div class="app-interface">
                 <div class="form-group">
-                    <label>CV/Resume Text</label>
-                    <textarea id="cvText" rows="5" class="form-control" placeholder="Paste your CV text..."></textarea>
+                    <label>Project Name</label>
+                    <input type="text" id="projectName" class="form-control" placeholder="Enter project name...">
                 </div>
                 <div class="form-group">
-                    <label>Job Description</label>
-                    <textarea id="jobDescription" rows="5" class="form-control" placeholder="Paste job description..."></textarea>
+                    <label>Test Query</label>
+                    <textarea id="testQuery" rows="3" class="form-control" placeholder="What are you testing?"></textarea>
                 </div>
-                <div class="form-group">
-                    <label>Tone</label>
-                    <select id="toneSelect" class="form-control">
-                        <option value="professional">Professional</option>
-                        <option value="friendly">Friendly</option>
-                        <option value="formal">Formal</option>
-                    </select>
-                </div>
-                <button onclick="generateCoverLetter()" class="primary-btn">Generate Cover Letter</button>
-                <div id="coverLetterResult" class="results-area"></div>
+                <button onclick="runTestComparison()" class="primary-btn">Run Tests</button>
+                <div id="testResults" class="results-area"></div>
             </div>
         `,
         'work_hours_calculator': `
@@ -1070,6 +1323,97 @@ function getAppInterface(appId) {
                 <div id="workHoursResult" class="results-area"></div>
             </div>
         `,
+        'document_extractor': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Upload Document</label>
+                    <input type="file" id="documentFile" class="form-control" accept=".pdf,.docx,.txt">
+                </div>
+                <div class="form-group">
+                    <label>Output Format</label>
+                    <select id="outputFormat" class="form-control">
+                        <option value="pdf">PDF</option>
+                        <option value="docx">DOCX</option>
+                        <option value="txt">TXT</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+                <button onclick="convertDocument()" class="primary-btn">Convert</button>
+                <div id="conversionResult" class="results-area"></div>
+            </div>
+        `,
+        'cover_letter_writer': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>CV/Resume Text</label>
+                    <textarea id="cvText" rows="5" class="form-control" placeholder="Paste your CV text..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Job Description</label>
+                    <textarea id="jobDescription" rows="5" class="form-control" placeholder="Paste job description..."></textarea>
+                </div>
+                <button onclick="generateCoverLetter()" class="primary-btn">Generate Cover Letter</button>
+                <div id="coverLetterResult" class="results-area"></div>
+            </div>
+        `,
+        'job_ad_generator': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" id="jobTitle" class="form-control" placeholder="e.g., Software Engineer">
+                </div>
+                <div class="form-group">
+                    <label>Required Skills</label>
+                    <textarea id="requiredSkills" rows="3" class="form-control" placeholder="List required skills..."></textarea>
+                </div>
+                <button onclick="generateJobAd()" class="primary-btn">Generate Job Ad</button>
+                <div id="jobAdResult" class="results-area"></div>
+            </div>
+        `,
+        'speech_to_text': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Upload Audio File</label>
+                    <input type="file" id="audioFile" class="form-control" accept="audio/*">
+                </div>
+                <button onclick="transcribeAudio()" class="primary-btn">Transcribe Audio</button>
+                <div id="transcriptionResult" class="results-area"></div>
+            </div>
+        `,
+        'calendar_system': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Event Title</label>
+                    <input type="text" id="eventTitle" class="form-control" placeholder="Meeting title...">
+                </div>
+                <div class="form-group">
+                    <label>Date & Time</label>
+                    <input type="datetime-local" id="eventDateTime" class="form-control">
+                </div>
+                <button onclick="createCalendarEvent()" class="primary-btn">Create Event</button>
+                <div id="calendarResult" class="results-area"></div>
+            </div>
+        `,
+        'doc_summariser': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Document Text</label>
+                    <textarea id="summaryDocText" rows="8" class="form-control" placeholder="Paste document text here..."></textarea>
+                </div>
+                <button onclick="summarizeDocument()" class="primary-btn">Summarize</button>
+                <div id="summaryResult" class="results-area"></div>
+            </div>
+        `,
+        'directory_summariser': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Directory Path</label>
+                    <input type="text" id="directoryPath" class="form-control" placeholder="C:\\path\\to\\directory">
+                </div>
+                <button onclick="analyzeDirectory()" class="primary-btn">Analyze Directory</button>
+                <div id="directoryResult" class="results-area"></div>
+            </div>
+        `,
         'coding_assistant': `
             <div class="app-interface">
                 <div class="form-group">
@@ -1082,18 +1426,6 @@ function getAppInterface(appId) {
                         <option value="python">Python</option>
                         <option value="javascript">JavaScript</option>
                         <option value="java">Java</option>
-                        <option value="csharp">C#</option>
-                        <option value="cpp">C++</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Request Type</label>
-                    <select id="requestType" class="form-control">
-                        <option value="suggestion">Code Suggestions</option>
-                        <option value="explain">Explain Code</option>
-                        <option value="documentation">Generate Documentation</option>
-                        <option value="quality_analysis">Quality Analysis</option>
-                        <option value="test_cases">Generate Tests</option>
                     </select>
                 </div>
                 <button onclick="getCodeAssistance()" class="primary-btn">Get Assistance</button>
@@ -1102,265 +1434,155 @@ function getAppInterface(appId) {
         `
     };
     
-    return interfaces[appId] || '<p>App interface not yet implemented. Please use the main chat to interact with this feature.</p>';
+    return interfaces[appId] || '<p>App interface not yet implemented.</p>';
 }
 
-// Close app interface
-function closeAppInterface() {
-    const modal = document.getElementById('appInterfaceModal');
-    if (modal) {
-        modal.remove();
-    }
+// Stub functions for app actions (these will call the backend APIs)
+function executeDocumentSearch() {
+    showNotification('Document search feature coming soon', 'info');
 }
 
-// API Functions
+function runTestComparison() {
+    showNotification('Test comparison feature coming soon', 'info');
+}
 
-// Document Search
-async function executeDocumentSearch() {
-    const query = document.getElementById('searchQuery').value;
-    const directory = document.getElementById('searchDirectory').value;
-    const resultsDiv = document.getElementById('searchResults');
+function calculateWorkHours() {
+    showNotification('Work hours calculator coming soon', 'info');
+}
+
+function convertDocument() {
+    showNotification('Document conversion feature coming soon', 'info');
+}
+
+function generateCoverLetter() {
+    showNotification('Cover letter generation coming soon', 'info');
+}
+
+function generateJobAd() {
+    showNotification('Job ad generation feature coming soon', 'info');
+}
+
+function transcribeAudio() {
+    showNotification('Audio transcription feature coming soon', 'info');
+}
+
+function createCalendarEvent() {
+    showNotification('Calendar event creation coming soon', 'info');
+}
+
+async function summarizeDocument() {
+    const text = document.getElementById('summaryDocText').value;
+    const resultsDiv = document.getElementById('summaryResult');
     
-    if (!query) {
-        showNotification('Please enter a search query', 'warning');
+    if (!text.trim()) {
+        showNotification('Please enter document text', 'warning');
         return;
     }
     
-    resultsDiv.innerHTML = '<div class="spinner"></div> Searching...';
+    resultsDiv.innerHTML = '<div class="spinner"></div> Generating summary...';
     
     try {
-        const response = await fetch('/api/search-documents', {
+        const response = await fetch('/api/summarize-document', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query, directory })
+            body: JSON.stringify({ document_content: text })
         });
         
         const data = await response.json();
         
         if (data.success) {
             resultsDiv.innerHTML = `
-                <h4>Search Results:</h4>
-                <div class="results-list">${formatSearchResults(data.results)}</div>
-                <h4 style="margin-top: 20px;">AI Summary:</h4>
-                <div class="ai-summary">${data.ai_summary}</div>
+                <h4>Summary:</h4>
+                <div class="summary-content">${data.summary}</div>
             `;
-            showNotification('Search completed successfully', 'success');
+            showNotification('Document summarized successfully', 'success');
         } else {
             resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
-            showNotification(data.error, 'error');
         }
     } catch (error) {
         resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        showNotification('Search failed', 'error');
+        showNotification('Summarization failed', 'error');
     }
 }
 
-// Format search results
-function formatSearchResults(results) {
-    if (!results || results.length === 0) {
-        return '<p>No results found</p>';
-    }
-    
-    return results.map(result => `
-        <div class="result-item" style="padding: 10px; margin: 10px 0; background: rgba(255,255,255,0.1); border-radius: 5px;">
-            <strong>${result.filename || result.title || 'Document'}</strong>
-            <p>${result.content || result.excerpt || 'No preview available'}</p>
+function analyzeDirectory() {
+    showNotification('Directory analysis feature coming soon', 'info');
+}
+
+function getCodeAssistance() {
+    showNotification('Code assistance feature coming soon', 'info');
+}
+
+// Chat utility functions
+function showTypingIndicator() {
+    const messagesDiv = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.className = 'typing-indicator';
+    typingDiv.innerHTML = `
+        <span>AI is typing</span>
+        <div class="typing-dots">
+            <span></span><span></span><span></span>
         </div>
-    `).join('');
+    `;
+    messagesDiv.appendChild(typingDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
 }
 
-// Generate Cover Letter
-async function generateCoverLetter() {
-    const cvText = document.getElementById('cvText').value;
-    const jobDescription = document.getElementById('jobDescription').value;
-    const tone = document.getElementById('toneSelect').value;
-    const resultsDiv = document.getElementById('coverLetterResult');
-    
-    if (!cvText || !jobDescription) {
-        showNotification('Please fill in both CV text and job description', 'warning');
-        return;
-    }
-    
-    resultsDiv.innerHTML = '<div class="spinner"></div> Generating cover letter...';
-    
-    try {
-        const response = await fetch('/api/generate-cover-letter', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cv_text: cvText, job_description: jobDescription, tone })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            const escapedLetter = escapeHtml(data.cover_letter);
-            resultsDiv.innerHTML = `
-                <h4>Generated Cover Letter:</h4>
-                <div class="cover-letter-content" style="white-space: pre-wrap; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
-                    ${data.cover_letter}
-                </div>
-                <button onclick="copyToClipboard(\`${escapedLetter}\`)" class="secondary-btn" style="margin-top: 10px;">
-                    📋 Copy to Clipboard
-                </button>
-            `;
-            showNotification('Cover letter generated successfully', 'success');
-        } else {
-            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
-            showNotification(data.error, 'error');
-        }
-    } catch (error) {
-        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        showNotification('Generation failed', 'error');
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.remove();
     }
 }
 
-// Calculate Work Hours
-async function calculateWorkHours() {
-    const contractedHours = document.getElementById('contractedHours').value;
-    const timeFrame = document.getElementById('timeFrame').value;
-    const workDescription = document.getElementById('workDescription').value;
-    const resultsDiv = document.getElementById('workHoursResult');
-    
-    resultsDiv.innerHTML = '<div class="spinner"></div> Calculating...';
-    
-    try {
-        const response = await fetch('/api/calculate-hours', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contracted_hours: contractedHours,
-                time_frame: timeFrame,
-                work_hours_description: workDescription
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            resultsDiv.innerHTML = `
-                <h4>Analysis:</h4>
-                <div class="summary-content" style="padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px;">
-                    ${data.summary}
-                </div>
-            `;
-            showNotification('Calculation completed', 'success');
-        } else {
-            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
-            showNotification(data.error, 'error');
-        }
-    } catch (error) {
-        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        showNotification('Calculation failed', 'error');
-    }
-}
-
-// Get Code Assistance
-async function getCodeAssistance() {
-    const code = document.getElementById('codeInput').value;
-    const language = document.getElementById('languageSelect').value;
-    const requestType = document.getElementById('requestType').value;
-    const resultsDiv = document.getElementById('codeAssistanceResult');
-    
-    if (!code) {
-        showNotification('Please enter some code', 'warning');
-        return;
-    }
-    
-    resultsDiv.innerHTML = '<div class="spinner"></div> Analyzing code...';
-    
-    try {
-        const response = await fetch('/api/code-assistance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                code: code,
-                language: language,
-                request_type: requestType
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            resultsDiv.innerHTML = `
-                <h4>Assistance (${data.assistance_type}):</h4>
-                <div class="code-assistance-content" style="white-space: pre-wrap; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 5px; font-family: monospace;">
-                    ${escapeHtml(data.assistance)}
-                </div>
-            `;
-            showNotification('Analysis completed', 'success');
-        } else {
-            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
-            showNotification(data.error, 'error');
-        }
-    } catch (error) {
-        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        showNotification('Analysis failed', 'error');
-    }
-}
-
-// Chat actions
 function clearChat() {
-    if (confirm('Are you sure you want to clear the chat history?')) {
-        chatHistory = [];
-        localStorage.removeItem('chatHistory');
-        
-        const chatMessages = document.getElementById('chatMessages');
-        chatMessages.innerHTML = `
+    if (confirm('Are you sure you want to clear the chat?')) {
+        const messagesDiv = document.getElementById('chatMessages');
+        messagesDiv.innerHTML = `
             <div class="message bot-message">
                 <div class="message-content">
                     <strong>🤖 AI Assistant:</strong>
-                    <p>Chat cleared. How can I help you today?</p>
+                    <p>Chat cleared. How can I help you?</p>
                 </div>
-                <div class="message-time">${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
             </div>
         `;
-        
-        showNotification('Chat history cleared', 'success');
+        chatHistory = [];
+        localStorage.removeItem('chatHistory');
+        showNotification('Chat cleared', 'success');
     }
 }
 
 function exportChat() {
-    if (chatHistory.length === 0) {
-        showNotification('No chat history to export', 'warning');
-        return;
-    }
+    const chatText = chatHistory.map(msg => 
+        `[${msg.timestamp}] ${msg.sender.toUpperCase()}: ${msg.content}`
+    ).join('\n\n');
     
-    const exportData = {
-        exported_at: new Date().toISOString(),
-        mode: currentMode,
-        messages: chatHistory
-    };
-    
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const blob = new Blob([chatText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `chat-export-${Date.now()}.json`;
+    a.download = `chat_export_${new Date().toISOString().slice(0,10)}.txt`;
     a.click();
-    
-    showNotification('Chat exported successfully', 'success');
+    URL.revokeObjectURL(url);
+    showNotification('Chat exported', 'success');
 }
 
 function showHelp() {
-    const helpMessage = `
-        <h4>How to use the AI Chatbot Hub:</h4>
-        <ul style="text-align: left;">
-            <li>Select a prompt mode from the dropdown to change the AI's behavior</li>
-            <li>Type your message and press Enter or click the send button</li>
-            <li>Click on Quick Apps to access specific AI tools</li>
-            <li>Use quick suggestions for common queries</li>
-            <li>The AI will suggest relevant apps based on your questions</li>
-        </ul>
-    `;
-    
-    addMessage('bot', helpMessage);
+    addMessage('bot', `
+        <strong>Help Guide:</strong><br><br>
+        🎯 <strong>Prompt Modes:</strong> Select different AI personalities<br>
+        🚀 <strong>Quick Apps:</strong> Click to launch specific tools<br>
+        💬 <strong>Chat:</strong> Type messages or use voice input<br>
+        📎 <strong>Files:</strong> Upload up to 10 files (1GB total)<br>
+        🎤 <strong>Voice:</strong> Click microphone to speak<br><br>
+        Type anything to get started!
+    `);
 }
 
-// Helper functions
 function saveChatHistory() {
     try {
-        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        localStorage.setItem('chatHistory', JSON.stringify(chatHistory.slice(-50)));
     } catch (e) {
         console.error('Failed to save chat history:', e);
     }
@@ -1371,62 +1593,11 @@ function loadChatHistory() {
         const saved = localStorage.getItem('chatHistory');
         if (saved) {
             chatHistory = JSON.parse(saved);
+            // Optionally restore messages to UI
         }
     } catch (e) {
         console.error('Failed to load chat history:', e);
     }
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-// Add CSS for form controls and app interfaces
-const appInterfaceStyle = document.createElement('style');
-appInterfaceStyle.textContent = `
-    .form-control {
-        width: 100%;
-        padding: 10px;
-        border-radius: 5px;
-        background: rgba(255,255,255,0.1);
-        border: 1px solid rgba(255,255,255,0.3);
-        color: #fff;
-        margin-bottom: 15px;
-    }
-    .form-group {
-        margin-bottom: 20px;
-    }
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        color: #FFD700;
-        font-weight: bold;
-    }
-    .results-area {
-        margin-top: 20px;
-        padding: 15px;
-        background: rgba(0,0,0,0.3);
-        border-radius: 8px;
-        min-height: 100px;
-    }
-    .app-interface {
-        color: #fff;
-    }
-    .spinner {
-        border: 3px solid rgba(255,255,255,0.3);
-        border-top: 3px solid #FFD700;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-        display: inline-block;
-        margin-right: 10px;
-    }
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-`;
-document.head.appendChild(appInterfaceStyle);
+//# sourceMappingURL=app.js.map

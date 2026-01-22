@@ -1,0 +1,837 @@
+LinguaCode IDE Code
+
+MainWindow.xaml:
+<Window x:Class="LinguaCodeIDE.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:LinguaCodeIDE.Views"
+        Title="LinguaCode IDE" Height="600" Width="1000">
+
+    <!-- Keyboard shortcuts -->
+    <Window.InputBindings>
+        <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenFileCommand}" />
+        <KeyBinding Key="S" Modifiers="Control" Command="{Binding SaveFileCommand}" />
+        <KeyBinding Key="S" Modifiers="Control+Shift" Command="{Binding SaveFileAsCommand}" />
+        <KeyBinding Key="P" Modifiers="Control" Command="{Binding OpenProjectCommand}" />
+    </Window.InputBindings>
+
+    <DockPanel>
+
+        <!-- Menu docked at the top -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="File">
+                <MenuItem Header="Open Project/Folder" Command="{Binding OpenProjectCommand}"/>
+                <MenuItem Header="Open File" Command="{Binding OpenFileCommand}"/>
+                <MenuItem Header="Save Project/All Files" Command="{Binding SaveAllCommand}"/>
+                <MenuItem Header="Save File" Command="{Binding SaveFileCommand}"/>
+                <MenuItem Header="Save As" Command="{Binding SaveFileAsCommand}"/>
+                <MenuItem Header="Close Project"/>
+                <Separator/>
+                <MenuItem Header="Recent Projects/Folders"/>
+                <MenuItem Header="Recent Files"/>
+                <Separator/>
+                <MenuItem Header="Exit IDE" Command="{Binding ExitCommand}"/>
+            </MenuItem>
+
+            <MenuItem Header="Edit">
+                <MenuItem Header="Go To"/>
+                <MenuItem Header="Find &amp; Replace"/>
+                <Separator/>
+                <MenuItem Header="Undo"/>
+                <MenuItem Header="Redo"/>
+                <Separator/>
+                <MenuItem Header="Copy"/>
+                <MenuItem Header="Paste"/>
+                <MenuItem Header="Cut"/>
+                <MenuItem Header="Duplicate"/>
+                <MenuItem Header="Delete"/>
+                <MenuItem Header="Select All"/>
+                <Separator/>
+                <MenuItem Header="Refactor"/>
+            </MenuItem>
+
+            <MenuItem Header="View">
+                <MenuItem Header="View Options here"/>
+            </MenuItem>
+
+            <MenuItem Header="Build">
+                <MenuItem Header="Build Project"/>
+                <MenuItem Header="Clean Project"/>
+                <MenuItem Header="Rebuild Project"/>
+                <Separator/>
+                <MenuItem Header="Run File"/>
+                <MenuItem Header="Run Project"/>
+            </MenuItem>
+
+            <MenuItem Header="Debug">
+                <MenuItem Header="Add Breakpoint"/>
+                <MenuItem Header="Run Debugger"/>
+                <MenuItem Header="Step Into"/>
+                <MenuItem Header="Step Over"/>
+            </MenuItem>
+
+            <MenuItem Header="Test">
+                <MenuItem Header="Run All Project Tests"/>
+                <MenuItem Header="Run Tests for this File"/>
+                <MenuItem Header="Repeat Last Run"/>
+                <Separator/>
+                <MenuItem Header="Debug All Tests"/>
+                <MenuItem Header="Debug Last Run"/>
+            </MenuItem>
+
+            <MenuItem Header="Tools/Add-ons">
+                <MenuItem Header="My Tools/Add-ons"/>
+                <MenuItem Header="Get Add-ons"/>
+                <MenuItem Header="[Existing Tools/Add-ons]"/>
+            </MenuItem>
+
+            <MenuItem Header="Settings">
+                <MenuItem Header="[Basic Options]"/>
+                <MenuItem Header="More Settings"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Main content -->
+        <Grid DockPanel.Dock="Top" Height="520">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+
+            <views:FileExplorerView Grid.Column="0"/>
+            <views:EditorView x:Name="EditorView" Grid.Column="1"/>
+            <views:PreviewPane Grid.Column="2"/>
+        </Grid>
+
+        <!-- Status bar at the bottom -->
+        <TabControl x:Name="DocumentTabs"
+            Grid.Column="1"
+            ItemsSource="{Binding OpenDocuments}"
+            SelectedItem="{Binding SelectedDocument}"
+            Background="Black">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" Foreground="White"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <views:EditorView />
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
+
+    </DockPanel>
+</Window>
+
+MainWindow.xaml.cs:
+using LinguaCodeIDE.Commands;
+using LinguaCodeIDE.Services;
+using LinguaCodeIDE.ViewModels;
+using LinguaCodeIDE.Views;
+using System.Collections.ObjectModel;
+using System.Windows;
+
+namespace LinguaCodeIDE
+{
+    public partial class MainWindow : Window
+    {
+        public FileService FileService { get; }
+        public StatusBarViewModel StatusBar { get; }
+        public ObservableCollection<DocumentViewModel> OpenDocuments { get; } = new ObservableCollection<DocumentViewModel>();
+
+        public DocumentViewModel? SelectedDocument { get; set; }
+        public RelayCommand OpenFileCommand { get; }
+        public RelayCommand OpenProjectCommand { get; }
+        public RelayCommand SaveFileCommand { get; }
+        public RelayCommand SaveFileAsCommand { get; }
+        public RelayCommand SaveAllCommand { get; }
+        public RelayCommand ExitCommand { get; }
+
+        public MainWindow()
+        {
+            FileService = new FileService();
+            StatusBar = new StatusBarViewModel();
+
+            InitializeComponent();
+
+            DocumentTabs.SelectionChanged += (s, e) =>
+            {
+                if (DocumentTabs.SelectedItem is DocumentViewModel doc)
+                {
+                    // Find the EditorView inside the tab and assign the VM
+                    if (DocumentTabs.ItemContainerGenerator.ContainerFromItem(doc) is TabItem tab &&
+                        tab.Content is EditorView view)
+                    {
+                        view.SetViewModel(doc.Editor);
+                    }
+                }
+            };
+
+            // Commands
+            OpenFileCommand = new RelayCommand(() => FileService.OpenFile());
+            OpenProjectCommand = new RelayCommand(() => FileService.OpenProject());
+            SaveFileCommand = new RelayCommand(() => FileService.SaveFile());
+            SaveFileAsCommand = new RelayCommand(() => FileService.SaveFileAs());
+            SaveAllCommand = new RelayCommand(() => FileService.SaveAll());
+            ExitCommand = new RelayCommand(() => Application.Current.Shutdown());
+
+            // Status bar updates
+            FileService.FileOpened += (s, e) =>
+            {
+                var editor = new EditorViewModel(FileService);
+                editor.CurrentFilePath = e.FilePath;
+                editor.CurrentText = e.Content;
+
+                var doc = new DocumentViewModel(editor);
+                OpenDocuments.Add(doc);
+                SelectedDocument = doc;
+
+                StatusBar.Message = $"Opened: {e.FilePath}";
+            };
+
+            FileService.FileSaved += (s, e) =>
+            {
+                StatusBar.Message = $"Saved: {e.FilePath}";
+            };
+
+            FileService.ProjectOpened += (s, e) =>
+            {
+                StatusBar.Message = $"Project opened: {e.FilePath}";
+            };
+
+            DataContext = this;
+
+            Loaded += MainWindow_Loaded;
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            EditorView.Initialize(FileService);
+        }
+    }
+}
+
+App.xaml:
+<?xml version="1.0" encoding="utf-8"?>
+<Application x:Class="LinguaCodeIDE.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <!-- Global Menu Style -->
+        <Style TargetType="Menu">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Global MenuItem Style -->
+        <Style TargetType="MenuItem">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Margin" Value="1"/>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Background="{TemplateBinding Background}">
+                            <Grid>
+                                <ContentPresenter ContentSource="Header"
+                                          Margin="4"
+                                          RecognizesAccessKey="True"/>
+                                <Popup Name="SubMenuPopup"
+                               Placement="Right"
+                               IsOpen="{TemplateBinding IsSubmenuOpen}"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               PopupAnimation="Fade">
+                                    <Border Background="Black"
+                                    BorderBrush="Gray"
+                                    BorderThickness="1">
+                                        <StackPanel IsItemsHost="True"
+                                            Background="Black"/>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#222222"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="Gray"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Global Separator Style -->
+        <Style TargetType="Separator">
+            <Setter Property="Background" Value="Gray"/>
+            <Setter Property="Height" Value="1"/>
+        </Style>
+    </Application.Resources>
+</Application>
+
+App.xaml.cs:
+using System.Windows;
+
+namespace LinguaCodeIDE
+{
+    public partial class App : System.Windows.Application
+    {
+    }
+}
+
+Views/PreviewPane.xaml:
+<?xml version="1.0" encoding="utf-8"?>
+    <UserControl x:Class="LinguaCodeIDE.Views.PreviewPane"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 Background="GreenYellow">
+    <Grid Background="Black" Margin="10">
+        <TextBlock Text="Preview Pane" Foreground="White"/>
+    </Grid>
+</UserControl>
+
+Views/FileExplorerView.xaml:
+<?xml version="1.0" encoding="utf-8"?>
+    <UserControl x:Class="LinguaCodeIDE.Views.FileExplorerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="Red">
+        <TreeView Margin="10" Background="Black">
+            <TreeViewItem Header="Project Files" Foreground="White"/>
+        </TreeView>
+    </Grid>
+</UserControl>
+
+Views/EditorView.xaml:
+<?xml version="1.0" encoding="utf-8"?>
+    <UserControl x:Class="LinguaCodeIDE.Views.EditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Background="LightBlue">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="{Binding DisplayName}"
+           Foreground="White"
+           FontWeight="Bold"
+           Margin="10"/>
+
+        <TextBox Text="{Binding CurrentText, UpdateSourceTrigger=PropertyChanged}"
+                 AcceptsReturn="True"
+                 VerticalScrollBarVisibility="Auto"
+                 Margin="10" Height="500"
+                 Background="Black" Foreground="White"/>
+    </Grid>
+</UserControl>
+
+Views/EditorView.xaml.cs:
+using System.Windows.Controls;
+using LinguaCodeIDE.ViewModels;
+using LinguaCodeIDE.Services;
+
+namespace LinguaCodeIDE.Views
+{
+    public partial class EditorView : UserControl
+    {
+        public EditorView()
+        {
+            InitializeComponent();
+        }
+
+        public void Initialize(FileService fileService)
+        {
+            DataContext = new EditorViewModel(fileService);
+        }
+
+        public void SetViewModel(EditorViewModel vm)
+        {
+            DataContext = vm;
+        }
+    }
+}
+
+ViewModels/PreviewPane.xaml.cs:
+using System.Windows.Controls;
+
+namespace LinguaCodeIDE.Views
+{
+    public partial class PreviewPane : UserControl
+    {
+        public PreviewPane()
+        {
+            InitializeComponent();
+        }
+    }
+}
+
+
+ViewModels/FileExplorerViewModel.cs:
+using System.Windows.Controls;
+
+namespace LinguaCodeIDE.Views
+{
+    public partial class FileExplorerView : UserControl
+    {
+        public FileExplorerView()
+        {
+            InitializeComponent();
+        }
+    }
+}
+
+ViewModels/EditorViewModel.cs:
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using LinguaCodeIDE.Services;
+
+namespace LinguaCodeIDE.ViewModels {
+    public class EditorViewModel : INotifyPropertyChanged {
+        private readonly FileService _fileService;
+
+        private string _currentText = string.Empty;
+        public string CurrentText {
+            get => _currentText;
+            set
+            {
+                if (_currentText != value)
+                {
+                    _currentText = value;
+                    IsDirty = true;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private string? _currentFilePath;
+        public string? CurrentFilePath {
+            get => _currentFilePath;
+            set {
+                if (_currentFilePath != value) {
+                    _currentFilePath = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        private bool _isDirty;
+        public bool IsDirty
+        {
+            get => _isDirty;
+            set
+            {
+                _isDirty = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DisplayName));
+            }
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(CurrentFilePath))
+                    return "Untitled";
+
+                string name = System.IO.Path.GetFileName(CurrentFilePath);
+                return IsDirty ? $"{name} *" : name;
+            }
+        }
+
+        public EditorViewModel(FileService fileService) {
+            _fileService = fileService;
+
+            // Subscribe to FileService events
+            _fileService.FileOpened += OnFileOpened;
+            _fileService.SaveRequested += OnSaveRequested;
+        }
+
+        private void OnFileOpened(object? sender, FileService.FileEventArgs e) {
+            CurrentFilePath = e.FilePath;
+            CurrentText = e.Content;
+        }
+
+        private void OnSaveRequested(object? sender, FileService.FileSaveRequestEventArgs e) {
+            // Provide the current editor state back to FileService
+            e.FilePath = CurrentFilePath;
+            e.Content = CurrentText;
+            IsDirty = false;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+    }
+}
+
+Services/SyntaxHighlighingService.cs:
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LinguaCodeIDE.Services
+{
+    internal class SyntaxHighlightingService
+    {
+    }
+}
+
+Services/ProjectService.cs:
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LinguaCodeIDE.Services
+{
+    // manage project-level metadata, recent files/projects, etc.
+    class ProjectService
+    {
+        public ProjectService() { }
+
+        public void LoadProject(string projectPath)
+        {
+            // Logic to load project metadata from the specified path
+        }
+
+        public void SaveProject(string projectPath)
+        {
+            // Logic to save project metadata to the specified path
+        }
+
+        public List<string> GetRecentProjects()
+        {
+            // Logic to retrieve a list of recent projects
+            return new List<string>();
+        }
+
+        public void AddRecentProject(string projectPath)
+        {
+            // Logic to add a project to the recent projects list
+        }
+
+        public void RemoveRecentProject(string projectPath)
+        {
+            // Logic to remove a project from the recent projects list
+        }
+
+        public List<string> GetRecentFiles()
+        {
+            // Logic to retrieve a list of recent files
+            return new List<string>();
+        }
+
+        public void AddRecentFile(string filePath)
+        {
+            // Logic to add a file to the recent files list
+        }
+
+        public void RemoveRecentFile(string filePath)
+        {
+            // Logic to remove a file from the recent files list
+        }
+    }
+}
+
+Services/OfficeViewerService.cs:
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LinguaCodeIDE.Services
+{
+    internal class OfficeViewerService
+    {
+    }
+}
+
+Services/FileService.cs:
+using System;
+using System.IO;
+using System.Windows.Forms; // Add this for FolderBrowserDialog
+using Microsoft.Win32;
+using Ookii.Dialogs.Wpf;
+
+namespace LinguaCodeIDE.Services
+{
+    public class FileService
+    {
+        // Events used to communicate with consumers (for example ViewModels)
+        public event EventHandler<FileEventArgs>? FileOpened;
+        public event EventHandler<FileEventArgs>? FileSaved;
+        public event EventHandler<FileEventArgs>? ProjectOpened;
+
+        // Raised when the service needs the current file content/path to save.
+        // Subscribers should fill in Content (and optionally FilePath) or set Cancel = true.
+        public event EventHandler<FileSaveRequestEventArgs>? SaveRequested;
+
+        // Request all documents be saved; subscribers should perform their saves when this is raised.
+        public event EventHandler? SaveAllRequested;
+
+        public void OpenFile()
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Open File",
+                Filter = "All files (*.*)|*.*",
+                Multiselect = false
+            };
+
+            var result = dlg.ShowDialog();
+            if (result == true)
+            {
+                var path = dlg.FileName;
+                string content = File.ReadAllText(path);
+                FileOpened?.Invoke(this, new FileEventArgs(path, content));
+            }
+        }
+
+        public void SaveFile()
+        {
+            var args = new FileSaveRequestEventArgs();
+            SaveRequested?.Invoke(this, args);
+
+            if (args.Cancel)
+                return;
+
+            // If caller provided a path, use it. Otherwise ask the user to choose one.
+            var path = args.FilePath;
+            if (string.IsNullOrEmpty(path))
+            {
+                var dlg = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Save File",
+                    Filter = "All files (*.*)|*.*"
+                };
+
+                var res = dlg.ShowDialog();
+                if (res != true)
+                    return;
+
+                path = dlg.FileName;
+            }
+
+            File.WriteAllText(path, args.Content ?? string.Empty);
+            FileSaved?.Invoke(this, new FileEventArgs(path, args.Content ?? string.Empty));
+        }
+
+        public void SaveFileAs()
+        {
+            var args = new FileSaveRequestEventArgs();
+            SaveRequested?.Invoke(this, args);
+
+            if (args.Cancel)
+                return;
+
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Save File As",
+                Filter = "All files (*.*)|*.*"
+            };
+
+            var res = dlg.ShowDialog();
+            if (res != true)
+                return;
+
+            var path = dlg.FileName;
+            File.WriteAllText(path, args.Content ?? string.Empty);
+            FileSaved?.Invoke(this, new FileEventArgs(path, args.Content ?? string.Empty));
+        }
+
+        public void OpenProject()
+        {
+            var choice = System.Windows.MessageBox.Show(
+                "Do you want to open a project file?\n\nYes = Open File\nNo = Open Folder",
+                "Open Project",
+                System.Windows.MessageBoxButton.YesNoCancel,
+                System.Windows.MessageBoxImage.Question);
+
+            if (choice == System.Windows.MessageBoxResult.Cancel)
+                return;
+
+            if (choice == System.Windows.MessageBoxResult.Yes)
+            {
+                // Open file
+                var dlg = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Open Project File",
+                    Filter = "Project files (*.json;*.proj;*.csproj)|*.json;*.proj;*.csproj|All files (*.*)|*.*",
+                    Multiselect = false
+                };
+
+                var result = dlg.ShowDialog();
+                if (result == true)
+                {
+                    var path = dlg.FileName;
+                    string content = File.Exists(path) ? File.ReadAllText(path) : string.Empty;
+                    ProjectOpened?.Invoke(this, new FileEventArgs(path, content));
+                }
+            }
+            else
+            {
+                // Open folder
+                var folderDialog = new VistaFolderBrowserDialog
+                {
+                    Description = "Select Project Folder",
+                    UseDescriptionForTitle = true
+                };
+
+                var result = folderDialog.ShowDialog();
+                if (result == true)
+                {
+                    var path = folderDialog.SelectedPath;
+                    ProjectOpened?.Invoke(this, new FileEventArgs(path, string.Empty));
+                }
+            }
+        }
+
+        public void SaveAll()
+        {
+            // Let subscribers handle saving all open documents.
+            SaveAllRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        // Simple EventArgs used to pass file path + content
+        public class FileEventArgs : EventArgs
+        {
+            public string FilePath { get; }
+            public string Content { get; }
+
+            public FileEventArgs(string filePath, string content)
+            {
+                FilePath = filePath;
+                Content = content;
+            }
+        }
+
+        // Used when the FileService needs the current content/path from consumers before saving.
+        public class FileSaveRequestEventArgs : EventArgs
+        {
+            public string? FilePath { get; set; }
+            public string? Content { get; set; }
+            public bool Cancel { get; set; }
+        }
+    }
+}
+
+Models/StatusBarViewModel.cs:
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+namespace LinguaCodeIDE.ViewModels
+{
+    public class StatusBarViewModel : INotifyPropertyChanged
+    {
+        private string _message = "Ready";
+        public string Message
+        {
+            get => _message;
+            set
+            {
+                _message = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+}
+
+Models/LinguaCodeTranslator.cs:
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LinguaCodeIDE.Models
+{
+    internal class LinguaCodeTranslator
+    {
+    }
+}
+
+Models/FileModel.cs:
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LinguaCodeIDE.Models
+{
+    internal class FileModel
+    {
+    }
+}
+
+Models/DocumentViewModel.cs:
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
+namespace LinguaCodeIDE.ViewModels
+{
+    public class DocumentViewModel : INotifyPropertyChanged
+    {
+        public EditorViewModel Editor { get; }
+
+        public DocumentViewModel(EditorViewModel editor)
+        {
+            Editor = editor;
+            Editor.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(Editor.DisplayName))
+                    OnPropertyChanged(nameof(DisplayName));
+            };
+        }
+
+        public string DisplayName => Editor.DisplayName;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string? name = null)
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
+}
+
+Commands/RelayCommand.cs:
+using System;
+using System.Windows.Input;
+
+namespace LinguaCodeIDE.Commands
+{
+    public class RelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        private readonly Func<bool>? _canExecute;
+
+        public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        {
+            _execute = execute;
+            _canExecute = canExecute;
+        }
+
+        public event EventHandler? CanExecuteChanged;
+
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
+
+        public void Execute(object? parameter) => _execute();
+    }
+}
