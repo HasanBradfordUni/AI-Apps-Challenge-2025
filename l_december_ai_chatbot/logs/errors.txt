@@ -21,3 +21,9 @@ Error loading logs page: object of type 'NoneType' has no len()
 [2026-01-18 23:32:59] Error:
 Error loading logs page: object of type 'NoneType' has no len()
 
+[2026-01-24 11:49:09] Error:
+500 error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+
+[2026-01-24 11:49:10] Error:
+404 error: http://localhost:6922/favicon.ico
+

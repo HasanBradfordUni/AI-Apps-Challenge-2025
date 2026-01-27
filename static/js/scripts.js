@@ -1,7 +1,7 @@
 // Directory AI Summariser JavaScript Functions
 
 // Enhanced logging for debugging
-const DEBUG = true; // Set to false in production
+const DEBUG = true;
 
 function debugLog(message, data = null) {
     if (DEBUG) {
@@ -26,14 +26,30 @@ function infoLog(message, data = null) {
     }
 }
 
-// SINGLE DOMContentLoaded event listener
+// Global variables for chatbot
+let currentMode = 'general';
+let suggestedAppId = null;
+let chatHistory = [];
+let uploadedFiles = [];
+let isRecording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+
+// Get data from window object (passed from HTML template)
+const PROMPT_MODES = window.PROMPT_MODES || {};
+const AVAILABLE_APPS = window.AVAILABLE_APPS || {};
+
+// =============================================================================
+// INITIALIZATION
+// =============================================================================
+
 document.addEventListener('DOMContentLoaded', function() {
-    debugLog('DOM Content Loaded - Starting Directory AI Summariser initialization');
+    debugLog('DOM Content Loaded - Starting initialization');
     
     // Initialize the application
     initializeApp();
     
-    // Form validation and submission handling (COMBINED)
+    // Form validation and submission handling
     setupFormValidation();
     
     // File upload handling
@@ -51,14 +67,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check for flash messages
     checkForFlashMessages();
     
-    debugLog('Directory AI Summariser initialization complete');
+    // Initialize chatbot
+    initializeChatbot();
+    
+    debugLog('Initialization complete');
 });
 
 // Initialize application
 function initializeApp() {
     debugLog('Initializing application components');
     
-    // Auto-dismiss flash messages after 5 seconds
     const flashMessages = document.querySelectorAll('.flash-message');
     debugLog(`Found ${flashMessages.length} flash messages`);
     
@@ -78,7 +96,29 @@ function initializeApp() {
     infoLog('Application initialization completed');
 }
 
-// Form validation setup - ENHANCED WITH DIRECTORY ANALYSIS HANDLING
+// Initialize chatbot
+function initializeChatbot() {
+    console.log('Chatbot initialized');
+    
+    loadChatHistory();
+    
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+    
+    updateModeDescription();
+}
+
+// =============================================================================
+// FORM VALIDATION
+// =============================================================================
+
 function setupFormValidation() {
     debugLog('Setting up form validation');
     
@@ -86,15 +126,10 @@ function setupFormValidation() {
     debugLog(`Found ${forms.length} forms to validate`);
     
     forms.forEach((form, index) => {
-        debugLog(`Setting up validation for form ${index + 1}: ${form.action}`);
-        
-        // Check if already has event listener to prevent duplicates
         if (form.dataset.listenerAdded === 'true') {
-            debugLog(`Form ${index + 1} already has event listener, skipping`);
             return;
         }
         
-        // Mark as having listener
         form.dataset.listenerAdded = 'true';
         
         form.addEventListener('submit', function(e) {
@@ -107,14 +142,8 @@ function setupFormValidation() {
             const templateFiles = this.querySelector('input[name="template_files"]');
             const submitBtn = this.querySelector('button[type="submit"]');
             
-            // Directory Analysis Form Handling
             if (this.action.includes('analyze_directory')) {
-                debugLog('Directory analysis form submission detected');
-                
                 const path = directoryInput ? directoryInput.value.trim() : '';
-                
-                debugLog(`Directory path value: "${path}"`);
-                debugLog(`Directory input element:`, directoryInput);
                 
                 if (!path) {
                     e.preventDefault();
@@ -128,7 +157,6 @@ function setupFormValidation() {
                     return false;
                 }
                 
-                // Show loading state for directory analysis
                 if (submitBtn) {
                     submitBtn.dataset.originalText = submitBtn.textContent;
                     submitBtn.textContent = 'Analyzing...';
@@ -136,25 +164,17 @@ function setupFormValidation() {
                 }
                 
                 if (directoryInput) {
-                    directoryInput.readOnly = true;  // ✅ Use readOnly instead of disabled
+                    directoryInput.readOnly = true;
                     directoryInput.style.opacity = '0.6';
-                    directoryInput.style.pointerEvents = 'none';  // Prevent clicking
+                    directoryInput.style.pointerEvents = 'none';
                 }
                 
-                // Show progress indicator
                 showProgressIndicator('Starting directory analysis...');
-                
-                // Setup progress messages
                 setupProgressMessages();
                 
-                debugLog('Directory analysis form submitted', { path: path });
-                infoLog('Directory analysis started', { path: path, timestamp: new Date().toISOString() });
-                
-                // Let the form submit normally
                 return true;
             }
             
-            // Template Upload Form Handling
             else if (this.action.includes('upload_templates')) {
                 if (templateFiles && templateFiles.files.length === 0) {
                     e.preventDefault();
@@ -169,10 +189,8 @@ function setupFormValidation() {
                 }
                 
                 showProgressIndicator('Uploading and processing templates...');
-                debugLog('Template upload form submitted');
             }
             
-            // General Form Validation
             else {
                 if (submitBtn) {
                     submitBtn.dataset.originalText = submitBtn.textContent;
@@ -180,13 +198,10 @@ function setupFormValidation() {
                     submitBtn.disabled = true;
                 }
             }
-            
-            infoLog(`Form ${index + 1} validation passed, submitting`);
         });
     });
 }
 
-// Setup progress messages for directory analysis
 function setupProgressMessages() {
     let progressStep = 0;
     const progressMessages = [
@@ -205,11 +220,9 @@ function setupProgressMessages() {
         }
     }, 2000);
     
-    // Store interval ID for cleanup
     window.analysisProgressInterval = progressInterval;
 }
 
-// Update progress message
 function updateProgressMessage(message) {
     const progressIndicator = document.getElementById('progressIndicator');
     if (progressIndicator) {
@@ -221,46 +234,25 @@ function updateProgressMessage(message) {
     }
 }
 
-// Directory path validation
 function isValidDirectoryPath(path) {
-    debugLog(`Checking path validity: "${path}"`);
-    
-    // Basic path validation
-    if (path.length < 3) {
-        debugLog('Path too short');
-        return false;
-    }
-    
-    // Windows path validation
-    if (path.match(/^[A-Za-z]:\\/)) {
-        debugLog('Valid Windows path format detected');
-        return true;
-    }
-    
-    // Unix/Linux path validation
-    if (path.startsWith('/')) {
-        debugLog('Valid Unix/Linux path format detected');
-        return true;
-    }
-    
-    // Relative path validation
-    if (path.startsWith('./') || path.startsWith('../')) {
-        debugLog('Valid relative path format detected');
-        return true;
-    }
-    
-    debugLog('No valid path format detected');
+    if (path.length < 3) return false;
+    if (path.match(/^[A-Za-z]:\\/)) return true;
+    if (path.startsWith('/')) return true;
+    if (path.startsWith('./') || path.startsWith('../')) return true;
     return false;
 }
 
-// File upload handling
+// =============================================================================
+// FILE UPLOAD HANDLING
+// =============================================================================
+
 function setupFileUpload() {
     const fileInputs = document.querySelectorAll('input[type="file"]');
     
     fileInputs.forEach(input => {
         input.addEventListener('change', function(e) {
             const files = e.target.files;
-            const maxSize = 16 * 1024 * 1024; // 16MB
+            const maxSize = 16 * 1024 * 1024;
             const allowedTypes = [
                 'application/pdf',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -285,19 +277,16 @@ function setupFileUpload() {
                 }
             }
             
-            // Check total size
             if (totalSize > maxSize) {
                 showNotification('Total file size exceeds 16MB limit', 'error');
                 input.value = '';
                 return;
             }
             
-            // Check file types
             if (validFiles !== files.length) {
                 showNotification('Some files have unsupported formats', 'warning');
             }
             
-            // Show file count
             if (files.length > 0) {
                 showNotification(`${files.length} file(s) selected (${formatFileSize(totalSize)})`, 'success');
             }
@@ -305,7 +294,88 @@ function setupFileUpload() {
     });
 }
 
-// Directory path validation with real-time feedback
+function openFileUpload() {
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.click();
+    }
+}
+
+function handleFileSelection(event) {
+    const files = Array.from(event.target.files);
+    const maxFiles = 10;
+    const maxTotalSize = 1024 * 1024 * 1024; // 1GB
+    
+    if (uploadedFiles.length + files.length > maxFiles) {
+        showNotification(`Maximum ${maxFiles} files allowed`, 'error');
+        return;
+    }
+    
+    let totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
+    totalSize += files.reduce((sum, f) => sum + f.size, 0);
+    
+    if (totalSize > maxTotalSize) {
+        showNotification('Total file size exceeds 1GB limit', 'error');
+        return;
+    }
+    
+    uploadedFiles = uploadedFiles.concat(files);
+    updateFilePreview();
+    showNotification(`${files.length} file(s) added`, 'success');
+}
+
+function updateFilePreview() {
+    const fileList = document.getElementById('fileList');
+    const fileUploadPreview = document.getElementById('fileUploadPreview');
+    const uploadedCount = document.getElementById('uploadedCount');
+    const totalSize = document.getElementById('totalSize');
+    const fileCount = document.getElementById('fileCount');
+    
+    if (!fileList) return;
+    
+    if (uploadedFiles.length === 0) {
+        fileUploadPreview.style.display = 'none';
+        fileCount.style.display = 'none';
+        return;
+    }
+    
+    fileUploadPreview.style.display = 'block';
+    fileCount.style.display = 'inline';
+    fileCount.textContent = uploadedFiles.length;
+    
+    uploadedCount.textContent = uploadedFiles.length;
+    
+    const total = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
+    totalSize.textContent = `${(total / (1024 * 1024)).toFixed(2)} MB / 1024 MB`;
+    
+    fileList.innerHTML = uploadedFiles.map((file, index) => `
+        <div class="file-item">
+            <span class="file-icon">📄</span>
+            <span class="file-name">${file.name}</span>
+            <span class="file-size">${formatFileSize(file.size)}</span>
+            <button onclick="removeFile(${index})" class="remove-file-btn">×</button>
+        </div>
+    `).join('');
+}
+
+function removeFile(index) {
+    uploadedFiles.splice(index, 1);
+    updateFilePreview();
+    showNotification('File removed', 'info');
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// =============================================================================
+// DIRECTORY VALIDATION
+// =============================================================================
+
 function setupDirectoryValidation() {
     const directoryInputs = document.querySelectorAll('input[name="directory_path"]');
     
@@ -316,7 +386,6 @@ function setupDirectoryValidation() {
             clearTimeout(timeout);
             const path = e.target.value.trim();
             
-            // Clear previous validation styles
             input.classList.remove('valid', 'invalid');
             
             if (path.length === 0) return;
@@ -330,7 +399,6 @@ function setupDirectoryValidation() {
             }, 500);
         });
         
-        // Add placeholder examples
         input.addEventListener('focus', function() {
             if (!this.value) {
                 const examples = [
@@ -346,20 +414,18 @@ function setupDirectoryValidation() {
     });
 }
 
-// Real-time feedback setup
+// =============================================================================
+// REAL-TIME FEEDBACK
+// =============================================================================
+
 function setupRealTimeFeedback() {
-    debugLog('Setting up real-time feedback systems');
-    
-    // Handle page navigation back
     window.addEventListener('pageshow', function(e) {
         if (e.persisted) {
-            debugLog('Page restored from cache, resetting form state');
             resetFormState();
         }
     });
 }
 
-// Reset form state
 function resetFormState() {
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
@@ -377,87 +443,25 @@ function resetFormState() {
         });
     });
     
-    // Clear progress indicator
     const progressIndicator = document.getElementById('progressIndicator');
     if (progressIndicator) {
         progressIndicator.remove();
     }
     
-    // Clear progress interval
     if (window.analysisProgressInterval) {
         clearInterval(window.analysisProgressInterval);
     }
-    
-    debugLog('Form state reset');
 }
 
-// Check for flash messages
-function checkForFlashMessages() {
-    setTimeout(() => {
-        const flashMessages = document.querySelectorAll('.flash-message, [class*="flash"], .alert');
-        debugLog('Found flash messages:', flashMessages.length);
-        
-        flashMessages.forEach((msg, index) => {
-            debugLog(`Flash message ${index + 1}:`, msg.textContent);
-        });
-        
-        if (flashMessages.length === 0) {
-            debugLog('No flash messages found');
-        }
-    }, 100);
-}
+// =============================================================================
+// NOTIFICATIONS & PROGRESS
+// =============================================================================
 
-// Progress indicator
-function showProgressIndicator(message) {
-    debugLog(`Showing progress indicator: ${message}`);
-    
-    // Remove existing progress indicator
-    const existing = document.getElementById('progressIndicator');
-    if (existing) {
-        debugLog('Removing existing progress indicator');
-        existing.remove();
-    }
-    
-    const progressHTML = `
-        <div id="progressIndicator" class="progress-overlay">
-            <div class="progress-content">
-                <div class="progress-spinner"></div>
-                <p class="progress-message">${message}</p>
-                <div class="progress-details">
-                    <p>This may take a few moments depending on directory size...</p>
-                    <p id="progressTimer">Elapsed time: 0s</p>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', progressHTML);
-    
-    // Start timer
-    const startTime = Date.now();
-    const timer = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - startTime) / 1000);
-        const timerElement = document.getElementById('progressTimer');
-        if (timerElement) {
-            timerElement.textContent = `Elapsed time: ${elapsed}s`;
-        } else {
-            clearInterval(timer);
-        }
-    }, 1000);
-    
-    infoLog('Progress indicator displayed', { message: message });
-}
-
-// Show notification system
 function showNotification(message, type = 'info', duration = 5000) {
     debugLog(`Showing notification: ${type} - ${message}`);
     
-    // Remove existing notifications of the same type
     const existing = document.querySelectorAll(`.notification-${type}`);
-    existing.forEach(notif => {
-        debugLog('Removing existing notification of same type');
-        notif.remove();
-    });
+    existing.forEach(notif => notif.remove());
     
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
@@ -490,24 +494,18 @@ function showNotification(message, type = 'info', duration = 5000) {
     
     document.body.appendChild(notification);
     
-    // Animate in
     setTimeout(() => {
         notification.style.transform = 'translateX(0)';
     }, 100);
     
-    // Auto-remove after duration
     setTimeout(() => {
         if (notification.parentElement) {
-            debugLog(`Auto-removing notification after ${duration}ms`);
             notification.style.transform = 'translateX(100%)';
             setTimeout(() => notification.remove(), 300);
         }
     }, duration);
-    
-    infoLog('Notification displayed', { type: type, message: message });
 }
 
-// Get notification icon based on type
 function getNotificationIcon(type) {
     const icons = {
         'success': '✅',
@@ -518,228 +516,52 @@ function getNotificationIcon(type) {
     return icons[type] || 'ℹ️';
 }
 
-// Template matching functionality
-function performTemplateMatching() {
-    const button = event.target;
-    const originalText = button.textContent;
+function showProgressIndicator(message) {
+    const existing = document.getElementById('progressIndicator');
+    if (existing) existing.remove();
     
-    button.textContent = 'Finding Matches...';
-    button.disabled = true;
+    const progressHTML = `
+        <div id="progressIndicator" class="progress-overlay">
+            <div class="progress-content">
+                <div class="progress-spinner"></div>
+                <p class="progress-message">${message}</p>
+                <div class="progress-details">
+                    <p>This may take a few moments...</p>
+                    <p id="progressTimer">Elapsed time: 0s</p>
+                </div>
+            </div>
+        </div>
+    `;
     
-    fetch('/template_matching', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        button.textContent = originalText;
-        button.disabled = false;
-        
-        if (data.success) {
-            showNotification(data.message, 'success');
-            setTimeout(() => {
-                window.location.href = '/view_analysis';
-            }, 1000);
+    document.body.insertAdjacentHTML('beforeend', progressHTML);
+    
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const timerElement = document.getElementById('progressTimer');
+        if (timerElement) {
+            timerElement.textContent = `Elapsed time: ${elapsed}s`;
         } else {
-            showNotification(data.error || 'Template matching failed', 'error');
+            clearInterval(timer);
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        button.textContent = originalText;
-        button.disabled = false;
-        showNotification('Error performing template matching', 'error');
-    });
+    }, 1000);
 }
 
-// Export functionality
-function exportAnalysis(format) {
-    debugLog(`Starting export in format: ${format}`);
-    showNotification('Preparing export...', 'info');
-    
-    fetch(`/export_analysis/${format}`, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => {
-        debugLog(`Export response received: ${response.status} ${response.statusText}`);
-        
-        if (response.ok) {
-            const filename = response.headers.get('Content-Disposition')
-                ?.split('filename=')[1]?.replace(/"/g, '') || 
-                `directory_analysis.${format}`;
-            
-            debugLog(`Export successful, downloading file: ${filename}`);
-            
-            return response.blob().then(blob => {
-                downloadFile(blob, filename);
-                showNotification('Export completed successfully', 'success');
-                infoLog('Export completed', { format: format, filename: filename });
-            });
-        } else {
-            throw new Error(`Export failed with status: ${response.status}`);
-        }
-    })
-    .catch(error => {
-        errorLog('Export failed', error);
-        showNotification('Export failed. Please try again.', 'error');
-    });
-}
+// =============================================================================
+// CHATBOT FUNCTIONALITY
+// =============================================================================
 
-// Download file helper
-function downloadFile(blob, filename) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-}
-
-// Delete template confirmation
-function confirmDeleteTemplate(templateId) {
-    if (confirm('Are you sure you want to delete this template?')) {
-        const form = document.querySelector(`form[action*="delete_template/${templateId}"]`);
-        if (form) {
-            const button = form.querySelector('button[type="submit"]');
-            button.textContent = 'Deleting...';
-            button.disabled = true;
-            form.submit();
-        }
-    }
-}
-
-// Format file size helper
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// Copy analysis results to clipboard
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        showNotification('Copied to clipboard!', 'success', 2000);
-    }).catch(function(err) {
-        console.error('Copy failed:', err);
-        showNotification('Failed to copy to clipboard', 'error');
-    });
-}
-
-// Initialize tooltips for better UX
-function initializeTooltips() {
-    const tooltipElements = document.querySelectorAll('[data-tooltip]');
-    
-    tooltipElements.forEach(element => {
-        element.addEventListener('mouseenter', showTooltip);
-        element.addEventListener('mouseleave', hideTooltip);
-    });
-}
-
-function showTooltip(e) {
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip';
-    tooltip.textContent = e.target.dataset.tooltip;
-    document.body.appendChild(tooltip);
-    
-    const rect = e.target.getBoundingClientRect();
-    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-    tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
-}
-
-function hideTooltip() {
-    const tooltip = document.querySelector('.tooltip');
-    if (tooltip) tooltip.remove();
-}
-
-// Handle page unload to clean up
-window.addEventListener('beforeunload', function() {
-    debugLog('Page unload detected, cleaning up');
-    
-    const progressIndicator = document.getElementById('progressIndicator');
-    if (progressIndicator) {
-        debugLog('Removing progress indicator on page unload');
-        progressIndicator.remove();
-    }
-    
-    // Clear any intervals
-    if (window.analysisProgressInterval) {
-        clearInterval(window.analysisProgressInterval);
-    }
-});
-
-// Global error handler
-window.addEventListener('error', function(e) {
-    errorLog('JavaScript error caught', {
-        message: e.message,
-        filename: e.filename,
-        lineno: e.lineno,
-        colno: e.colno,
-        error: e.error
-    });
-});
-
-// Handle unhandled promise rejections
-window.addEventListener('unhandledrejection', function(e) {
-    console.error('[ERROR] Unhandled promise rejection:', e.reason);
-});
-
-// Global variables
-let currentMode = 'general';
-let suggestedAppId = null;
-let chatHistory = [];
-
-// Get data from window object (passed from HTML template)
-const PROMPT_MODES = window.PROMPT_MODES || {};
-const AVAILABLE_APPS = window.AVAILABLE_APPS || {};
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Chatbot initialized');
-    
-    // Load chat history from localStorage
-    loadChatHistory();
-    
-    // Setup Enter key to send message
-    const messageInput = document.getElementById('messageInput');
-    if (messageInput) {
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-    }
-    
-    // Update mode description
-    updateModeDescription();
-});
-
-// Change prompt mode - FIXED
 function changeMode() {
     const modeSelect = document.getElementById('promptMode');
     currentMode = modeSelect.value;
     updateModeDescription();
     
-    // Add system message about mode change
     const mode = PROMPT_MODES[currentMode];
     if (mode) {
         addSystemMessage(`Switched to ${mode.name} mode`);
     }
 }
 
-// Update mode description - FIXED
 function updateModeDescription() {
     const modeDesc = document.getElementById('modeDescription');
     const mode = PROMPT_MODES[currentMode];
@@ -749,7 +571,6 @@ function updateModeDescription() {
     }
 }
 
-// Send message to chatbot
 async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value.trim();
@@ -759,761 +580,116 @@ async function sendMessage() {
         return;
     }
     
-    // Create form data if files are present
-    if (uploadedFiles.length > 0) {
-        const formData = new FormData();
-        formData.append('message', message);
-        formData.append('mode', currentMode);
+    if (message) {
+        const fileInfo = uploadedFiles.length > 0 ? ` [${uploadedFiles.length} file(s) attached]` : '';
+        addMessage('user', message + fileInfo);
+    }
+    
+    messageInput.value = '';
+    showTypingIndicator();
+    
+    const sendButton = document.getElementById('sendButton');
+    sendButton.disabled = true;
+    
+    try {
+        let response;
         
-        uploadedFiles.forEach((file, index) => {
-            formData.append(`file_${index}`, file);
-        });
-        
-        formData.append('file_count', uploadedFiles.length);
-        
-        // Add message to chat
-        addMessage('user', message + ` [${uploadedFiles.length} file(s) attached]`);
-        
-        // Clear input and files
-        messageInput.value = '';
-        uploadedFiles = [];
-        document.getElementById('fileList').innerHTML = '';
-        updateFilePreview();
-        
-        // Show typing indicator
-        showTypingIndicator();
-        
-        // Disable send button
-        const sendButton = document.getElementById('sendButton');
-        sendButton.disabled = true;
-        
-        try {
-            const response = await fetch('/chat', {
+        if (uploadedFiles.length > 0) {
+            const formData = new FormData();
+            formData.append('message', message);
+            formData.append('mode', currentMode);
+            
+            uploadedFiles.forEach((file, index) => {
+                formData.append(`file_${index}`, file);
+            });
+            
+            formData.append('file_count', uploadedFiles.length);
+            
+            response = await fetch('/chat', {
                 method: 'POST',
                 body: formData
             });
             
-            const data = await response.json();
-            
-            removeTypingIndicator();
-            
-            if (data.error) {
-                addMessage('error', data.error);
-                showNotification('Error: ' + data.error, 'error');
-            } else {
-                addMessage('bot', data.response);
-                if (data.app_suggestion) {
-                    showAppSuggestion(data.app_suggestion);
-                }
-                saveChatHistory();
-            }
-            
-        } catch (error) {
-            console.error('Error sending message:', error);
-            removeTypingIndicator();
-            addMessage('error', 'Failed to send message. Please try again.');
-            showNotification('Connection error', 'error');
-        } finally {
-            sendButton.disabled = false;
-            messageInput.focus();
-        }
-    } else {
-        // Call original sendMessage if no files
-        await originalSendMessage();
-    }
-};
-
-// Voice Recording Variables
-let mediaRecorder = null;
-let audioChunks = [];
-let isRecording = false;
-let recognition = null;
-
-// File Upload Variables
-let uploadedFiles = [];
-const MAX_FILES = 10;
-const MAX_TOTAL_SIZE = 1024 * 1024 * 1024; // 1GB in bytes
-
-// Initialize Speech Recognition
-function initSpeechRecognition() {
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        
-        recognition.onresult = function(event) {
-            let interimTranscript = '';
-            let finalTranscript = '';
-            
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const transcript = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    finalTranscript += transcript + ' ';
-                } else {
-                    interimTranscript += transcript;
-                }
-            }
-            
-            const transcriptDiv = document.getElementById('transcriptText');
-            transcriptDiv.innerHTML = `
-                <div style="color: #fff;">${finalTranscript}</div>
-                <div style="color: #aaa; font-style: italic;">${interimTranscript}</div>
-            `;
-            
-            // Update message input with final transcript
-            if (finalTranscript) {
-                const messageInput = document.getElementById('messageInput');
-                messageInput.value = (messageInput.value + ' ' + finalTranscript).trim();
-            }
-        };
-        
-        recognition.onerror = function(event) {
-            console.error('Speech recognition error:', event.error);
-            showNotification('Speech recognition error: ' + event.error, 'error');
-            stopVoiceRecording();
-        };
-    } else {
-        console.warn('Speech recognition not supported');
-    }
-}
-
-// Toggle voice recording
-async function toggleVoiceRecording() {
-    if (isRecording) {
-        stopVoiceRecording();
-    } else {
-        startVoiceRecording();
-    }
-}
-
-// Start voice recording
-async function startVoiceRecording() {
-    try {
-        // Initialize speech recognition if not already done
-        if (!recognition) {
-            initSpeechRecognition();
+            uploadedFiles = [];
+            document.getElementById('fileList').innerHTML = '';
+            updateFilePreview();
+        } else {
+            response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    mode: currentMode
+                })
+            });
         }
         
-        if (!recognition) {
-            showNotification('Speech recognition not supported in this browser', 'error');
-            return;
+        const data = await response.json();
+        
+        removeTypingIndicator();
+        
+        if (data.error) {
+            addMessage('error', data.error);
+            showNotification('Error: ' + data.error, 'error');
+        } else {
+            addMessage('bot', data.response);
+            if (data.app_suggestion) {
+                showAppSuggestion(data.app_suggestion);
+            }
+            saveChatHistory();
         }
-        
-        // Start recording
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        
-        mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
-        };
-        
-        mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            // Could upload audio blob to server for processing if needed
-        };
-        
-        mediaRecorder.start();
-        recognition.start();
-        isRecording = true;
-        
-        // Update UI
-        const voiceBtn = document.getElementById('voiceBtn');
-        voiceBtn.innerHTML = '🔴';
-        voiceBtn.title = 'Recording... Click to stop';
-        
-        const transcriptDiv = document.getElementById('voiceTranscript');
-        transcriptDiv.style.display = 'block';
-        
-        showNotification('Voice recording started', 'success');
         
     } catch (error) {
-        console.error('Error starting voice recording:', error);
-        showNotification('Could not access microphone', 'error');
+        console.error('Error sending message:', error);
+        removeTypingIndicator();
+        addMessage('error', 'Failed to send message. Please try again.');
+        showNotification('Connection error', 'error');
+    } finally {
+        sendButton.disabled = false;
+        messageInput.focus();
     }
 }
 
-// Stop voice recording
-function stopVoiceRecording() {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
-    }
-    
-    if (recognition) {
-        recognition.stop();
-    }
-    
-    isRecording = false;
-    
-    // Update UI
-    const voiceBtn = document.getElementById('voiceBtn');
-    voiceBtn.innerHTML = '🎤';
-    voiceBtn.title = 'Voice input';
-    
-    const transcriptDiv = document.getElementById('voiceTranscript');
-    transcriptDiv.style.display = 'none';
-    
-    showNotification('Voice recording stopped', 'info');
-}
-
-// Open file upload dialog
-function openFileUpload() {
-    const fileInput = document.getElementById('fileInput');
-    fileInput.click();
-}
-
-// Handle file selection
-function handleFileSelection(event) {
-    const files = Array.from(event.target.files);
-    
-    // Check file count
-    if (uploadedFiles.length + files.length > MAX_FILES) {
-        showNotification(`Maximum ${MAX_FILES} files allowed`, 'warning');
-        return;
-    }
-    
-    // Check total size
-    let totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
-    const newFilesSize = files.reduce((sum, f) => sum + f.size, 0);
-    
-    if (totalSize + newFilesSize > MAX_TOTAL_SIZE) {
-        showNotification('Total file size exceeds 1GB limit', 'warning');
-        return;
-    }
-    
-    // Add files
-    files.forEach(file => {
-        uploadedFiles.push(file);
-        addFileToPreview(file);
-    });
-    
-    updateFilePreview();
-    
-    // Clear input for next selection
-    event.target.value = '';
-}
-
-// Add file to preview
-function addFileToPreview(file) {
-    const fileList = document.getElementById('fileList');
-    const fileId = `file-${Date.now()}-${Math.random()}`;
-    
-    const fileItem = document.createElement('div');
-    fileItem.className = 'file-item';
-    fileItem.id = fileId;
-    fileItem.innerHTML = `
-        <div class="file-info">
-            <span class="file-icon">${getFileIcon(file.type)}</span>
-            <div class="file-details">
-                <div class="file-name">${file.name}</div>
-                <div class="file-size">${formatFileSize(file.size)}</div>
-            </div>
-        </div>
-        <button onclick="removeFile('${fileId}')" class="remove-file-btn">&times;</button>
-    `;
-    
-    fileList.appendChild(fileItem);
-}
-
-// Get file icon based on type
-function getFileIcon(type) {
-    if (type.startsWith('image/')) return '🖼️';
-    if (type.startsWith('video/')) return '🎥';
-    if (type.startsWith('audio/')) return '🎵';
-    if (type.includes('pdf')) return '📄';
-    if (type.includes('word')) return '📝';
-    if (type.includes('excel') || type.includes('spreadsheet')) return '📊';
-    if (type.includes('powerpoint') || type.includes('presentation')) return '📽️';
-    if (type.includes('zip') || type.includes('rar')) return '🗜️';
-    if (type.includes('code') || type.includes('text')) return '💻';
-    return '📎';
-}
-
-// Remove file
-function removeFile(fileId) {
-    const fileItem = document.getElementById(fileId);
-    if (fileItem) {
-        const index = Array.from(fileItem.parentNode.children).indexOf(fileItem);
-        uploadedFiles.splice(index, 1);
-        fileItem.remove();
-        updateFilePreview();
-    }
-}
-
-// Update file preview display
-function updateFilePreview() {
-    const preview = document.getElementById('fileUploadPreview');
-    const uploadedCount = document.getElementById('uploadedCount');
-    const totalSizeSpan = document.getElementById('totalSize');
-    const fileCount = document.getElementById('fileCount');
-    
-    if (uploadedFiles.length > 0) {
-        preview.style.display = 'block';
-        uploadedCount.textContent = uploadedFiles.length;
-        
-        const totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
-        const totalMB = (totalSize / (1024 * 1024)).toFixed(2);
-        totalSizeSpan.textContent = `${totalMB} MB / 1024 MB`;
-        
-        fileCount.textContent = uploadedFiles.length;
-        fileCount.style.display = 'inline';
-    } else {
-        preview.style.display = 'none';
-        fileCount.style.display = 'none';
-    }
-}
-
-// Modify sendMessage to include uploaded files
-const originalSendMessage = sendMessage;
-sendMessage = async function() {
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value.trim();
-    
-    if (!message && uploadedFiles.length === 0) {
-        showNotification('Please enter a message or upload files', 'warning');
-        return;
-    }
-    
-    // Create form data if files are present
-    if (uploadedFiles.length > 0) {
-        const formData = new FormData();
-        formData.append('message', message);
-        formData.append('mode', currentMode);
-        
-        uploadedFiles.forEach((file, index) => {
-            formData.append(`file_${index}`, file);
-        });
-        
-        formData.append('file_count', uploadedFiles.length);
-        
-        // Add message to chat
-        addMessage('user', message + ` [${uploadedFiles.length} file(s) attached]`);
-        
-        // Clear input and files
-        messageInput.value = '';
-        uploadedFiles = [];
-        document.getElementById('fileList').innerHTML = '';
-        updateFilePreview();
-        
-        // Show typing indicator
-        showTypingIndicator();
-        
-        // Disable send button
-        const sendButton = document.getElementById('sendButton');
-        sendButton.disabled = true;
-        
-        try {
-            const response = await fetch('/chat', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const data = await response.json();
-            
-            removeTypingIndicator();
-            
-            if (data.error) {
-                addMessage('error', data.error);
-                showNotification('Error: ' + data.error, 'error');
-            } else {
-                addMessage('bot', data.response);
-                if (data.app_suggestion) {
-                    showAppSuggestion(data.app_suggestion);
-                }
-                saveChatHistory();
-            }
-            
-        } catch (error) {
-            console.error('Error sending message:', error);
-            removeTypingIndicator();
-            addMessage('error', 'Failed to send message. Please try again.');
-            showNotification('Connection error', 'error');
-        } finally {
-            sendButton.disabled = false;
-            messageInput.focus();
-        }
-    } else {
-        // Call original sendMessage if no files
-        await originalSendMessage();
-    }
-};
-
-// Add message to chat
 function addMessage(sender, content) {
     const messagesDiv = document.getElementById('chatMessages');
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${sender}-message`;
     
-    const currentTime = new Date().toLocaleTimeString('en-US', { 
+    const timestamp = new Date().toLocaleTimeString('en-US', { 
         hour: '2-digit', 
         minute: '2-digit' 
     });
     
-    if (sender === 'bot') {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <strong>🤖 AI Assistant:</strong>
-                <p>${content}</p>
-            </div>
-            <div class="message-time">${currentTime}</div>
-        `;
-    } else if (sender === 'user') {
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                <strong>You:</strong>
-                <p>${content}</p>
-            </div>
-            <div class="message-time">${currentTime}</div>
-        `;
-    } else if (sender === 'error') {
-        messageDiv.innerHTML = `
-            <div class="message-content" style="background: rgba(220, 53, 69, 0.2); border: 1px solid #dc3545;">
-                <strong>❌ Error:</strong>
-                <p>${content}</p>
-            </div>
-            <div class="message-time">${currentTime}</div>
-        `;
-    }
+    messageDiv.innerHTML = `
+        <div class="message-content">
+            <strong>${sender === 'user' ? '👤 You' : sender === 'bot' ? '🤖 AI Assistant' : '⚠️ System'}:</strong>
+            <p>${content}</p>
+        </div>
+        <div class="message-time">${timestamp}</div>
+    `;
     
     messagesDiv.appendChild(messageDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
     
-    // Add to chat history
     chatHistory.push({
         sender: sender,
         content: content,
-        timestamp: currentTime
+        timestamp: timestamp
     });
 }
 
-// Add system message
 function addSystemMessage(content) {
-    const messagesDiv = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message system-message';
-    messageDiv.style.textAlign = 'center';
-    messageDiv.style.opacity = '0.7';
-    
-    messageDiv.innerHTML = `
-        <div class="message-content" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);">
-            <p style="margin: 0; font-style: italic;">ℹ️ ${content}</p>
-        </div>
-    `;
-    
-    messagesDiv.appendChild(messageDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    addMessage('system', content);
 }
 
-// Quick message function
 function quickMessage(message) {
     const messageInput = document.getElementById('messageInput');
     messageInput.value = message;
-    messageInput.focus();
+    sendMessage();
 }
 
-// Suggest app function - FIXED
-function suggestApp(appId) {
-    debugLog(`Suggesting app: ${appId}`);
-    
-    const app = AVAILABLE_APPS[appId];
-    if (!app) {
-        errorLog(`App not found: ${appId}`);
-        showNotification('App not found', 'error');
-        return;
-    }
-    
-    if (!app.available) {
-        showNotification(`${app.name} is not currently available`, 'warning');
-        return;
-    }
-    
-    // Show app interface modal
-    showAppInterface(appId, app);
-}
-
-// Show app interface - NEW FUNCTION
-function showAppInterface(appId, appInfo) {
-    debugLog(`Showing app interface for: ${appId}`);
-    
-    // Create modal
-    const modalHTML = `
-        <div id="appInterfaceModal" class="modal" style="display: flex;">
-            <div class="modal-content" style="max-width: 800px; width: 90%;">
-                <div class="modal-header">
-                    <h3>${appInfo.icon} ${appInfo.name}</h3>
-                    <button onclick="closeAppModal()" class="close-btn">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p class="app-description">${appInfo.description}</p>
-                    ${getAppInterface(appId)}
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Remove existing modal if present
-    const existingModal = document.getElementById('appInterfaceModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-    infoLog(`App interface shown: ${appInfo.name}`);
-}
-
-// Close app modal
-function closeAppModal() {
-    const modal = document.getElementById('appInterfaceModal');
-    if (modal) {
-        modal.style.opacity = '0';
-        setTimeout(() => modal.remove(), 300);
-    }
-}
-
-// Get app interface HTML - COMPLETE IMPLEMENTATION
-function getAppInterface(appId) {
-    const interfaces = {
-        'document_search': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Search Query</label>
-                    <input type="text" id="searchQuery" class="form-control" placeholder="Enter search query...">
-                </div>
-                <div class="form-group">
-                    <label>Directory</label>
-                    <input type="text" id="searchDirectory" class="form-control" value="default">
-                </div>
-                <button onclick="executeDocumentSearch()" class="primary-btn">Search</button>
-                <div id="searchResults" class="results-area"></div>
-            </div>
-        `,
-        'testing_agent': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Project Name</label>
-                    <input type="text" id="projectName" class="form-control" placeholder="Enter project name...">
-                </div>
-                <div class="form-group">
-                    <label>Test Query</label>
-                    <textarea id="testQuery" rows="3" class="form-control" placeholder="What are you testing?"></textarea>
-                </div>
-                <button onclick="runTestComparison()" class="primary-btn">Run Tests</button>
-                <div id="testResults" class="results-area"></div>
-            </div>
-        `,
-        'work_hours_calculator': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Contracted Hours</label>
-                    <input type="number" id="contractedHours" class="form-control" placeholder="e.g., 40">
-                </div>
-                <div class="form-group">
-                    <label>Time Frame</label>
-                    <select id="timeFrame" class="form-control">
-                        <option value="week">Per Week</option>
-                        <option value="month">Per Month</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Work Description</label>
-                    <textarea id="workDescription" rows="4" class="form-control" placeholder="Describe your work hours..."></textarea>
-                </div>
-                <button onclick="calculateWorkHours()" class="primary-btn">Calculate</button>
-                <div id="workHoursResult" class="results-area"></div>
-            </div>
-        `,
-        'document_extractor': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Upload Document</label>
-                    <input type="file" id="documentFile" class="form-control" accept=".pdf,.docx,.txt">
-                </div>
-                <div class="form-group">
-                    <label>Output Format</label>
-                    <select id="outputFormat" class="form-control">
-                        <option value="pdf">PDF</option>
-                        <option value="docx">DOCX</option>
-                        <option value="txt">TXT</option>
-                        <option value="json">JSON</option>
-                    </select>
-                </div>
-                <button onclick="convertDocument()" class="primary-btn">Convert</button>
-                <div id="conversionResult" class="results-area"></div>
-            </div>
-        `,
-        'cover_letter_writer': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>CV/Resume Text</label>
-                    <textarea id="cvText" rows="5" class="form-control" placeholder="Paste your CV text..."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Job Description</label>
-                    <textarea id="jobDescription" rows="5" class="form-control" placeholder="Paste job description..."></textarea>
-                </div>
-                <button onclick="generateCoverLetter()" class="primary-btn">Generate Cover Letter</button>
-                <div id="coverLetterResult" class="results-area"></div>
-            </div>
-        `,
-        'job_ad_generator': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Job Title</label>
-                    <input type="text" id="jobTitle" class="form-control" placeholder="e.g., Software Engineer">
-                </div>
-                <div class="form-group">
-                    <label>Required Skills</label>
-                    <textarea id="requiredSkills" rows="3" class="form-control" placeholder="List required skills..."></textarea>
-                </div>
-                <button onclick="generateJobAd()" class="primary-btn">Generate Job Ad</button>
-                <div id="jobAdResult" class="results-area"></div>
-            </div>
-        `,
-        'speech_to_text': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Upload Audio File</label>
-                    <input type="file" id="audioFile" class="form-control" accept="audio/*">
-                </div>
-                <button onclick="transcribeAudio()" class="primary-btn">Transcribe Audio</button>
-                <div id="transcriptionResult" class="results-area"></div>
-            </div>
-        `,
-        'calendar_system': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Event Title</label>
-                    <input type="text" id="eventTitle" class="form-control" placeholder="Meeting title...">
-                </div>
-                <div class="form-group">
-                    <label>Date & Time</label>
-                    <input type="datetime-local" id="eventDateTime" class="form-control">
-                </div>
-                <button onclick="createCalendarEvent()" class="primary-btn">Create Event</button>
-                <div id="calendarResult" class="results-area"></div>
-            </div>
-        `,
-        'doc_summariser': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Document Text</label>
-                    <textarea id="summaryDocText" rows="8" class="form-control" placeholder="Paste document text here..."></textarea>
-                </div>
-                <button onclick="summarizeDocument()" class="primary-btn">Summarize</button>
-                <div id="summaryResult" class="results-area"></div>
-            </div>
-        `,
-        'directory_summariser': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Directory Path</label>
-                    <input type="text" id="directoryPath" class="form-control" placeholder="C:\\path\\to\\directory">
-                </div>
-                <button onclick="analyzeDirectory()" class="primary-btn">Analyze Directory</button>
-                <div id="directoryResult" class="results-area"></div>
-            </div>
-        `,
-        'coding_assistant': `
-            <div class="app-interface">
-                <div class="form-group">
-                    <label>Code</label>
-                    <textarea id="codeInput" rows="10" class="form-control" placeholder="Paste your code here..." style="font-family: monospace;"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Language</label>
-                    <select id="languageSelect" class="form-control">
-                        <option value="python">Python</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="java">Java</option>
-                    </select>
-                </div>
-                <button onclick="getCodeAssistance()" class="primary-btn">Get Assistance</button>
-                <div id="codeAssistanceResult" class="results-area"></div>
-            </div>
-        `
-    };
-    
-    return interfaces[appId] || '<p>App interface not yet implemented.</p>';
-}
-
-// Stub functions for app actions (these will call the backend APIs)
-function executeDocumentSearch() {
-    showNotification('Document search feature coming soon', 'info');
-}
-
-function runTestComparison() {
-    showNotification('Test comparison feature coming soon', 'info');
-}
-
-function calculateWorkHours() {
-    showNotification('Work hours calculator coming soon', 'info');
-}
-
-function convertDocument() {
-    showNotification('Document conversion feature coming soon', 'info');
-}
-
-function generateCoverLetter() {
-    showNotification('Cover letter generation coming soon', 'info');
-}
-
-function generateJobAd() {
-    showNotification('Job ad generation feature coming soon', 'info');
-}
-
-function transcribeAudio() {
-    showNotification('Audio transcription feature coming soon', 'info');
-}
-
-function createCalendarEvent() {
-    showNotification('Calendar event creation coming soon', 'info');
-}
-
-async function summarizeDocument() {
-    const text = document.getElementById('summaryDocText').value;
-    const resultsDiv = document.getElementById('summaryResult');
-    
-    if (!text.trim()) {
-        showNotification('Please enter document text', 'warning');
-        return;
-    }
-    
-    resultsDiv.innerHTML = '<div class="spinner"></div> Generating summary...';
-    
-    try {
-        const response = await fetch('/api/summarize-document', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ document_content: text })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            resultsDiv.innerHTML = `
-                <h4>Summary:</h4>
-                <div class="summary-content">${data.summary}</div>
-            `;
-            showNotification('Document summarized successfully', 'success');
-        } else {
-            resultsDiv.innerHTML = `<p class="error-text">Error: ${data.error}</p>`;
-        }
-    } catch (error) {
-        resultsDiv.innerHTML = `<p class="error-text">Error: ${error.message}</p>`;
-        showNotification('Summarization failed', 'error');
-    }
-}
-
-function analyzeDirectory() {
-    showNotification('Directory analysis feature coming soon', 'info');
-}
-
-function getCodeAssistance() {
-    showNotification('Code assistance feature coming soon', 'info');
-}
-
-// Chat utility functions
 function showTypingIndicator() {
     const messagesDiv = document.getElementById('chatMessages');
     const typingDiv = document.createElement('div');
@@ -1593,11 +769,1000 @@ function loadChatHistory() {
         const saved = localStorage.getItem('chatHistory');
         if (saved) {
             chatHistory = JSON.parse(saved);
-            // Optionally restore messages to UI
         }
     } catch (e) {
         console.error('Failed to load chat history:', e);
     }
 }
 
-//# sourceMappingURL=app.js.map
+// =============================================================================
+// APP SUGGESTIONS & MODALS
+// =============================================================================
+
+function suggestApp(appId) {
+    const app = AVAILABLE_APPS[appId];
+    if (!app) return;
+    
+    if (!app.available) {
+        showNotification(`${app.name} is not currently available`, 'warning');
+        return;
+    }
+    
+    suggestedAppId = appId;
+    
+    const modal = document.getElementById('appSuggestionModal');
+    const appDiv = document.getElementById('suggestedApp');
+    
+    appDiv.innerHTML = `
+        <div class="app-card">
+            <div class="app-icon">${app.icon}</div>
+            <h4>${app.name}</h4>
+            <p>${app.description}</p>
+            <div class="app-interface-preview">
+                ${getAppInterface(appId)}
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function showAppSuggestion(suggestion) {
+    suggestedAppId = suggestion.app_id;
+    
+    const modal = document.getElementById('appSuggestionModal');
+    const appDiv = document.getElementById('suggestedApp');
+    
+    appDiv.innerHTML = `
+        <div class="app-card">
+            <h4>${suggestion.app_name}</h4>
+            <p>${suggestion.description}</p>
+            <p class="confidence">Confidence: ${Math.round(suggestion.confidence * 100)}%</p>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    const modal = document.getElementById('appSuggestionModal');
+    modal.style.display = 'none';
+    suggestedAppId = null;
+}
+
+function goToApp() {
+    if (suggestedAppId) {
+        const app = AVAILABLE_APPS[suggestedAppId];
+        if (app) {
+            addMessage('bot', `Opening ${app.name}...`);
+            addMessage('system', getAppInterface(suggestedAppId));
+        }
+    }
+    closeModal();
+}
+
+function continueChat() {
+    closeModal();
+    const messageInput = document.getElementById('messageInput');
+    messageInput.focus();
+}
+
+// =============================================================================
+// APP INTERFACES
+// =============================================================================
+
+function getAppInterface(appId) {
+    const interfaces = {
+        'document_search': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Search Query</label>
+                    <input type="text" id="searchQuery" class="form-control" placeholder="Enter search query...">
+                </div>
+                <div class="form-group">
+                    <label>Directory</label>
+                    <input type="text" id="searchDirectory" class="form-control" value="default">
+                </div>
+                <button onclick="executeDocumentSearch()" class="primary-btn">Search</button>
+                <div id="searchResults" class="results-area"></div>
+            </div>
+        `,
+        'testing_agent': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" id="projectName" class="form-control" placeholder="Enter project name...">
+                </div>
+                <div class="form-group">
+                    <label>Project Description</label>
+                    <textarea id="projectDescription" rows="3" class="form-control" placeholder="Describe your project..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Test Query</label>
+                    <textarea id="testQuery" rows="3" class="form-control" placeholder="What are you testing?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Expected Results (PDF)</label>
+                    <input type="file" id="expectedResults" class="form-control" accept=".pdf">
+                </div>
+                <div class="form-group">
+                    <label>Actual Results (Screenshot)</label>
+                    <input type="file" id="actualResults" class="form-control" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label>Additional Context</label>
+                    <textarea id="additionalContext" rows="3" class="form-control" placeholder="Any additional information..."></textarea>
+                </div>
+                <button onclick="runTestComparison()" class="primary-btn">Run Tests</button>
+                <div id="testResults" class="results-area"></div>
+            </div>
+        `,
+        'work_hours_calculator': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Contracted Hours</label>
+                    <input type="number" id="contractedHours" class="form-control" placeholder="e.g., 40">
+                </div>
+                <div class="form-group">
+                    <label>Time Frame</label>
+                    <select id="timeFrame" class="form-control">
+                        <option value="day">Per Day</option>
+                        <option value="week">Per Week</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Work Description</label>
+                    <textarea id="workDescription" rows="4" class="form-control" placeholder="Describe your work hours..."></textarea>
+                </div>
+                <button onclick="calculateWorkHours()" class="primary-btn">Calculate</button>
+                <div id="workHoursResult" class="results-area"></div>
+            </div>
+        `,
+        'document_extractor': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Upload Document</label>
+                    <input type="file" id="documentFile" class="form-control" accept=".pdf,.docx,.txt">
+                </div>
+                <div class="form-group">
+                    <label>Output Format</label>
+                    <select id="outputFormat" class="form-control">
+                        <option value="same">Keep Same Format</option>
+                        <option value="pdf">PDF</option>
+                        <option value="docx">DOCX</option>
+                        <option value="txt">TXT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Table Handling</label>
+                    <select id="tableHandling" class="form-control">
+                        <option value="keep">Keep Original Table</option>
+                        <option value="empty">Convert to Empty Table</option>
+                        <option value="remove">Remove Tables</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Field Mapping (JSON format)</label>
+                    <textarea id="fieldMapping" rows="3" class="form-control" placeholder='{"original_field": "new_field"}'></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Custom Placeholder Text</label>
+                    <input type="text" id="placeholderText" class="form-control" placeholder="e.g., [To be filled]">
+                </div>
+                <div class="form-group">
+                    <label>Page Range</label>
+                    <input type="text" id="pageRange" class="form-control" placeholder="e.g., 1-3, all">
+                </div>
+                <div class="form-group">
+                    <label>Output Formatting</label>
+                    <select id="outputFormatting" class="form-control">
+                        <option value="original">Keep Original Formatting</option>
+                        <option value="default">Apply Default Formatting</option>
+                        <option value="custom">Custom Formatting</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Additional Notes/Instructions</label>
+                    <textarea id="additionalNotes" rows="3" class="form-control" placeholder="Any special instructions..."></textarea>
+                </div>
+                <button onclick="convertDocument()" class="primary-btn">Convert</button>
+                <div id="conversionResult" class="results-area"></div>
+            </div>
+        `,
+        'cover_letter_writer': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>CV/Resume Text</label>
+                    <textarea id="cvText" rows="5" class="form-control" placeholder="Paste your CV text..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Job Description</label>
+                    <textarea id="jobDescription" rows="5" class="form-control" placeholder="Paste job description..."></textarea>
+                </div>
+                <button onclick="generateCoverLetter()" class="primary-btn">Generate Cover Letter</button>
+                <div id="coverLetterResult" class="results-area"></div>
+            </div>
+        `,
+        'job_ad_generator': `
+            <div class="app-interface">
+                <h4>Job Role Information</h4>
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" id="jobTitle" class="form-control" placeholder="e.g., Software Engineer">
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1; margin-right: 10px;">
+                        <label>Employment Type</label>
+                        <select id="employmentType" class="form-control">
+                            <option value="full-time">Full-time</option>
+                            <option value="part-time">Part-time</option>
+                            <option value="contract">Contract</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Work Mode</label>
+                        <select id="workMode" class="form-control">
+                            <option value="remote">Remote</option>
+                            <option value="in-person">In-Person</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex: 1; margin-right: 10px;">
+                        <label>Department</label>
+                        <input type="text" id="department" class="form-control" placeholder="e.g., Engineering">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Location</label>
+                        <input type="text" id="location" class="form-control" placeholder="e.g., New York, NY">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Salary Range</label>
+                    <input type="text" id="salaryRange" class="form-control" placeholder="e.g., $80,000 - $120,000">
+                </div>
+                
+                <h4>Requirements</h4>
+                <div class="form-group">
+                    <label>Minimum Education Required</label>
+                    <input type="text" id="minEducation" class="form-control" placeholder="e.g., Bachelor's degree in Computer Science">
+                </div>
+                <div class="form-group">
+                    <label>Experience Requirements</label>
+                    <textarea id="experienceReqs" rows="3" class="form-control" placeholder="e.g., 3+ years in software development"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Key Job Responsibilities</label>
+                    <textarea id="jobResponsibilities" rows="4" class="form-control" placeholder="List main responsibilities..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Required Skills</label>
+                    <textarea id="requiredSkills" rows="3" class="form-control" placeholder="List required skills..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Skills</label>
+                    <textarea id="preferredSkills" rows="3" class="form-control" placeholder="List preferred skills..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Desired Personality Traits</label>
+                    <textarea id="personalityTraits" rows="2" class="form-control" placeholder="e.g., Team player, self-motivated..."></textarea>
+                </div>
+                
+                <h4>Company Information</h4>
+                <div class="form-group">
+                    <label>Company Name</label>
+                    <input type="text" id="companyName" class="form-control" placeholder="Your company name">
+                </div>
+                <div class="form-group">
+                    <label>About Company</label>
+                    <textarea id="aboutCompany" rows="3" class="form-control" placeholder="Brief company description..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Diversity & Inclusion Statement</label>
+                    <textarea id="diversityStatement" rows="2" class="form-control" placeholder="Optional diversity statement..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Application Process Details</label>
+                    <textarea id="applicationProcess" rows="2" class="form-control" placeholder="How to apply..."></textarea>
+                </div>
+                
+                <button onclick="generateJobAd()" class="primary-btn">Generate Job Ad</button>
+                <div id="jobAdResult" class="results-area"></div>
+            </div>
+        `,
+        'speech_to_text': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Upload Audio File</label>
+                    <input type="file" id="audioFile" class="form-control" accept="audio/*">
+                </div>
+                <button onclick="transcribeAudio()" class="primary-btn">Transcribe Audio</button>
+                <div id="transcriptionResult" class="results-area"></div>
+            </div>
+        `,
+        'calendar_system': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Event Title</label>
+                    <input type="text" id="eventTitle" class="form-control" placeholder="Meeting title...">
+                </div>
+                <div class="form-group">
+                    <label>Date & Time</label>
+                    <input type="datetime-local" id="eventDateTime" class="form-control">
+                </div>
+                <button onclick="createCalendarEvent()" class="primary-btn">Create Event</button>
+                <div id="calendarResult" class="results-area"></div>
+            </div>
+        `,
+        'doc_summariser': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Input Method</label>
+                    <select id="inputMethod" class="form-control" onchange="toggleSummaryInput()">
+                        <option value="text">Paste Text</option>
+                        <option value="upload">Upload Document</option>
+                    </select>
+                </div>
+                <div class="form-group" id="textInputGroup">
+                    <label>Document Text</label>
+                    <textarea id="summaryDocText" rows="8" class="form-control" placeholder="Paste document text here..."></textarea>
+                </div>
+                <div class="form-group" id="fileInputGroup" style="display: none;">
+                    <label>Upload Document</label>
+                    <input type="file" id="summaryDocFile" class="form-control" accept=".pdf,.docx,.txt,.md">
+                </div>
+                <button onclick="summarizeDocument()" class="primary-btn">Summarize</button>
+                <div id="summaryResult" class="results-area"></div>
+            </div>
+        `,
+        'directory_summariser': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Directory Path</label>
+                    <input type="text" id="directoryPath" class="form-control" placeholder="C:\\path\\to\\directory">
+                </div>
+                <button onclick="analyzeDirectory()" class="primary-btn">Analyze Directory</button>
+                <div id="directoryResult" class="results-area"></div>
+            </div>
+        `,
+        'coding_assistant': `
+            <div class="app-interface">
+                <div class="form-group">
+                    <label>Code</label>
+                    <textarea id="codeInput" rows="10" class="form-control" placeholder="Paste your code here..." style="font-family: monospace;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Language</label>
+                    <select id="languageSelect" class="form-control">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="java">Java</option>
+                        <option value="csharp">C#</option>
+                        <option value="cpp">C++</option>
+                    </select>
+                </div>
+                <button onclick="getCodeAssistance()" class="primary-btn">Get Assistance</button>
+                <div id="codeAssistanceResult" class="results-area"></div>
+            </div>
+        `
+    };
+    
+    return interfaces[appId] || '<p>App interface not yet implemented.</p>';
+}
+
+function toggleSummaryInput() {
+    const method = document.getElementById('inputMethod').value;
+    const textGroup = document.getElementById('textInputGroup');
+    const fileGroup = document.getElementById('fileInputGroup');
+    
+    if (method === 'text') {
+        textGroup.style.display = 'block';
+        fileGroup.style.display = 'none';
+    } else {
+        textGroup.style.display = 'none';
+        fileGroup.style.display = 'block';
+    }
+}
+
+// =============================================================================
+// APP EXECUTION FUNCTIONS
+// =============================================================================
+
+async function executeDocumentSearch() {
+    const query = document.getElementById('searchQuery')?.value;
+    const directory = document.getElementById('searchDirectory')?.value || 'default';
+    
+    if (!query) {
+        showNotification('Please enter a search query', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/search-documents', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query, directory })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = `
+                <h4>Search Results</h4>
+                <div class="ai-summary">${data.ai_summary}</div>
+                <div class="results-list">
+                    ${data.results.map(r => `<div class="result-item">${r}</div>`).join('')}
+                </div>
+            `;
+            resultsDiv.style.display = 'block';
+            showNotification('Search completed', 'success');
+        } else {
+            showNotification(data.error || 'Search failed', 'error');
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+        showNotification('Search failed', 'error');
+    }
+}
+
+async function runTestComparison() {
+    const projectName = document.getElementById('projectName')?.value;
+    const projectDescription = document.getElementById('projectDescription')?.value;
+    const testQuery = document.getElementById('testQuery')?.value;
+    const expectedResults = document.getElementById('expectedResults')?.files[0];
+    const actualResults = document.getElementById('actualResults')?.files[0];
+    const additionalContext = document.getElementById('additionalContext')?.value;
+    
+    if (!projectName || !testQuery) {
+        showNotification('Please enter project name and test query', 'warning');
+        return;
+    }
+    
+    if (!expectedResults || !actualResults) {
+        showNotification('Please upload both expected and actual results files', 'warning');
+        return;
+    }
+    
+    // Validate file types
+    if (!expectedResults.name.toLowerCase().endsWith('.pdf')) {
+        showNotification('Expected results must be a PDF file', 'warning');
+        return;
+    }
+    
+    const allowedImageTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/bmp'];
+    if (!allowedImageTypes.includes(actualResults.type) && 
+        !actualResults.name.toLowerCase().match(/\.(png|jpg|jpeg|gif|bmp)$/)) {
+        showNotification('Actual results must be an image file (PNG, JPG, GIF, BMP)', 'warning');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('project_name', projectName);
+        formData.append('project_description', projectDescription || '');
+        formData.append('test_query', testQuery);
+        formData.append('expected_results', expectedResults);
+        formData.append('actual_results', actualResults);
+        formData.append('additional_context', additionalContext || '');
+        
+        showNotification('Running test comparison... This may take a moment.', 'info');
+        
+        // Log the request for debugging
+        console.log('Sending test comparison request:', {
+            project_name: projectName,
+            test_query: testQuery,
+            expected_file: expectedResults.name,
+            actual_file: actualResults.name
+        });
+        
+        const response = await fetch('/api/run-test-comparison', {
+            method: 'POST',
+            body: formData
+            // Don't set Content-Type header - let browser set it for multipart/form-data
+        });
+        
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
+            throw new Error(`Server returned ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (data.success) {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = `
+                <h4>Test Comparison Results</h4>
+                <div class="comparison-section">
+                    <h5>Comparison Analysis</h5>
+                    <div class="comparison-content">${data.comparison}</div>
+                </div>
+                <div class="summary-section">
+                    <h5>Summary</h5>
+                    <div class="summary-content">${data.summary}</div>
+                </div>
+                <div class="result-actions" style="margin-top: 20px;">
+                    <button onclick="copyToClipboard(document.querySelector('.comparison-content').innerText)" class="secondary-btn">
+                        📋 Copy Comparison
+                    </button>
+                    <button onclick="copyToClipboard(document.querySelector('.summary-content').innerText)" class="secondary-btn">
+                        📋 Copy Summary
+                    </button>
+                </div>
+            `;
+            resultsDiv.style.display = 'block';
+            showNotification('Test comparison completed successfully!', 'success');
+        } else {
+            showNotification(data.error || 'Test comparison failed', 'error');
+        }
+    } catch (error) {
+        console.error('Test comparison error:', error);
+        showNotification(`Test comparison failed: ${error.message}`, 'error');
+    }
+}
+
+async function convertDocument() {
+    const documentFile = document.getElementById('documentFile')?.files[0];
+    const outputFormat = document.getElementById('outputFormat')?.value;
+    const tableHandling = document.getElementById('tableHandling')?.value;
+    const fieldMapping = document.getElementById('fieldMapping')?.value;
+    const placeholderText = document.getElementById('placeholderText')?.value;
+    const pageRange = document.getElementById('pageRange')?.value;
+    const outputFormatting = document.getElementById('outputFormatting')?.value;
+    const additionalNotes = document.getElementById('additionalNotes')?.value;
+    
+    if (!documentFile) {
+        showNotification('Please upload a document', 'warning');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('document_file', documentFile);
+        formData.append('output_format', outputFormat);
+        formData.append('table_handling', tableHandling);
+        formData.append('field_mapping', fieldMapping || '{}');
+        formData.append('placeholder_text', placeholderText || '');
+        formData.append('page_range', pageRange || 'all');
+        formData.append('output_formatting', outputFormatting);
+        formData.append('additional_notes', additionalNotes || '');
+        
+        showNotification('Converting document...', 'info');
+        
+        const response = await fetch('/api/convert-document', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Download converted file
+            const byteCharacters = atob(data.converted_file);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray]);
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = data.filename;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            const resultDiv = document.getElementById('conversionResult');
+            resultDiv.innerHTML = `
+                <h4>Conversion Complete</h4>
+                <p>File: ${data.filename}</p>
+                ${data.insights ? `<div class="insights">${data.insights}</div>` : ''}
+            `;
+            resultDiv.style.display = 'block';
+            
+            showNotification('Document converted successfully', 'success');
+        } else {
+            showNotification(data.error || 'Conversion failed', 'error');
+        }
+    } catch (error) {
+        console.error('Conversion error:', error);
+        showNotification('Conversion failed', 'error');
+    }
+}
+
+async function generateJobAd() {
+    // Collect all form data
+    const jobData = {
+        job_title: document.getElementById('jobTitle')?.value,
+        employment_type: document.getElementById('employmentType')?.value,
+        work_mode: document.getElementById('workMode')?.value,
+        department: document.getElementById('department')?.value,
+        location: document.getElementById('location')?.value,
+        salary_range: document.getElementById('salaryRange')?.value,
+        min_education: document.getElementById('minEducation')?.value,
+        experience_reqs: document.getElementById('experienceReqs')?.value,
+        job_responsibilities: document.getElementById('jobResponsibilities')?.value,
+        required_skills: document.getElementById('requiredSkills')?.value,
+        preferred_skills: document.getElementById('preferredSkills')?.value,
+        personality_traits: document.getElementById('personalityTraits')?.value,
+        company_name: document.getElementById('companyName')?.value,
+        about_company: document.getElementById('aboutCompany')?.value,
+        diversity_statement: document.getElementById('diversityStatement')?.value,
+        application_process: document.getElementById('applicationProcess')?.value
+    };
+    
+    if (!jobData.job_title) {
+        showNotification('Please enter a job title', 'warning');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        Object.keys(jobData).forEach(key => {
+            formData.append(key, jobData[key] || '');
+        });
+        
+        showNotification('Generating job ad...', 'info');
+        
+        const response = await fetch('/api/generate-job-ad', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const resultDiv = document.getElementById('jobAdResult');
+            resultDiv.innerHTML = `
+                <h4>Generated Job Advertisement</h4>
+                <div class="job-ad-content">${data.job_ad}</div>
+                <button onclick="copyToClipboard(\`${data.job_ad_raw.replace(/`/g, '\\`')}\`)" class="secondary-btn">Copy to Clipboard</button>
+            `;
+            resultDiv.style.display = 'block';
+            showNotification('Job ad generated', 'success');
+        } else {
+            showNotification(data.error || 'Generation failed', 'error');
+        }
+    } catch (error) {
+        console.error('Job ad generation error:', error);
+        showNotification('Generation failed', 'error');
+    }
+}
+
+async function transcribeAudio() {
+    const audioFile = document.getElementById('audioFile')?.files[0];
+    
+    if (!audioFile) {
+        showNotification('Please upload an audio file', 'warning');
+        return;
+    }
+    
+    try {
+        const formData = new FormData();
+        formData.append('audio_file', audioFile);
+        
+        showNotification('Transcribing audio...', 'info');
+        
+        const response = await fetch('/api/transcribe-audio', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const resultDiv = document.getElementById('transcriptionResult');
+            resultDiv.innerHTML = `
+                <h4>Transcription</h4>
+                <div class="transcription-text">${data.transcription}</div>
+                ${data.summary ? `<h5>Summary</h5><div class="summary-text">${data.summary}</div>` : ''}
+            `;
+            resultDiv.style.display = 'block';
+            showNotification('Transcription completed', 'success');
+        } else {
+            showNotification(data.error || 'Transcription failed', 'error');
+        }
+    } catch (error) {
+        console.error('Transcription error:', error);
+        showNotification('Transcription failed', 'error');
+    }
+}
+
+async function createCalendarEvent() {
+    const eventTitle = document.getElementById('eventTitle')?.value;
+    const eventDateTime = document.getElementById('eventDateTime')?.value;
+    
+    if (!eventTitle || !eventDateTime) {
+        showNotification('Please enter event title and date/time', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/create-calendar-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                event_title: eventTitle,
+                event_datetime: eventDateTime
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const resultDiv = document.getElementById('calendarResult');
+            resultDiv.innerHTML = `
+                <h4>Event Created</h4>
+                <p>${data.message}</p>
+            `;
+            resultDiv.style.display = 'block';
+            showNotification('Event created successfully', 'success');
+        } else {
+            showNotification(data.error || 'Event creation failed', 'error');
+        }
+    } catch (error) {
+        console.error('Calendar event error:', error);
+        showNotification('Event creation failed', 'error');
+    }
+}
+
+async function analyzeDirectory() {
+    const directoryPath = document.getElementById('directoryPath')?.value;
+    
+    if (!directoryPath) {
+        showNotification('Please enter a directory path', 'warning');
+        return;
+    }
+    
+    try {
+        showNotification('Analyzing directory...', 'info');
+        
+        const response = await fetch('/api/analyze-directory', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ directory_path: directoryPath })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            const resultDiv = document.getElementById('directoryResult');
+            resultDiv.innerHTML = `
+                <h4>Directory Analysis</h4>
+                <div class="analysis-content">${JSON.stringify(data.analysis, null, 2)}</div>
+                ${data.summary ? `<h5>AI Summary</h5><div class="summary-content">${data.summary}</div>` : ''}
+            `;
+            resultDiv.style.display = 'block';
+            showNotification('Directory analyzed', 'success');
+        } else {
+            showNotification(data.error || 'Analysis failed', 'error');
+        }
+    } catch (error) {
+        console.error('Directory analysis error:', error);
+        showNotification('Analysis failed', 'error');
+    }
+}
+
+// =============================================================================
+// VOICE RECORDING
+// =============================================================================
+
+async function toggleVoiceRecording() {
+    if (!isRecording) {
+        startVoiceRecording();
+    } else {
+        stopVoiceRecording();
+    }
+}
+
+async function startVoiceRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            // Here you would send the audio to your speech-to-text API
+            showNotification('Voice recording completed', 'success');
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        
+        document.getElementById('voiceTranscript').style.display = 'block';
+        document.getElementById('voiceBtn').style.backgroundColor = '#dc3545';
+        
+        showNotification('Recording started...', 'info');
+    } catch (error) {
+        console.error('Voice recording error:', error);
+        showNotification('Could not start recording', 'error');
+    }
+}
+
+function stopVoiceRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        isRecording = false;
+        
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        
+        document.getElementById('voiceTranscript').style.display = 'none';
+        document.getElementById('voiceBtn').style.backgroundColor = '';
+    }
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+function checkForFlashMessages() {
+    setTimeout(() => {
+        const flashMessages = document.querySelectorAll('.flash-message, [class*="flash"], .alert');
+        debugLog('Found flash messages:', flashMessages.length);
+    }, 100);
+}
+
+function initializeTooltips() {
+    const tooltipElements = document.querySelectorAll('[data-tooltip]');
+    
+    tooltipElements.forEach(element => {
+        element.addEventListener('mouseenter', showTooltip);
+        element.addEventListener('mouseleave', hideTooltip);
+    });
+}
+
+function showTooltip(e) {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    tooltip.textContent = e.target.dataset.tooltip;
+    document.body.appendChild(tooltip);
+    
+    const rect = e.target.getBoundingClientRect();
+    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+    tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
+}
+
+function hideTooltip() {
+    const tooltip = document.querySelector('.tooltip');
+    if (tooltip) tooltip.remove();
+}
+
+function performTemplateMatching() {
+    const button = event.target;
+    const originalText = button.textContent;
+    
+    button.textContent = 'Finding Matches...';
+    button.disabled = true;
+    
+    fetch('/template_matching', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => {
+                window.location.href = '/view_analysis';
+            }, 1000);
+        } else {
+            showNotification(data.error || 'Template matching failed', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        button.textContent = originalText;
+        button.disabled = false;
+        showNotification('Error performing template matching', 'error');
+    });
+}
+
+function exportAnalysis(format) {
+    debugLog(`Starting export in format: ${format}`);
+    showNotification('Preparing export...', 'info');
+    
+    fetch(`/export_analysis/${format}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            const filename = response.headers.get('Content-Disposition')
+                ?.split('filename=')[1]?.replace(/"/g, '') || 
+                `directory_analysis.${format}`;
+            
+            return response.blob().then(blob => {
+                downloadFile(blob, filename);
+                showNotification('Export completed successfully', 'success');
+            });
+        } else {
+            throw new Error(`Export failed with status: ${response.status}`);
+        }
+    })
+    .catch(error => {
+        errorLog('Export failed', error);
+        showNotification('Export failed. Please try again.', 'error');
+    });
+}
+
+function downloadFile(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+
+function confirmDeleteTemplate(templateId) {
+    if (confirm('Are you sure you want to delete this template?')) {
+        const form = document.querySelector(`form[action*="delete_template/${templateId}"]`);
+        if (form) {
+            const button = form.querySelector('button[type="submit"]');
+            button.textContent = 'Deleting...';
+            button.disabled = true;
+            form.submit();
+        }
+    }
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        showNotification('Copied to clipboard!', 'success', 2000);
+    }).catch(function(err) {
+        console.error('Copy failed:', err);
+        showNotification('Failed to copy to clipboard', 'error');
+    });
+}
+
+// =============================================================================
+// EVENT LISTENERS
+// =============================================================================
+
+window.addEventListener('beforeunload', function() {
+    debugLog('Page unload detected, cleaning up');
+    
+    const progressIndicator = document.getElementById('progressIndicator');
+    if (progressIndicator) {
+        progressIndicator.remove();
+    }
+    
+    if (window.analysisProgressInterval) {
+        clearInterval(window.analysisProgressInterval);
+    }
+});
+
+window.addEventListener('error', function(e) {
+    errorLog('JavaScript error caught', {
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno,
+        error: e.error
+    });
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('[ERROR] Unhandled promise rejection:', e.reason);
+});

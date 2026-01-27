@@ -808,3 +808,309 @@ Comprehensive analysis complete for user 1, path: C:\Users\fifau\Documents\Old l
 [2025-10-31 23:23:22] Output:
 User 1 viewed analysis results for analysis ID: 8
 
+[2026-01-25 22:03:45] Output:
+Flask application starting - routes registration beginning
+
+[2026-01-25 22:03:45] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\j_october_ai_directory_summariser\app\static\directory_summariser.db
+
+[2026-01-25 22:03:45] Output:
+All services initialized successfully
+
+[2026-01-25 22:03:45] Output:
+Flask route registration completed successfully
+
+[2026-01-25 22:04:02] Output:
+Anonymous user redirected to login
+
+[2026-01-25 22:04:18] User Input:
+Login attempt: Username: AkhHas2005, Email: akhtarhasan2005@gmail.com
+
+[2026-01-25 22:04:18] Output:
+Successful login for user 1 - AkhHas2005
+
+[2026-01-25 22:04:18] Output:
+User 1 accessed dashboard
+
+[2026-01-25 22:04:18] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2026-01-25 22:04:24] Output:
+User 1 accessed templates page
+
+[2026-01-25 22:04:24] Output:
+Templates page loaded for user 1: 2 templates
+
+[2026-01-25 22:04:30] Output:
+User 1 accessed dashboard
+
+[2026-01-25 22:04:30] Output:
+Dashboard loaded for user 1: 2 templates, 5 recent analyses
+
+[2026-01-25 22:05:47] User Input:
+Directory analysis request: User: 1, Path: C:\Users\fifau\Videos\Screen Recordings
+
+[2026-01-25 22:05:47] Output:
+Starting comprehensive directory analysis
+
+[2026-01-25 22:05:47] Output:
+Adding basic structure analysis for compatibility
+
+[2026-01-25 22:05:47] Output:
+Adding basic organization metrics for compatibility
+
+[2026-01-25 22:05:47] Output:
+Directory analysis complete - found 143 files, 25303834327 bytes
+
+[2026-01-25 22:05:47] Output:
+Starting content analysis
+
+[2026-01-25 22:05:47] Output:
+Content analysis complete - 0 supported files
+
+[2026-01-25 22:05:47] Output:
+Starting template analysis
+
+[2026-01-25 22:05:47] Output:
+Found 2 user templates, performing template matching
+
+[2026-01-25 22:05:47] Error:
+Template analysis failed: 'file_content'
+
+[2026-01-25 22:05:47] Output:
+Generating enhanced AI insights with template analysis
+
+[2026-01-25 22:06:07] Output:
+Enhanced AI insights generated: 8013 characters
+
+[2026-01-25 22:06:07] Output:
+Saving comprehensive analysis to database
+
+[2026-01-25 22:06:07] Output:
+Analysis saved with ID: 9
+
+[2026-01-25 22:06:07] Output:
+Comprehensive analysis complete for user 1, path: C:\Users\fifau\Videos\Screen Recordings
+
+[2026-01-25 22:06:08] Output:
+User 1 viewed analysis results for analysis ID: 9
+
+[2026-01-25 22:07:48] Output:
+Analysis exported by user 1: Format json, Analysis ID: 9, File: directory_analysis_20260125_220748.json
+
+[2026-01-25 23:17:57] Output:
+Flask application starting - routes registration beginning
+
+[2026-01-25 23:17:59] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\j_october_ai_directory_summariser\app\static\directory_summariser.db
+
+[2026-01-25 23:17:59] Output:
+All services initialized successfully
+
+[2026-01-25 23:17:59] Output:
+Flask route registration completed successfully
+
+[2026-01-25 23:18:03] Output:
+Anonymous user redirected to login
+
+[2026-01-25 23:20:10] User Input:
+Login attempt: Username: PythonProgrammer, Email: pythonprogramsha@gmail.com
+
+[2026-01-25 23:20:10] Output:
+Successful login for user 2 - PythonProgrammer
+
+[2026-01-25 23:20:10] Output:
+User 2 accessed dashboard
+
+[2026-01-25 23:20:10] Output:
+Dashboard loaded for user 2: 0 templates, 0 recent analyses
+
+[2026-01-25 23:22:50] User Input:
+Directory analysis request: User: 2, Path: C:\Work-Docs
+
+[2026-01-25 23:22:50] Output:
+Starting comprehensive directory analysis
+
+[2026-01-25 23:22:51] Output:
+Adding basic structure analysis for compatibility
+
+[2026-01-25 23:22:51] Output:
+Adding basic organization metrics for compatibility
+
+[2026-01-25 23:22:51] Output:
+Directory analysis complete - found 578 files, 721965395 bytes
+
+[2026-01-25 23:22:51] Output:
+Starting content analysis
+
+[2026-01-25 23:23:55] Output:
+Content analysis complete - 414 supported files
+
+[2026-01-25 23:23:55] Output:
+Starting template analysis
+
+[2026-01-25 23:23:55] Output:
+No user templates found, skipping template analysis
+
+[2026-01-25 23:23:55] Output:
+Generating enhanced AI insights with template analysis
+
+[2026-01-25 23:24:12] Output:
+Enhanced AI insights generated: 8186 characters
+
+[2026-01-25 23:24:12] Output:
+Saving comprehensive analysis to database
+
+[2026-01-25 23:24:12] Output:
+Analysis saved with ID: 10
+
+[2026-01-25 23:24:12] Output:
+Comprehensive analysis complete for user 2, path: C:\Work-Docs
+
+[2026-01-25 23:24:12] Output:
+User 2 viewed analysis results for analysis ID: 10
+
+[2026-01-25 23:25:23] Output:
+User 2 accessed logs page
+
+[2026-01-25 23:25:23] Output:
+Logs page loaded with 5 log files
+
+[2026-01-25 23:25:58] User Input:
+Log search: User: 2, Term: 'syntax', Type: error, File: app_logs.txt
+
+[2026-01-25 23:25:58] Output:
+Log search completed: 0 results found for 'syntax' in app_logs.txt
+
+[2026-01-25 23:26:12] User Input:
+Log search: User: 2, Term: 'e', Type: all, File: app_logs.txt
+
+[2026-01-25 23:26:12] Output:
+Log search completed: 1056 results found for 'e' in app_logs.txt
+
+[2026-01-25 23:27:10] User Input:
+Log search: User: 2, Term: 'e', Type: all, File: app_logs.txt
+
+[2026-01-25 23:27:11] Output:
+Log search completed: 1064 results found for 'e' in app_logs.txt
+
+[2026-01-25 23:27:26] Output:
+User 2 accessed templates page
+
+[2026-01-25 23:27:26] Output:
+Templates page loaded for user 2: 0 templates
+
+[2026-01-25 23:27:56] User Input:
+Template upload: User: 2, Category: Copilot Convo template, Files: 1
+
+[2026-01-25 23:27:57] Output:
+Template uploaded: Conversation.pdf (158798 bytes)
+
+[2026-01-25 23:27:57] Output:
+Template upload successful for user 2: 1 files, 158798 total bytes in category 'Copilot Convo template'
+
+[2026-01-25 23:27:57] Output:
+User 2 accessed templates page
+
+[2026-01-25 23:27:57] Output:
+Templates page loaded for user 2: 1 templates
+
+[2026-01-25 23:28:00] Output:
+User 2 accessed dashboard
+
+[2026-01-25 23:28:00] Output:
+Dashboard loaded for user 2: 1 templates, 1 recent analyses
+
+[2026-01-25 23:28:15] User Input:
+Directory analysis request: User: 2, Path: C:\Users\fifau\OneDrive\Documents\CoPilot Conversations
+
+[2026-01-25 23:28:15] Output:
+Starting comprehensive directory analysis
+
+[2026-01-25 23:28:15] Output:
+Adding basic structure analysis for compatibility
+
+[2026-01-25 23:28:15] Output:
+Adding basic organization metrics for compatibility
+
+[2026-01-25 23:28:15] Output:
+Directory analysis complete - found 464 files, 146312735 bytes
+
+[2026-01-25 23:28:15] Output:
+Starting content analysis
+
+[2026-01-25 23:31:58] Output:
+Content analysis complete - 462 supported files
+
+[2026-01-25 23:31:58] Output:
+Starting template analysis
+
+[2026-01-25 23:31:58] Output:
+Found 1 user templates, performing template matching
+
+[2026-01-25 23:31:58] Error:
+Template analysis failed: 'file_content'
+
+[2026-01-25 23:31:58] Output:
+Generating enhanced AI insights with template analysis
+
+[2026-01-25 23:32:08] Output:
+Enhanced AI insights generated: 6686 characters
+
+[2026-01-25 23:32:08] Output:
+Saving comprehensive analysis to database
+
+[2026-01-25 23:32:08] Output:
+Analysis saved with ID: 11
+
+[2026-01-25 23:32:08] Output:
+Comprehensive analysis complete for user 2, path: C:\Users\fifau\OneDrive\Documents\CoPilot Conversations
+
+[2026-01-25 23:32:09] Output:
+User 2 viewed analysis results for analysis ID: 11
+
+[2026-01-25 23:32:39] Output:
+User 2 accessed templates page
+
+[2026-01-25 23:32:39] Output:
+Templates page loaded for user 2: 1 templates
+
+[2026-01-25 23:32:43] Output:
+User 2 accessed dashboard
+
+[2026-01-25 23:32:43] Output:
+Dashboard loaded for user 2: 1 templates, 2 recent analyses
+
+[2026-01-25 23:32:53] Output:
+User 2 viewed analysis results for analysis ID: 11
+
+[2026-01-25 23:32:59] Output:
+Analysis exported by user 2: Format json, Analysis ID: 11, File: directory_analysis_20260125_233259.json
+
+[2026-01-25 23:33:24] Output:
+User 2 logged out
+
+[2026-01-25 23:33:31] User Input:
+Login attempt: Username: PythonProgrammer, Email: pythonprogramsha@gmail.com
+
+[2026-01-25 23:33:31] Output:
+Successful login for user 2 - PythonProgrammer
+
+[2026-01-25 23:33:31] Output:
+User 2 accessed dashboard
+
+[2026-01-25 23:33:31] Output:
+Dashboard loaded for user 2: 1 templates, 2 recent analyses
+
+[2026-01-27 20:26:30] Output:
+Flask application starting - routes registration beginning
+
+[2026-01-27 20:26:30] Output:
+Database initialized at: c:\Users\fifau\OneDrive\Documents\GitHub\New Laptop - Inspiron 14 2-in-1\AI-Apps-Challenge-2025\j_october_ai_directory_summariser\app\static\directory_summariser.db
+
+[2026-01-27 20:26:30] Output:
+All services initialized successfully
+
+[2026-01-27 20:26:30] Output:
+Flask route registration completed successfully
+

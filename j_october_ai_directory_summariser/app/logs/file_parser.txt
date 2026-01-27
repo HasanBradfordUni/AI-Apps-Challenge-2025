@@ -1150,3 +1150,2435 @@ Total characters: 684844
 [2025-10-31 23:23:04] Output:
 Average words per file: 1128.4
 
+[2026-01-25 22:03:45] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2026-01-25 22:03:45] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2026-01-25 22:05:47] Output:
+Starting content analysis for: C:\Users\fifau\Videos\Screen Recordings
+
+[2026-01-25 22:05:47] Output:
+Content analysis progress: 50 files processed
+
+[2026-01-25 22:05:47] Output:
+Content analysis progress: 100 files processed
+
+[2026-01-25 22:05:47] Output:
+No supported files found for content analysis
+
+[2026-01-25 23:17:59] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2026-01-25 23:17:59] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+
+[2026-01-25 23:22:51] Output:
+Starting content analysis for: C:\Work-Docs
+
+[2026-01-25 23:22:51] Output:
+Reading DOCX file: ContrOCC Guides AI Search (with AI Testing Agent).docx
+
+[2026-01-25 23:22:51] Output:
+Large content file found: ContrOCC Guides AI Search (with AI Testing Agent).docx (1381 words)
+
+[2026-01-25 23:22:51] Output:
+Reading DOCX file: ContrOCC Guides AI Search.docx
+
+[2026-01-25 23:22:52] Output:
+Large content file found: ContrOCC Guides AI Search.docx (1383 words)
+
+[2026-01-25 23:22:52] Output:
+Large content file found: Conversation (35).txt (1187 words)
+
+[2026-01-25 23:22:52] Output:
+Large content file found: Conversations to rename.txt (1117 words)
+
+[2026-01-25 23:22:52] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form 2.docx
+
+[2026-01-25 23:22:52] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form 3.docx
+
+[2026-01-25 23:22:52] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form.docx
+
+[2026-01-25 23:22:52] Output:
+Reading DOCX file: Hasan Akhtar EHM Training Guides Search Testing.docx
+
+[2026-01-25 23:22:53] Output:
+Large content file found: Hasan Akhtar EHM Training Guides Search Testing.docx (1377 words)
+
+[2026-01-25 23:22:53] Output:
+Large content file found: Internship Experience Notes.txt (1635 words)
+
+[2026-01-25 23:22:53] Output:
+Large content file found: pythonTranscripts.txt (11770 words)
+
+[2026-01-25 23:22:53] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 1.docx
+
+[2026-01-25 23:22:53] Output:
+Large content file found: Report about AI in BCFT - Draft 1.docx (6353 words)
+
+[2026-01-25 23:22:53] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 2.docx
+
+[2026-01-25 23:22:53] Output:
+Large content file found: Report about AI in BCFT - Draft 2.docx (4366 words)
+
+[2026-01-25 23:22:53] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 3.docx
+
+[2026-01-25 23:22:54] Output:
+Large content file found: Report about AI in BCFT - Draft 3.docx (2918 words)
+
+[2026-01-25 23:22:54] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 4.docx
+
+[2026-01-25 23:22:54] Output:
+Large content file found: Report about AI in BCFT - Draft 4.docx (5038 words)
+
+[2026-01-25 23:22:54] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 4b.docx
+
+[2026-01-25 23:22:54] Output:
+Large content file found: Report about AI in BCFT - Draft 4b.docx (2649 words)
+
+[2026-01-25 23:22:54] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 4c.docx
+
+[2026-01-25 23:22:54] Output:
+Large content file found: Report about AI in BCFT - Draft 4c.docx (2929 words)
+
+[2026-01-25 23:22:54] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 5 (final draft).docx
+
+[2026-01-25 23:22:54] Output:
+Large content file found: Report about AI in BCFT - Draft 5 (final draft).docx (3553 words)
+
+[2026-01-25 23:22:54] Output:
+Large content file found: ReportSummaries.txt (1078 words)
+
+[2026-01-25 23:22:54] Output:
+Content analysis progress: 50 files processed
+
+[2026-01-25 23:22:54] Output:
+Reading DOCX file: Research report for SAP power apps project (1).docx
+
+[2026-01-25 23:22:54] Output:
+Large content file found: Research report for SAP power apps project (1).docx (2068 words)
+
+[2026-01-25 23:22:54] Output:
+Reading DOCX file: Research report for SAP power apps project.docx
+
+[2026-01-25 23:22:54] Output:
+Large content file found: To-Do-List-Progression (10).txt (2486 words)
+
+[2026-01-25 23:22:54] Output:
+Large content file found: To-Do-List-Progression (3).txt (1259 words)
+
+[2026-01-25 23:22:54] Output:
+Large content file found: To-Do-List-Progression (4).txt (1259 words)
+
+[2026-01-25 23:22:54] Output:
+Large content file found: To-Do-List-Progression (5).txt (1579 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-Progression (6).txt (1729 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-Progression (8).txt (1929 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-Progression (9).txt (2096 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-Progression - Copy.txt (1089 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-Progression.txt (3417 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-ProgressionV11.txt (2671 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-ProgressionV12.txt (2812 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-ProgressionV13.txt (3069 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List-ProgressionV14.txt (3249 words)
+
+[2026-01-25 23:22:55] Output:
+Large content file found: To-Do-List.txt (1178 words)
+
+[2026-01-25 23:22:55] Output:
+Reading Excel file: 2024 Master Checklist.xlsx
+
+[2026-01-25 23:22:58] Output:
+Large content file found: 2024 Master Checklist.xlsx (1451 words)
+
+[2026-01-25 23:22:58] Output:
+Reading Excel file: 2024 Master Price List.xlsx
+
+[2026-01-25 23:22:58] Output:
+Large content file found: 2024 Master Price List.xlsx (1451 words)
+
+[2026-01-25 23:22:58] Output:
+Reading PDF file: APX - Football Brochure - 2025 - BLANK.pdf
+
+[2026-01-25 23:23:03] Output:
+Large content file found: APX - Football Brochure - 2025 - BLANK.pdf (1389 words)
+
+[2026-01-25 23:23:03] Output:
+Reading PDF file: APX - Rugby Brochure WEB.pdf
+
+[2026-01-25 23:23:06] Output:
+Large content file found: APX - Rugby Brochure WEB.pdf (1315 words)
+
+[2026-01-25 23:23:06] Output:
+Large content file found: APX Order App - Apps Script Version Code.txt (2037 words)
+
+[2026-01-25 23:23:06] Output:
+Large content file found: APX Order App - GitHub Version index html.txt (1015 words)
+
+[2026-01-25 23:23:07] Output:
+Large content file found: APX Order App - GitHub Version Sizes Html.txt (1212 words)
+
+[2026-01-25 23:23:07] Output:
+Content analysis progress: 100 files processed
+
+[2026-01-25 23:23:07] Output:
+Reading PDF file: APXBrandGuidelines.pdf
+
+[2026-01-25 23:23:11] Output:
+Large content file found: apx_club_product_combinations.txt (9144 words)
+
+[2026-01-25 23:23:11] Output:
+Large content file found: apx_club_product_combinations_no_one_size.txt (8532 words)
+
+[2026-01-25 23:23:11] Output:
+Reading Excel file: Canvey Island U10.xlsx
+
+[2026-01-25 23:23:11] Output:
+Large content file found: club_item_combinations.txt (9420 words)
+
+[2026-01-25 23:23:11] Output:
+Large content file found: Current vs old sizes.html code.txt (1843 words)
+
+[2026-01-25 23:23:11] Output:
+Reading Excel file: Cut and Sew Order Form.xlsx
+
+[2026-01-25 23:23:12] Output:
+Large content file found: index (1).html (1015 words)
+
+[2026-01-25 23:23:12] Output:
+Reading Excel file: Match Kit Order Form - LTFC.xlsx
+
+[2026-01-25 23:23:12] Output:
+Reading Excel file: Match Kit Order Form.xlsx
+
+[2026-01-25 23:23:13] Output:
+Reading PDF file: Order Form Draft - Google Forms.pdf
+
+[2026-01-25 23:23:13] Output:
+Reading PDF file: Order Form Draft Blank - Google Forms.pdf
+
+[2026-01-25 23:23:13] Output:
+Reading Excel file: Order – AAK Football Club.xlsx
+
+[2026-01-25 23:23:14] Output:
+Reading Excel file: Order – Barham AFC.xlsx
+
+[2026-01-25 23:23:14] Output:
+Reading Excel file: Order – Costello FC (1).xlsx
+
+[2026-01-25 23:23:15] Output:
+Reading PDF file: Order – Costello FC – 30_07_2025.pdf
+
+[2026-01-25 23:23:16] Output:
+Reading Excel file: Order – Costello FC.xlsx
+
+[2026-01-25 23:23:16] Output:
+Reading Excel file: Order – Wednesfield Community FC (1).xlsx
+
+[2026-01-25 23:23:16] Output:
+Reading Excel file: Order – Wednesfield Community FC.xlsx
+
+[2026-01-25 23:23:17] Output:
+Content analysis progress: 150 files processed
+
+[2026-01-25 23:23:17] Output:
+Reading Excel file: Sublimation Order Form.xlsx
+
+[2026-01-25 23:23:17] Output:
+Reading Excel file: Training Kit Order Form.xlsx
+
+[2026-01-25 23:23:18] Output:
+Large content file found: index.html (1317 words)
+
+[2026-01-25 23:23:18] Output:
+Large content file found: script.js (1043 words)
+
+[2026-01-25 23:23:18] Output:
+Reading PDF file: ASOG Business Plan - Draft 1.pdf
+
+[2026-01-25 23:23:19] Output:
+Large content file found: ASOG Business Plan - Draft 1.pdf (2883 words)
+
+[2026-01-25 23:23:19] Output:
+Reading PDF file: ASOG Business Plan - Draft 2.pdf
+
+[2026-01-25 23:23:19] Output:
+Large content file found: ASOG Business Plan - Draft 2.pdf (3074 words)
+
+[2026-01-25 23:23:19] Output:
+Reading PDF file: ASOG Business Plan - Draft 3.pdf
+
+[2026-01-25 23:23:20] Output:
+Large content file found: ASOG Business Plan - Draft 3.pdf (3128 words)
+
+[2026-01-25 23:23:20] Output:
+Reading DOCX file: ASOG_Business_Plan.docx
+
+[2026-01-25 23:23:20] Output:
+Reading PDF file: AKHTARH322 Payslip for April 01 2025 - April 30 2025.pdf
+
+[2026-01-25 23:23:20] Output:
+Reading PDF file: AKHTARH322 Payslip for December 01 2024 - December 31 2024-1.pdf
+
+[2026-01-25 23:23:21] Output:
+Reading PDF file: AKHTARH322 Payslip for February 01 2025 - February 28 2025-2.pdf
+
+[2026-01-25 23:23:21] Output:
+Reading PDF file: AKHTARH322 Payslip for January 01 2025 - January 31 2025-1.pdf
+
+[2026-01-25 23:23:21] Output:
+Reading PDF file: AKHTARH322 Payslip for June 01 2025 - June 30 2025.pdf
+
+[2026-01-25 23:23:22] Output:
+Reading PDF file: AKHTARH322 Payslip for March 01 2025 - March 31 2025-1.pdf
+
+[2026-01-25 23:23:22] Output:
+Reading PDF file: AKHTARH322 Payslip for May 01 2025 - May 31 2025.pdf
+
+[2026-01-25 23:23:22] Output:
+Reading PDF file: AKHTARH322 Payslip for November 01 2024 - November 30 2024-2.pdf
+
+[2026-01-25 23:23:22] Output:
+Reading PDF file: AKHTARH646 Payslip for August 01 2025 - August 31 2025.pdf
+
+[2026-01-25 23:23:23] Output:
+Content analysis progress: 200 files processed
+
+[2026-01-25 23:23:23] Output:
+Reading PDF file: 5130379365.pdf
+
+[2026-01-25 23:23:23] Output:
+Reading PDF file: 5154237741.pdf
+
+[2026-01-25 23:23:23] Output:
+Reading PDF file: 5175840487.pdf
+
+[2026-01-25 23:23:23] Output:
+Reading PDF file: 5194081542.pdf
+
+[2026-01-25 23:23:23] Output:
+Reading PDF file: 6781415fd06c5e2526621c5a.pdf
+
+[2026-01-25 23:23:24] Output:
+Large content file found: 6781415fd06c5e2526621c5a.pdf (2818 words)
+
+[2026-01-25 23:23:24] Output:
+Reading PDF file: 9446_Means_of_Escape_v2_.pdf
+
+[2026-01-25 23:23:26] Output:
+Large content file found: 9446_Means_of_Escape_v2_.pdf (17608 words)
+
+[2026-01-25 23:23:26] Output:
+Reading PDF file: 9449_Offices_and_Shops_v2.pdf
+
+[2026-01-25 23:23:35] Output:
+Large content file found: 9449_Offices_and_Shops_v2.pdf (53757 words)
+
+[2026-01-25 23:23:35] Output:
+Reading PDF file: Certificate (1).pdf
+
+[2026-01-25 23:23:35] Output:
+Reading PDF file: Certificate (2).pdf
+
+[2026-01-25 23:23:35] Output:
+Reading PDF file: Certificate.pdf
+
+[2026-01-25 23:23:35] Output:
+Reading PDF file: CV - Hasan Akhtar - Cloud and Platform Engineer.pdf
+
+[2026-01-25 23:23:36] Output:
+Large content file found: CV - Hasan Akhtar - Cloud and Platform Engineer.pdf (1216 words)
+
+[2026-01-25 23:23:36] Output:
+Reading PDF file: CV - Hasan Akhtar - Data Science.pdf
+
+[2026-01-25 23:23:36] Output:
+Large content file found: CV - Hasan Akhtar - Data Science.pdf (1209 words)
+
+[2026-01-25 23:23:36] Output:
+Reading PDF file: CV - Hasan Akhtar - Power Platform.pdf
+
+[2026-01-25 23:23:37] Output:
+Large content file found: CV - Hasan Akhtar - Power Platform.pdf (1202 words)
+
+[2026-01-25 23:23:37] Output:
+Reading DOCX file: Documentation for Version 1 of the AI Document Extraction Program.docx
+
+[2026-01-25 23:23:37] Output:
+Large content file found: Documentation for Version 1 of the AI Document Extraction Program.docx (1047 words)
+
+[2026-01-25 23:23:37] Output:
+Reading DOCX file: Documentation for Version 2 of the AI Document Extraction Program.docx
+
+[2026-01-25 23:23:37] Output:
+Large content file found: Documentation for Version 2 of the AI Document Extraction Program.docx (1419 words)
+
+[2026-01-25 23:23:37] Output:
+Reading DOCX file: Documentation for Version 3 of the AI Document Extraction Program.docx
+
+[2026-01-25 23:23:37] Output:
+Large content file found: Documentation for Version 3 of the AI Document Extraction Program.docx (1941 words)
+
+[2026-01-25 23:23:37] Output:
+Reading DOCX file: Documentation for Version 4 of the AI Document Extraction Program.docx
+
+[2026-01-25 23:23:38] Output:
+Large content file found: Documentation for Version 4 of the AI Document Extraction Program.docx (2295 words)
+
+[2026-01-25 23:23:38] Output:
+Large content file found: documentationForV3.md (3053 words)
+
+[2026-01-25 23:23:38] Output:
+Reading PDF file: DSA Taxi Receipts - December 2024 and January 2025.pdf
+
+[2026-01-25 23:23:38] Output:
+Reading PDF file: DSA Taxi Receipts - October and November 2024.pdf
+
+[2026-01-25 23:23:38] Output:
+Reading PDF file: Graduate 8.0 Candidate Report..PDF
+
+[2026-01-25 23:23:39] Output:
+Large content file found: Graduate 8.0 Candidate Report..PDF (2032 words)
+
+[2026-01-25 23:23:39] Output:
+Reading PDF file: Hasan Akhtar Pension opt-out form Jan 2025 BCFT.pdf
+
+[2026-01-25 23:23:39] Output:
+Large content file found: Hasan Akhtar Pension opt-out form Jan 2025 BCFT.pdf (1085 words)
+
+[2026-01-25 23:23:39] Output:
+Reading DOCX file: Installing the Citrix Secure Access Application.docx
+
+[2026-01-25 23:23:39] Output:
+Reading PowerPoint file: Presentation on generative AI.pptx
+
+[2026-01-25 23:23:39] Output:
+Reading PDF file: SEP Process as 041024.pdf
+
+[2026-01-25 23:23:39] Output:
+Reading DOCX file: Spend Efficiency Panel Process flow narrative
+300924 .docx
+
+[2026-01-25 23:23:40] Output:
+Reading Excel file: Transforming Social Care_ Exciting AI Innovations Question Responses.xlsx
+
+[2026-01-25 23:23:40] Output:
+Large content file found: Transforming Social Care_ Exciting AI Innovations Question Responses.xlsx (3859 words)
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: ChatGPT Initial Role Ideas.docx
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: HAR Business Round-up - Template.docx
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: HAR Business Round-up [fifth edition].docx
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: HAR Business Round-up [first edition].docx
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: HAR Business Round-up [fourth edition].docx
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: HAR Business Round-up [second edition].docx
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: HAR Business Round-up [third edition].docx
+
+[2026-01-25 23:23:40] Output:
+Content analysis progress: 250 files processed
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: Old Business Round-ups [combined edition].docx
+
+[2026-01-25 23:23:40] Output:
+Large content file found: Old Business Round-ups [combined edition].docx (1601 words)
+
+[2026-01-25 23:23:40] Output:
+Reading DOCX file: Python Transcripts for first project (05.10.2024).docx
+
+[2026-01-25 23:23:41] Output:
+Large content file found: Python Transcripts for first project (05.10.2024).docx (1484 words)
+
+[2026-01-25 23:23:41] Output:
+Reading DOCX file: Redshift Business Round-up [first edition].docx
+
+[2026-01-25 23:23:41] Output:
+Content analysis progress: 300 files processed
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: AI Generated Images - Copilot.docx
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: ContrOCC Guides AI Search (with AI Testing Agent).docx
+
+[2026-01-25 23:23:42] Output:
+Large content file found: ContrOCC Guides AI Search (with AI Testing Agent).docx (1381 words)
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: ContrOCC Guides AI Search.docx
+
+[2026-01-25 23:23:42] Output:
+Large content file found: ContrOCC Guides AI Search.docx (1383 words)
+
+[2026-01-25 23:23:42] Output:
+Large content file found: Conversation (35).txt (1187 words)
+
+[2026-01-25 23:23:42] Output:
+Large content file found: Conversations to rename.txt (1117 words)
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: Documentation for Version 1 of the AI Document Extraction Program.docx
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form 2.docx
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form 3.docx
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form.docx
+
+[2026-01-25 23:23:42] Output:
+Reading DOCX file: Hasan Akhtar EHM Training Guides Search Testing.docx
+
+[2026-01-25 23:23:43] Output:
+Large content file found: Hasan Akhtar EHM Training Guides Search Testing.docx (1377 words)
+
+[2026-01-25 23:23:43] Output:
+Content analysis progress: 350 files processed
+
+[2026-01-25 23:23:43] Output:
+Large content file found: Internship Experience Notes.txt (1635 words)
+
+[2026-01-25 23:23:43] Output:
+Large content file found: Now I've comeback (Priorities).txt (1718 words)
+
+[2026-01-25 23:23:43] Output:
+Reading DOCX file: Objectives and Scope document.docx
+
+[2026-01-25 23:23:43] Output:
+Reading DOCX file: Power Platform screenshots.docx
+
+[2026-01-25 23:23:43] Output:
+Large content file found: pythonTranscripts.txt (11770 words)
+
+[2026-01-25 23:23:43] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 1.docx
+
+[2026-01-25 23:23:43] Output:
+Large content file found: Report about AI in BCFT - Draft 1.docx (6353 words)
+
+[2026-01-25 23:23:43] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 2.docx
+
+[2026-01-25 23:23:43] Output:
+Large content file found: Report about AI in BCFT - Draft 2.docx (4366 words)
+
+[2026-01-25 23:23:43] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 3.docx
+
+[2026-01-25 23:23:44] Output:
+Large content file found: Report about AI in BCFT - Draft 3.docx (2918 words)
+
+[2026-01-25 23:23:44] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 4.docx
+
+[2026-01-25 23:23:44] Output:
+Large content file found: Report about AI in BCFT - Draft 4.docx (5038 words)
+
+[2026-01-25 23:23:44] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 4b.docx
+
+[2026-01-25 23:23:44] Output:
+Large content file found: Report about AI in BCFT - Draft 4b.docx (2649 words)
+
+[2026-01-25 23:23:44] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 4c.docx
+
+[2026-01-25 23:23:44] Output:
+Large content file found: Report about AI in BCFT - Draft 4c.docx (2929 words)
+
+[2026-01-25 23:23:44] Output:
+Reading DOCX file: Report about AI in BCFT - Draft 5 (final draft).docx
+
+[2026-01-25 23:23:44] Output:
+Large content file found: Report about AI in BCFT - Draft 5 (final draft).docx (3553 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: ReportSummaries.txt (1078 words)
+
+[2026-01-25 23:23:44] Output:
+Reading DOCX file: Research report for SAP power apps project (1).docx
+
+[2026-01-25 23:23:44] Output:
+Large content file found: Research report for SAP power apps project (1).docx (2068 words)
+
+[2026-01-25 23:23:44] Output:
+Reading DOCX file: Research report for SAP power apps project.docx
+
+[2026-01-25 23:23:44] Output:
+Reading DOCX file: Spending Panel Review - Power Automate notes.docx
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression (10).txt (2486 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression (3).txt (1259 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression (4).txt (1259 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression (5).txt (1579 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression (6).txt (1729 words)
+
+[2026-01-25 23:23:44] Output:
+Content analysis progress: 400 files processed
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression (8).txt (1929 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression (9).txt (2096 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression - Copy.txt (1089 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression-Final.txt (3492 words)
+
+[2026-01-25 23:23:44] Output:
+Large content file found: To-Do-List-Progression.txt (3417 words)
+
+[2026-01-25 23:23:45] Output:
+Large content file found: To-Do-List-ProgressionV11.txt (2671 words)
+
+[2026-01-25 23:23:45] Output:
+Large content file found: To-Do-List-ProgressionV12.txt (2812 words)
+
+[2026-01-25 23:23:45] Output:
+Large content file found: To-Do-List-ProgressionV13.txt (3069 words)
+
+[2026-01-25 23:23:45] Output:
+Large content file found: To-Do-List-ProgressionV14.txt (3249 words)
+
+[2026-01-25 23:23:45] Output:
+Large content file found: To-Do-List-ProgressionV15.txt (3417 words)
+
+[2026-01-25 23:23:45] Output:
+Large content file found: To-Do-List.txt (1178 words)
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 1 (1).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 1 (2).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 1 (3).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 1 (4).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 1 (5).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 1 (6).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 1.docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2 (1).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2 (2).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2 (3).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2 (4).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2 (5).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2 (6).docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2.docx
+
+[2026-01-25 23:23:45] Output:
+Reading DOCX file: A & E Case 2_1.docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 2_2.docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 (1).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 (2).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 (3).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 (4).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 (5).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 (6).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 v1.docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 v2.docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3 v3.docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: A & E Case 3.docx
+
+[2026-01-25 23:23:46] Output:
+Reading Excel file: BLANK Master Spreadsheet.xlsx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: Blank Testing doc.docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: Case 1 (1).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: Case 1 (2).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: Case 1 (3).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: Case 1 (4).docx
+
+[2026-01-25 23:23:46] Output:
+Reading DOCX file: Case 1 (5).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 1 (6).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 1.docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2 (1).docx
+
+[2026-01-25 23:23:47] Output:
+Content analysis progress: 450 files processed
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2 (2).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2 (3).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2 (4).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2 (5).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2 (6).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2.docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2_1.docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2_2.docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2_3.docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2_4.docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: case 2_5.docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 3 (1).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 3 (2).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 3 (3).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 3 (4).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 3 (5).docx
+
+[2026-01-25 23:23:47] Output:
+Reading DOCX file: Case 3 (6).docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case 3 - copy 1.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case 3 - copy 2.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case 3 - copy 3.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case 3 - copy 4.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case 3.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case 4.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case management profile - blank.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case management profile - marked example V2.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Case management profile - marked example.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form (1).docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form (2).docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form (3).docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form (4).docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form (5).docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form (6).docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form 2.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form 3.docx
+
+[2026-01-25 23:23:48] Output:
+Reading DOCX file: Example filled Breaking Cycles Referral Form.docx
+
+[2026-01-25 23:23:48] Output:
+Reading Excel file: Filled Master Spreadsheet V1.00.xlsx
+
+[2026-01-25 23:23:49] Output:
+Large content file found: run_logs.txt (159187 words)
+
+[2026-01-25 23:23:49] Output:
+Reading DOCX file: TALENT ENGINE Business Plan.docx
+
+[2026-01-25 23:23:49] Output:
+Large content file found: TALENT ENGINE Business Plan.docx (3664 words)
+
+[2026-01-25 23:23:49] Output:
+Large content file found: Talent Engine Initial Prototype - All Code.txt (18027 words)
+
+[2026-01-25 23:23:49] Output:
+Content analysis progress: 500 files processed
+
+[2026-01-25 23:23:49] Output:
+Reading PowerPoint file: Copy of Wiser Academy Rec _ Ambassadors 2025_26.pptx
+
+[2026-01-25 23:23:50] Output:
+Reading DOCX file: CV - Hasan Akhtar (June 2025) [Wiser Academy - Ambassador].docx
+
+[2026-01-25 23:23:50] Output:
+Large content file found: CV - Hasan Akhtar (June 2025) [Wiser Academy - Ambassador].docx (1009 words)
+
+[2026-01-25 23:23:50] Output:
+Reading PDF file: Wiser 2025 Highlights.pdf
+
+[2026-01-25 23:23:51] Output:
+Reading PowerPoint file: Wiser 2025 Highlights.pptx
+
+[2026-01-25 23:23:51] Output:
+Large content file found: Wiser academy Posts notes - October.txt (3882 words)
+
+[2026-01-25 23:23:51] Output:
+Reading PDF file: Wiser Academy Rec _ Ambassadors 2025_26.pdf
+
+[2026-01-25 23:23:52] Output:
+Reading PowerPoint file: Wiser Academy Rec _ Ambassadors 2025_26.pptx
+
+[2026-01-25 23:23:53] Output:
+Reading PDF file: Wiser Academy _ Client Training Pre-reading 🚀 (1).pdf
+
+[2026-01-25 23:23:55] Output:
+Large content file found: Wiser Academy _ Client Training Pre-reading 🚀 (1).pdf (4218 words)
+
+[2026-01-25 23:23:55] Output:
+Reading PowerPoint file: ~$Wiser 2025 Highlights.pptx
+
+[2026-01-25 23:23:55] Output:
+Content analysis progress: 550 files processed
+
+[2026-01-25 23:23:55] Output:
+Content analysis complete: 414 supported files
+
+[2026-01-25 23:23:55] Output:
+Total words: 582441
+
+[2026-01-25 23:23:55] Output:
+Total characters: 4153633
+
+[2026-01-25 23:23:55] Output:
+Average words per file: 1406.9
+
+[2026-01-25 23:28:15] Output:
+Starting content analysis for: C:\Users\fifau\OneDrive\Documents\CoPilot Conversations
+
+[2026-01-25 23:28:15] Output:
+Reading PDF file: Conversation.pdf
+
+[2026-01-25 23:28:16] Output:
+Large content file found: Conversation.txt (1356 words)
+
+[2026-01-25 23:28:16] Output:
+Reading Excel file: DoneTracker.xlsx
+
+[2026-01-25 23:28:16] Output:
+Large content file found: DoneTracker.xlsx (3053 words)
+
+[2026-01-25 23:28:16] Output:
+Reading DOCX file: template.docx
+
+[2026-01-25 23:28:17] Output:
+Reading PDF file: template.pdf
+
+[2026-01-25 23:28:19] Output:
+Reading DOCX file: Creating a FIFA 24 Career Mode Mod.docx
+
+[2026-01-25 23:28:20] Output:
+Reading DOCX file: Academic Achievements.docx
+
+[2026-01-25 23:28:20] Output:
+Reading DOCX file: Adding a Week to a Date in Python.docx
+
+[2026-01-25 23:28:20] Output:
+Reading DOCX file: AI Research Intern and Python Enthusiast.docx
+
+[2026-01-25 23:28:21] Output:
+Reading DOCX file: Automating SAP Approval Process.docx
+
+[2026-01-25 23:28:21] Output:
+Reading DOCX file: Calculating Work Hours with Power apps.docx
+
+[2026-01-25 23:28:22] Output:
+Large content file found: Calculating Work Hours with Power apps.docx (1313 words)
+
+[2026-01-25 23:28:22] Output:
+Reading DOCX file: Contacting Unilever for Hiring Manager Information.docx
+
+[2026-01-25 23:28:22] Output:
+Reading DOCX file: Converting Positive to Negative in Python.docx
+
+[2026-01-25 23:28:23] Output:
+Large content file found: Converting Positive to Negative in Python.docx (1187 words)
+
+[2026-01-25 23:28:23] Output:
+Reading DOCX file: Counting Items per Day in Weekly Data.docx
+
+[2026-01-25 23:28:23] Output:
+Reading DOCX file: Creating a Fancy Image with a Quote.docx
+
+[2026-01-25 23:28:23] Output:
+Reading DOCX file: Creating a Tkinter Window.docx
+
+[2026-01-25 23:28:24] Output:
+Reading DOCX file: Creating a Work Hour Calculator with Tkinter in Python.docx
+
+[2026-01-25 23:28:24] Output:
+Large content file found: Creating a Work Hour Calculator with Tkinter in Python.docx (1021 words)
+
+[2026-01-25 23:28:24] Output:
+Reading DOCX file: Creating Album Folders in Xiaomi Gallery App.docx
+
+[2026-01-25 23:28:25] Output:
+Reading DOCX file: Creating an AI-Powered Document Processor.docx
+
+[2026-01-25 23:28:25] Output:
+Large content file found: Creating an AI-Powered Document Processor.docx (1479 words)
+
+[2026-01-25 23:28:25] Output:
+Reading DOCX file: Creating Custom Thumbnails with AI Tools.docx
+
+[2026-01-25 23:28:25] Output:
+Reading DOCX file: Creating Mailing Lists in Gmail.docx
+
+[2026-01-25 23:28:26] Output:
+Large content file found: Creating Mailing Lists in Gmail.docx (1697 words)
+
+[2026-01-25 23:28:26] Output:
+Reading DOCX file: Creative Map Ideas for Fortnite Livestream.docx
+
+[2026-01-25 23:28:26] Output:
+Reading DOCX file: Custom Power Apps Component for File Uploads.docx
+
+[2026-01-25 23:28:27] Output:
+Reading DOCX file: CV Summary Assistance.docx
+
+[2026-01-25 23:28:27] Output:
+Reading DOCX file: Debugging Software Testing Agent.docx
+
+[2026-01-25 23:28:28] Output:
+Large content file found: Debugging Software Testing Agent.docx (2806 words)
+
+[2026-01-25 23:28:28] Output:
+Reading DOCX file: Designing a Web Application for Non-Technical Users.docx
+
+[2026-01-25 23:28:28] Output:
+Reading DOCX file: Drafting an Email for Reference Request Follow-Up.docx
+
+[2026-01-25 23:28:28] Output:
+Large content file found: Drafting an Email for Reference Request Follow-Up.docx (1184 words)
+
+[2026-01-25 23:28:28] Output:
+Reading DOCX file: Email Assistance.docx
+
+[2026-01-25 23:28:29] Output:
+Reading DOCX file: Evaluating AI Search results for testing summaries.docx
+
+[2026-01-25 23:28:29] Output:
+Large content file found: Evaluating AI Search results for testing summaries.docx (1429 words)
+
+[2026-01-25 23:28:29] Output:
+Reading DOCX file: Fifa Account Progress.docx
+
+[2026-01-25 23:28:30] Output:
+Reading DOCX file: File Path issue with Python code.docx
+
+[2026-01-25 23:28:30] Output:
+Reading PDF file: File Path issue with Python code.pdf
+
+[2026-01-25 23:28:31] Output:
+Reading DOCX file: Finding Computer Science Placements.docx
+
+[2026-01-25 23:28:31] Output:
+Reading DOCX file: Fixing Logic Error in Circular Queue Implementation.docx
+
+[2026-01-25 23:28:32] Output:
+Reading DOCX file: Fixing Scrollbar Height in Tkinter.docx
+
+[2026-01-25 23:28:32] Output:
+Large content file found: Fixing Scrollbar Height in Tkinter.docx (1125 words)
+
+[2026-01-25 23:28:32] Output:
+Reading DOCX file: Football Moments 2013-2024.docx
+
+[2026-01-25 23:28:32] Output:
+Reading DOCX file: Google Cloud Speech Dependencies Troubleshooting.docx
+
+[2026-01-25 23:28:33] Output:
+Large content file found: Google Cloud Speech Dependencies Troubleshooting.docx (1398 words)
+
+[2026-01-25 23:28:33] Output:
+Reading DOCX file: Gorillas vs. Monkeys.docx
+
+[2026-01-25 23:28:33] Output:
+Reading DOCX file: Hiding Icons on Windows 10.docx
+
+[2026-01-25 23:28:34] Output:
+Reading DOCX file: ID Generation Flow Steps.docx
+
+[2026-01-25 23:28:34] Output:
+Large content file found: ID Generation Flow Steps.docx (10076 words)
+
+[2026-01-25 23:28:34] Output:
+Reading DOCX file: Integrating code to make textbox that can scroll in Python Tkinter.docx
+
+[2026-01-25 23:28:35] Output:
+Reading DOCX file: LinkedIn Internship Update.docx
+
+[2026-01-25 23:28:35] Output:
+Reading DOCX file: LinkedIn Post for New Job Announcement.docx
+
+[2026-01-25 23:28:36] Output:
+Large content file found: LinkedIn Post for New Job Announcement.docx (6751 words)
+
+[2026-01-25 23:28:36] Output:
+Reading DOCX file: Matching Colours in Clipchamp Video Overlay.docx
+
+[2026-01-25 23:28:36] Output:
+Reading DOCX file: Optimistic Gaming Spirit.docx
+
+[2026-01-25 23:28:37] Output:
+Large content file found: Optimistic Gaming Spirit.docx (1159 words)
+
+[2026-01-25 23:28:37] Output:
+Reading DOCX file: Optimizing Performance on Your New Dell Laptop.docx
+
+[2026-01-25 23:28:37] Output:
+Reading DOCX file: Planning a Fifa 24 Pack and Play Vid.docx
+
+[2026-01-25 23:28:37] Output:
+Reading DOCX file: Planning for GOATs of Darwizzy RTG Vid.docx
+
+[2026-01-25 23:28:38] Output:
+Content analysis progress: 50 files processed
+
+[2026-01-25 23:28:38] Output:
+Reading DOCX file: Preparing for a Business Call.docx
+
+[2026-01-25 23:28:38] Output:
+Reading DOCX file: Python dictionary copy method explanation.docx
+
+[2026-01-25 23:28:38] Output:
+Reading DOCX file: Python Import Error - NoneType object has no attribute 'loader'.docx
+
+[2026-01-25 23:28:39] Output:
+Large content file found: Python Import Error - NoneType object has no attribute 'loader'.docx (1563 words)
+
+[2026-01-25 23:28:39] Output:
+Reading DOCX file: Python String Transformation.docx
+
+[2026-01-25 23:28:39] Output:
+Reading DOCX file: Python to Power Apps conversion.docx
+
+[2026-01-25 23:28:40] Output:
+Large content file found: Python to Power Apps conversion.docx (1666 words)
+
+[2026-01-25 23:28:40] Output:
+Reading DOCX file: Randomizing Array Values into Stack in Java.docx
+
+[2026-01-25 23:28:40] Output:
+Large content file found: Randomizing Array Values into Stack in Java.docx (4923 words)
+
+[2026-01-25 23:28:40] Output:
+Reading DOCX file: Recording 'Names Only' Draft Challenge in Fc24 on Ps4.docx
+
+[2026-01-25 23:28:41] Output:
+Large content file found: Recording 'Names Only' Draft Challenge in Fc24 on Ps4.docx (1436 words)
+
+[2026-01-25 23:28:41] Output:
+Reading DOCX file: Repaying Student Loan while Studying.docx
+
+[2026-01-25 23:28:41] Output:
+Reading DOCX file: Rephrasing Fiverr Gig Description.docx
+
+[2026-01-25 23:28:42] Output:
+Reading DOCX file: Resetting Textbox Inputs in Power Apps.docx
+
+[2026-01-25 23:28:42] Output:
+Reading DOCX file: Resolving Android Resource Cycle Error.docx
+
+[2026-01-25 23:28:43] Output:
+Large content file found: Resolving Android Resource Cycle Error.docx (6314 words)
+
+[2026-01-25 23:28:43] Output:
+Reading DOCX file: Rewording Internship Feedback email to sound more Professional.docx
+
+[2026-01-25 23:28:43] Output:
+Reading DOCX file: Selection Sort with New Data Values.docx
+
+[2026-01-25 23:28:43] Output:
+Reading DOCX file: Setting up Fiverr Account for Video Editing services.docx
+
+[2026-01-25 23:28:44] Output:
+Large content file found: Setting up Fiverr Account for Video Editing services.docx (1638 words)
+
+[2026-01-25 23:28:44] Output:
+Reading DOCX file: Setting Up Notifications Between Laptop and Phone.docx
+
+[2026-01-25 23:28:44] Output:
+Large content file found: Setting Up Notifications Between Laptop and Phone.docx (2224 words)
+
+[2026-01-25 23:28:44] Output:
+Reading DOCX file: Sharing Gemini AI Code.docx
+
+[2026-01-25 23:28:44] Output:
+Large content file found: Sharing Gemini AI Code.docx (1586 words)
+
+[2026-01-25 23:28:44] Output:
+Reading DOCX file: Sharing GitHub Markdown files outside of GitHub.docx
+
+[2026-01-25 23:28:45] Output:
+Reading DOCX file: Solving Color Arrangement with Decision Trees.docx
+
+[2026-01-25 23:28:45] Output:
+Reading DOCX file: SQL Query for Client and Staff Information.docx
+
+[2026-01-25 23:28:46] Output:
+Large content file found: SQL Query for Client and Staff Information.docx (1758 words)
+
+[2026-01-25 23:28:46] Output:
+Reading DOCX file: Steps Recorder File location and Format.docx
+
+[2026-01-25 23:28:46] Output:
+Large content file found: Steps Recorder File location and Format.docx (1434 words)
+
+[2026-01-25 23:28:46] Output:
+Reading DOCX file: Structuring AI Solutions for PA Team.docx
+
+[2026-01-25 23:28:47] Output:
+Reading DOCX file: Summarizing Machine Learning Classifiers.docx
+
+[2026-01-25 23:28:47] Output:
+Large content file found: Summarizing Machine Learning Classifiers.docx (4595 words)
+
+[2026-01-25 23:28:47] Output:
+Reading DOCX file: Troubleshooting 'setup.py' Error.docx
+
+[2026-01-25 23:28:48] Output:
+Reading DOCX file: Troubleshooting MySQL in XAMPP.docx
+
+[2026-01-25 23:28:49] Output:
+Large content file found: Troubleshooting MySQL in XAMPP.docx (11273 words)
+
+[2026-01-25 23:28:49] Output:
+Reading DOCX file: Voice Isolation Tools for Recordings.docx
+
+[2026-01-25 23:28:49] Output:
+Large content file found: Voice Isolation Tools for Recordings.docx (2631 words)
+
+[2026-01-25 23:28:49] Output:
+Reading DOCX file: Writing a Speculative Email for Placement Opportunities at EXA Networks.docx
+
+[2026-01-25 23:28:50] Output:
+Large content file found: Writing a Speculative Email for Placement Opportunities at EXA Networks.docx (4830 words)
+
+[2026-01-25 23:28:50] Output:
+Reading DOCX file: Writing Python code for a text-to-speech app in Google Colab Python.docx
+
+[2026-01-25 23:28:50] Output:
+Large content file found: Writing Python code for a text-to-speech app in Google Colab Python.docx (1401 words)
+
+[2026-01-25 23:28:50] Output:
+Reading DOCX file: 3D House Design Tools.docx
+
+[2026-01-25 23:28:51] Output:
+Reading PDF file: 3D House Design Tools.pdf
+
+[2026-01-25 23:28:52] Output:
+Reading DOCX file: Academic Achievements.docx
+
+[2026-01-25 23:28:52] Output:
+Reading PDF file: Academic Achievements.pdf
+
+[2026-01-25 23:28:52] Output:
+Large content file found: Academic Achievements.pdf (1180 words)
+
+[2026-01-25 23:28:52] Output:
+Reading DOCX file: Adding a Week to a Date in Python.docx
+
+[2026-01-25 23:28:53] Output:
+Reading PDF file: Adding a Week to a Date in Python.pdf
+
+[2026-01-25 23:28:54] Output:
+Reading DOCX file: Adding New Lines in Markdown.docx
+
+[2026-01-25 23:28:54] Output:
+Reading PDF file: Adding New Lines in Markdown.pdf
+
+[2026-01-25 23:28:55] Output:
+Reading DOCX file: Adding Node.js and npm to PATH.docx
+
+[2026-01-25 23:28:55] Output:
+Large content file found: Adding Node.js and npm to PATH.docx (1213 words)
+
+[2026-01-25 23:28:55] Output:
+Reading PDF file: Adding Node.js and npm to PATH.pdf
+
+[2026-01-25 23:28:56] Output:
+Large content file found: Adding Node.js and npm to PATH.pdf (1246 words)
+
+[2026-01-25 23:28:57] Output:
+Large content file found: Adding Node.js and npm to PATH.txt (1286 words)
+
+[2026-01-25 23:28:57] Output:
+Reading DOCX file: AI Research Intern and Python Enthusiast.docx
+
+[2026-01-25 23:28:57] Output:
+Reading PDF file: AI Research Intern and Python Enthusiast.pdf
+
+[2026-01-25 23:28:58] Output:
+Reading DOCX file: Automating Message Saving in Teams with Workflows.docx
+
+[2026-01-25 23:28:58] Output:
+Reading PDF file: Automating Message Saving in Teams with Workflows.pdf
+
+[2026-01-25 23:28:59] Output:
+Reading DOCX file: Automating SAP Approval Process.docx
+
+[2026-01-25 23:29:00] Output:
+Reading PDF file: Automating SAP Approval Process.pdf
+
+[2026-01-25 23:29:00] Output:
+Content analysis progress: 100 files processed
+
+[2026-01-25 23:29:01] Output:
+Reading DOCX file: Balancing Academics, Sports, and YouTube.docx
+
+[2026-01-25 23:29:01] Output:
+Reading PDF file: Balancing Academics, Sports, and YouTube.pdf
+
+[2026-01-25 23:29:02] Output:
+Reading DOCX file: Benefits of Parental Involvement in Education.docx
+
+[2026-01-25 23:29:02] Output:
+Reading PDF file: Benefits of Parental Involvement in Education.pdf
+
+[2026-01-25 23:29:03] Output:
+Reading DOCX file: Building an AI Testing Agent in Vertex AI.docx
+
+[2026-01-25 23:29:04] Output:
+Reading PDF file: Building an AI Testing Agent in Vertex AI.pdf
+
+[2026-01-25 23:29:04] Output:
+Reading DOCX file: Calculating Time Difference in Power Apps part 2.docx
+
+[2026-01-25 23:29:05] Output:
+Large content file found: Calculating Time Difference in Power Apps part 2.docx (1112 words)
+
+[2026-01-25 23:29:05] Output:
+Reading PDF file: Calculating Time Difference in Power Apps part 2.pdf
+
+[2026-01-25 23:29:05] Output:
+Large content file found: Calculating Time Difference in Power Apps part 2.pdf (1166 words)
+
+[2026-01-25 23:29:06] Output:
+Large content file found: Calculating Time Difference in Power Apps part 2.txt (1110 words)
+
+[2026-01-25 23:29:06] Output:
+Reading DOCX file: Calculating Time Difference in Power Apps.docx
+
+[2026-01-25 23:29:06] Output:
+Reading PDF file: Calculating Time Difference in Power Apps.pdf
+
+[2026-01-25 23:29:07] Output:
+Reading DOCX file: Calculating Work Hours with Power apps.docx
+
+[2026-01-25 23:29:07] Output:
+Large content file found: Calculating Work Hours with Power apps.docx (1295 words)
+
+[2026-01-25 23:29:07] Output:
+Reading PDF file: Calculating Work Hours with Power apps.pdf
+
+[2026-01-25 23:29:09] Output:
+Large content file found: Calculating Work Hours with Power apps.pdf (1396 words)
+
+[2026-01-25 23:29:09] Output:
+Large content file found: Calculating Work Hours with Power apps.txt (1301 words)
+
+[2026-01-25 23:29:09] Output:
+Reading DOCX file: Changing String Format in Power Apps.docx
+
+[2026-01-25 23:29:10] Output:
+Large content file found: Changing String Format in Power Apps.docx (1116 words)
+
+[2026-01-25 23:29:10] Output:
+Reading PDF file: Changing String Format in Power Apps.pdf
+
+[2026-01-25 23:29:11] Output:
+Reading DOCX file: Console Error Troubleshooting.docx
+
+[2026-01-25 23:29:11] Output:
+Reading PDF file: Console Error Troubleshooting.pdf
+
+[2026-01-25 23:29:12] Output:
+Reading DOCX file: Contacting Unilever for Hiring Manager Information.docx
+
+[2026-01-25 23:29:12] Output:
+Reading PDF file: Contacting Unilever for Hiring Manager Information.pdf
+
+[2026-01-25 23:29:12] Output:
+Reading DOCX file: Converting Positive to Negative in Python.docx
+
+[2026-01-25 23:29:12] Output:
+Large content file found: Converting Positive to Negative in Python.docx (1173 words)
+
+[2026-01-25 23:29:12] Output:
+Reading PDF file: Converting Positive to Negative in Python.pdf
+
+[2026-01-25 23:29:13] Output:
+Large content file found: Converting Positive to Negative in Python.pdf (1433 words)
+
+[2026-01-25 23:29:13] Output:
+Large content file found: Converting Positive to Negative in Python.txt (1189 words)
+
+[2026-01-25 23:29:13] Output:
+Reading DOCX file: Copying Custom Components in Power Apps.docx
+
+[2026-01-25 23:29:13] Output:
+Large content file found: Copying Custom Components in Power Apps.docx (1291 words)
+
+[2026-01-25 23:29:13] Output:
+Reading PDF file: Copying Custom Components in Power Apps.pdf
+
+[2026-01-25 23:29:14] Output:
+Large content file found: Copying Custom Components in Power Apps.txt (1010 words)
+
+[2026-01-25 23:29:14] Output:
+Reading DOCX file: Counting Items per Day in Weekly Data.docx
+
+[2026-01-25 23:29:14] Output:
+Reading PDF file: Counting Items per Day in Weekly Data.pdf
+
+[2026-01-25 23:29:15] Output:
+Reading DOCX file: Creating a Fancy Image with a Quote.docx
+
+[2026-01-25 23:29:15] Output:
+Reading PDF file: Creating a Fancy Image with a Quote.pdf
+
+[2026-01-25 23:29:15] Output:
+Reading DOCX file: Creating a SharePoint Tutorial for Child Social Care Workers.docx
+
+[2026-01-25 23:29:16] Output:
+Reading PDF file: Creating a SharePoint Tutorial for Child Social Care Workers.pdf
+
+[2026-01-25 23:29:16] Output:
+Reading DOCX file: Creating a Software Testing Agent with Vertex AI.docx
+
+[2026-01-25 23:29:17] Output:
+Reading PDF file: Creating a Software Testing Agent with Vertex AI.pdf
+
+[2026-01-25 23:29:18] Output:
+Reading DOCX file: Creating a Tkinter Window.docx
+
+[2026-01-25 23:29:18] Output:
+Reading PDF file: Creating a Tkinter Window.pdf
+
+[2026-01-25 23:29:21] Output:
+Reading DOCX file: Creating a Work Hour Calculator with Tkinter in Python.docx
+
+[2026-01-25 23:29:22] Output:
+Content analysis progress: 150 files processed
+
+[2026-01-25 23:29:22] Output:
+Reading PDF file: Creating a Work Hour Calculator with Tkinter in Python.pdf
+
+[2026-01-25 23:29:24] Output:
+Large content file found: Creating a Work Hour Calculator with Tkinter in Python.pdf (1042 words)
+
+[2026-01-25 23:29:24] Output:
+Large content file found: Creating a Work Hour Calculator with Tkinter in Python.txt (1022 words)
+
+[2026-01-25 23:29:24] Output:
+Reading DOCX file: Creating Album Folders in Xiaomi Gallery App.docx
+
+[2026-01-25 23:29:24] Output:
+Reading PDF file: Creating Album Folders in Xiaomi Gallery App.pdf
+
+[2026-01-25 23:29:25] Output:
+Reading DOCX file: Creating an AI-Powered Document Processor.docx
+
+[2026-01-25 23:29:25] Output:
+Large content file found: Creating an AI-Powered Document Processor.docx (1440 words)
+
+[2026-01-25 23:29:25] Output:
+Reading PDF file: Creating an AI-Powered Document Processor.pdf
+
+[2026-01-25 23:29:27] Output:
+Large content file found: Creating an AI-Powered Document Processor.pdf (1628 words)
+
+[2026-01-25 23:29:27] Output:
+Large content file found: Creating an AI-Powered Document Processor.txt (1563 words)
+
+[2026-01-25 23:29:27] Output:
+Reading DOCX file: Creating an Indexable Dataset from a Zip File in Python.docx
+
+[2026-01-25 23:29:28] Output:
+Large content file found: Creating an Indexable Dataset from a Zip File in Python.docx (1529 words)
+
+[2026-01-25 23:29:28] Output:
+Reading PDF file: Creating an Indexable Dataset from a Zip File in Python.pdf
+
+[2026-01-25 23:29:29] Output:
+Large content file found: Creating an Indexable Dataset from a Zip File in Python.pdf (1456 words)
+
+[2026-01-25 23:29:29] Output:
+Large content file found: Creating an Indexable Dataset from a Zip File in Python.txt (1467 words)
+
+[2026-01-25 23:29:29] Output:
+Reading DOCX file: Creating Checkbox-Driven Pick List in Excel.docx
+
+[2026-01-25 23:29:30] Output:
+Large content file found: Creating Checkbox-Driven Pick List in Excel.docx (1222 words)
+
+[2026-01-25 23:29:30] Output:
+Reading PDF file: Creating Checkbox-Driven Pick List in Excel.pdf
+
+[2026-01-25 23:29:30] Output:
+Large content file found: Creating Checkbox-Driven Pick List in Excel.pdf (1089 words)
+
+[2026-01-25 23:29:31] Output:
+Large content file found: Creating Checkbox-Driven Pick List in Excel.txt (1104 words)
+
+[2026-01-25 23:29:31] Output:
+Reading DOCX file: Creating Custom Thumbnails with AI Tools.docx
+
+[2026-01-25 23:29:31] Output:
+Reading PDF file: Creating Custom Thumbnails with AI Tools.pdf
+
+[2026-01-25 23:29:33] Output:
+Reading DOCX file: Creating Dynamic Components in Power Apps.docx
+
+[2026-01-25 23:29:33] Output:
+Reading PDF file: Creating Dynamic Components in Power Apps.pdf
+
+[2026-01-25 23:29:34] Output:
+Reading DOCX file: Creating Dynamic Dependent Drop-Downs in Excel.docx
+
+[2026-01-25 23:29:35] Output:
+Reading PDF file: Creating Dynamic Dependent Drop-Downs in Excel.pdf
+
+[2026-01-25 23:29:36] Output:
+Reading DOCX file: Creating Global Variables in Power Apps.docx
+
+[2026-01-25 23:29:36] Output:
+Reading PDF file: Creating Global Variables in Power Apps.pdf
+
+[2026-01-25 23:29:37] Output:
+Reading DOCX file: Creating Mailing Lists in Gmail.docx
+
+[2026-01-25 23:29:37] Output:
+Large content file found: Creating Mailing Lists in Gmail.docx (1691 words)
+
+[2026-01-25 23:29:37] Output:
+Reading PDF file: Creating Mailing Lists in Gmail.pdf
+
+[2026-01-25 23:29:38] Output:
+Large content file found: Creating Mailing Lists in Gmail.pdf (1887 words)
+
+[2026-01-25 23:29:38] Output:
+Large content file found: Creating Mailing Lists in Gmail.txt (1708 words)
+
+[2026-01-25 23:29:38] Output:
+Reading DOCX file: Creative Map Ideas for Fortnite Livestream.docx
+
+[2026-01-25 23:29:38] Output:
+Reading PDF file: Creative Map Ideas for Fortnite Livestream.pdf
+
+[2026-01-25 23:29:38] Output:
+Reading DOCX file: Custom Power Apps Component for File Uploads.docx
+
+[2026-01-25 23:29:39] Output:
+Reading PDF file: Custom Power Apps Component for File Uploads.pdf
+
+[2026-01-25 23:29:40] Output:
+Reading DOCX file: CV Summary Assistance.docx
+
+[2026-01-25 23:29:40] Output:
+Reading PDF file: CV Summary Assistance.pdf
+
+[2026-01-25 23:29:40] Output:
+Reading DOCX file: Debugging Software Testing Agent.docx
+
+[2026-01-25 23:29:40] Output:
+Large content file found: Debugging Software Testing Agent.docx (2785 words)
+
+[2026-01-25 23:29:40] Output:
+Reading PDF file: Debugging Software Testing Agent.pdf
+
+[2026-01-25 23:29:42] Output:
+Large content file found: Debugging Software Testing Agent.pdf (3076 words)
+
+[2026-01-25 23:29:42] Output:
+Large content file found: Debugging Software Testing Agent.txt (2813 words)
+
+[2026-01-25 23:29:42] Output:
+Reading DOCX file: Designing a Web Application for Non-Technical Users.docx
+
+[2026-01-25 23:29:42] Output:
+Reading PDF file: Designing a Web Application for Non-Technical Users.pdf
+
+[2026-01-25 23:29:43] Output:
+Reading DOCX file: DNS Resolution Error Fix.docx
+
+[2026-01-25 23:29:44] Output:
+Reading PDF file: DNS Resolution Error Fix.pdf
+
+[2026-01-25 23:29:45] Output:
+Reading DOCX file: Drafting an Email for Reference Request Follow-Up.docx
+
+[2026-01-25 23:29:45] Output:
+Large content file found: Drafting an Email for Reference Request Follow-Up.docx (1170 words)
+
+[2026-01-25 23:29:45] Output:
+Reading PDF file: Drafting an Email for Reference Request Follow-Up.pdf
+
+[2026-01-25 23:29:45] Output:
+Large content file found: Drafting an Email for Reference Request Follow-Up.pdf (1195 words)
+
+[2026-01-25 23:29:45] Output:
+Large content file found: Drafting an Email for Reference Request Follow-Up.txt (1182 words)
+
+[2026-01-25 23:29:45] Output:
+Content analysis progress: 200 files processed
+
+[2026-01-25 23:29:45] Output:
+Reading DOCX file: Email Assistance.docx
+
+[2026-01-25 23:29:45] Output:
+Reading PDF file: Email Assistance.pdf
+
+[2026-01-25 23:29:46] Output:
+Reading DOCX file: Evaluating AI Search results for testing summaries.docx
+
+[2026-01-25 23:29:47] Output:
+Large content file found: Evaluating AI Search results for testing summaries.docx (1390 words)
+
+[2026-01-25 23:29:47] Output:
+Reading PDF file: Evaluating AI Search results for testing summaries.pdf
+
+[2026-01-25 23:29:48] Output:
+Large content file found: Evaluating AI Search results for testing summaries.pdf (1484 words)
+
+[2026-01-25 23:29:49] Output:
+Large content file found: Evaluating AI Search results for testing summaries.txt (1490 words)
+
+[2026-01-25 23:29:49] Output:
+Reading PDF file: Excel -
+Retrieve Meeting About info Based on Day and Week.pdf
+
+[2026-01-25 23:29:49] Output:
+Reading DOCX file: Excel - Retrieve 'Meeting About' Based on Day and Week.docx
+
+[2026-01-25 23:29:50] Output:
+Reading DOCX file: Fifa Account Progress.docx
+
+[2026-01-25 23:29:51] Output:
+Reading PDF file: Fifa Account Progress.pdf
+
+[2026-01-25 23:29:51] Output:
+Reading DOCX file: File Path issue with Python code.docx
+
+[2026-01-25 23:29:51] Output:
+Reading PDF file: File Path issue with Python code.pdf
+
+[2026-01-25 23:29:52] Output:
+Reading DOCX file: Filtering a Python Dictionary.docx
+
+[2026-01-25 23:29:53] Output:
+Reading PDF file: Filtering a Python Dictionary.pdf
+
+[2026-01-25 23:29:54] Output:
+Reading DOCX file: Finding Computer Science Placements.docx
+
+[2026-01-25 23:29:54] Output:
+Reading PDF file: Finding Computer Science Placements.pdf
+
+[2026-01-25 23:29:54] Output:
+Reading DOCX file: Fixing Counting Issue in Power Apps.docx
+
+[2026-01-25 23:29:54] Output:
+Large content file found: Fixing Counting Issue in Power Apps.docx (1122 words)
+
+[2026-01-25 23:29:54] Output:
+Reading PDF file: Fixing Counting Issue in Power Apps.pdf
+
+[2026-01-25 23:29:55] Output:
+Large content file found: Fixing Counting Issue in Power Apps.pdf (1489 words)
+
+[2026-01-25 23:29:55] Output:
+Large content file found: Fixing Counting Issue in Power Apps.txt (1407 words)
+
+[2026-01-25 23:29:55] Output:
+Reading DOCX file: Fixing Logic Error in Circular Queue Implementation.docx
+
+[2026-01-25 23:29:55] Output:
+Reading PDF file: Fixing Logic Error in Circular Queue Implementation.pdf
+
+[2026-01-25 23:29:56] Output:
+Reading DOCX file: Fixing Scrollbar Height in Tkinter.docx
+
+[2026-01-25 23:29:56] Output:
+Large content file found: Fixing Scrollbar Height in Tkinter.docx (1089 words)
+
+[2026-01-25 23:29:56] Output:
+Reading PDF file: Fixing Scrollbar Height in Tkinter.pdf
+
+[2026-01-25 23:29:58] Output:
+Large content file found: Fixing Scrollbar Height in Tkinter.pdf (1158 words)
+
+[2026-01-25 23:29:58] Output:
+Large content file found: Fixing Scrollbar Height in Tkinter.txt (1114 words)
+
+[2026-01-25 23:29:58] Output:
+Reading DOCX file: Follow-up Meeting Request with Nic Tuff.docx
+
+[2026-01-25 23:29:59] Output:
+Reading PDF file: Follow-up Meeting Request with Nic Tuff.pdf
+
+[2026-01-25 23:30:00] Output:
+Reading DOCX file: Football Moments 2013-2024.docx
+
+[2026-01-25 23:30:00] Output:
+Reading PDF file: Football Moments 2013-2024.pdf
+
+[2026-01-25 23:30:01] Output:
+Reading DOCX file: FUT Heroes without Futties Cards.docx
+
+[2026-01-25 23:30:01] Output:
+Reading PDF file: FUT Heroes without Futties Cards.pdf
+
+[2026-01-25 23:30:03] Output:
+Reading DOCX file: Generating OAuth or JWT Token in .NET 5.0 API.docx
+
+[2026-01-25 23:30:03] Output:
+Reading PDF file: Generating OAuth or JWT Token in .NET 5.0 API.pdf
+
+[2026-01-25 23:30:04] Output:
+Reading DOCX file: GitHub Desktop Error - Proxy Authentication Issue.docx
+
+[2026-01-25 23:30:05] Output:
+Reading PDF file: GitHub Desktop Error - Proxy Authentication Issue.pdf
+
+[2026-01-25 23:30:06] Output:
+Reading DOCX file: Google Cloud Speech Dependencies Troubleshooting.docx
+
+[2026-01-25 23:30:06] Output:
+Large content file found: Google Cloud Speech Dependencies Troubleshooting.docx (1369 words)
+
+[2026-01-25 23:30:06] Output:
+Reading PDF file: Google Cloud Speech Dependencies Troubleshooting.pdf
+
+[2026-01-25 23:30:07] Output:
+Large content file found: Google Cloud Speech Dependencies Troubleshooting.pdf (1482 words)
+
+[2026-01-25 23:30:07] Output:
+Large content file found: Google Cloud Speech Dependencies Troubleshooting.txt (1413 words)
+
+[2026-01-25 23:30:07] Output:
+Reading DOCX file: Gorillas vs. Monkeys.docx
+
+[2026-01-25 23:30:08] Output:
+Reading PDF file: Gorillas vs. Monkeys.pdf
+
+[2026-01-25 23:30:08] Output:
+Content analysis progress: 250 files processed
+
+[2026-01-25 23:30:08] Output:
+Reading DOCX file: Hiding Icons on Windows 10.docx
+
+[2026-01-25 23:30:09] Output:
+Reading PDF file: Hiding Icons on Windows 10.pdf
+
+[2026-01-25 23:30:11] Output:
+Reading DOCX file: ID Generation Flow Steps.docx
+
+[2026-01-25 23:30:11] Output:
+Large content file found: ID Generation Flow Steps.docx (10053 words)
+
+[2026-01-25 23:30:11] Output:
+Reading PDF file: ID Generation Flow Steps.pdf
+
+[2026-01-25 23:30:14] Output:
+Large content file found: ID Generation Flow Steps.pdf (10928 words)
+
+[2026-01-25 23:30:14] Output:
+Large content file found: ID Generation Flow Steps.txt (10069 words)
+
+[2026-01-25 23:30:14] Output:
+Reading DOCX file: Integrating code to make textbox that can scroll in Python Tkinter.docx
+
+[2026-01-25 23:30:15] Output:
+Reading PDF file: Integrating code to make textbox that can scroll in Python Tkinter.pdf
+
+[2026-01-25 23:30:15] Output:
+Reading DOCX file: Internship Reflection at BCFT.docx
+
+[2026-01-25 23:30:16] Output:
+Reading PDF file: Internship Reflection at BCFT.pdf
+
+[2026-01-25 23:30:17] Output:
+Reading DOCX file: Interview Questions for Research Internship in Sports Surfaces.docx
+
+[2026-01-25 23:30:17] Output:
+Reading PDF file: Interview Questions for Research Internship in Sports Surfaces.pdf
+
+[2026-01-25 23:30:18] Output:
+Reading DOCX file: ITIL for AI Researchers.docx
+
+[2026-01-25 23:30:18] Output:
+Reading PDF file: ITIL for AI Researchers.pdf
+
+[2026-01-25 23:30:19] Output:
+Reading DOCX file: Job Interview Preparation.docx
+
+[2026-01-25 23:30:20] Output:
+Large content file found: Job Interview Preparation.docx (1071 words)
+
+[2026-01-25 23:30:20] Output:
+Reading PDF file: Job Interview Preparation.pdf
+
+[2026-01-25 23:30:20] Output:
+Large content file found: Job Interview Preparation.pdf (1045 words)
+
+[2026-01-25 23:30:21] Output:
+Large content file found: Job Interview Preparation.txt (1119 words)
+
+[2026-01-25 23:30:21] Output:
+Reading DOCX file: Linear Regression for Drink Sales.docx
+
+[2026-01-25 23:30:21] Output:
+Large content file found: Linear Regression for Drink Sales.docx (1294 words)
+
+[2026-01-25 23:30:21] Output:
+Reading PDF file: Linear Regression for Drink Sales.pdf
+
+[2026-01-25 23:30:22] Output:
+Large content file found: Linear Regression for Drink Sales.pdf (1342 words)
+
+[2026-01-25 23:30:22] Output:
+Large content file found: Linear Regression for Drink Sales.txt (1309 words)
+
+[2026-01-25 23:30:22] Output:
+Reading DOCX file: LinkedIn Internship Update.docx
+
+[2026-01-25 23:30:22] Output:
+Reading PDF file: LinkedIn Internship Update.pdf
+
+[2026-01-25 23:30:23] Output:
+Reading DOCX file: LinkedIn Post for New Job Announcement.docx
+
+[2026-01-25 23:30:23] Output:
+Large content file found: LinkedIn Post for New Job Announcement.docx (6737 words)
+
+[2026-01-25 23:30:23] Output:
+Reading PDF file: LinkedIn Post for New Job Announcement.pdf
+
+[2026-01-25 23:30:25] Output:
+Large content file found: LinkedIn Post for New Job Announcement.pdf (7130 words)
+
+[2026-01-25 23:30:25] Output:
+Large content file found: LinkedIn Post for New Job Announcement.txt (6806 words)
+
+[2026-01-25 23:30:25] Output:
+Reading DOCX file: Linking Cells in Excel.docx
+
+[2026-01-25 23:30:26] Output:
+Reading PDF file: Linking Cells in Excel.pdf
+
+[2026-01-25 23:30:27] Output:
+Reading DOCX file: Markdown File Viewer Apps.docx
+
+[2026-01-25 23:30:27] Output:
+Reading PDF file: Markdown File Viewer Apps.pdf
+
+[2026-01-25 23:30:28] Output:
+Reading DOCX file: Marketing and Fundraising Intern Interview Questions.docx
+
+[2026-01-25 23:30:28] Output:
+Reading PDF file: Marketing and Fundraising Intern Interview Questions.pdf
+
+[2026-01-25 23:30:29] Output:
+Reading DOCX file: Matching Colours in Clipchamp Video Overlay.docx
+
+[2026-01-25 23:30:30] Output:
+Reading PDF file: Matching Colours in Clipchamp Video Overlay.pdf
+
+[2026-01-25 23:30:30] Output:
+Reading DOCX file: Optimistic Gaming Spirit.docx
+
+[2026-01-25 23:30:30] Output:
+Large content file found: Optimistic Gaming Spirit.docx (1119 words)
+
+[2026-01-25 23:30:30] Output:
+Reading PDF file: Optimistic Gaming Spirit.pdf
+
+[2026-01-25 23:30:31] Output:
+Large content file found: Optimistic Gaming Spirit.pdf (1249 words)
+
+[2026-01-25 23:30:31] Output:
+Large content file found: Optimistic Gaming Spirit.txt (1177 words)
+
+[2026-01-25 23:30:31] Output:
+Reading DOCX file: Optimizing Performance on Your New Dell Laptop.docx
+
+[2026-01-25 23:30:31] Output:
+Reading PDF file: Optimizing Performance on Your New Dell Laptop.pdf
+
+[2026-01-25 23:30:32] Output:
+Content analysis progress: 300 files processed
+
+[2026-01-25 23:30:32] Output:
+Reading DOCX file: Planning a Fifa 24 Pack and Play Vid.docx
+
+[2026-01-25 23:30:32] Output:
+Reading PDF file: Planning a Fifa 24 Pack and Play Vid.pdf
+
+[2026-01-25 23:30:34] Output:
+Reading DOCX file: Planning for GOATs of Darwizzy RTG Vid.docx
+
+[2026-01-25 23:30:34] Output:
+Reading PDF file: Planning for GOATs of Darwizzy RTG Vid.pdf
+
+[2026-01-25 23:30:35] Output:
+Reading DOCX file: Power Apps - Conditional Variable Assignment.docx
+
+[2026-01-25 23:30:35] Output:
+Reading PDF file: Power Apps - Conditional Variable Assignment.pdf
+
+[2026-01-25 23:30:36] Output:
+Reading DOCX file: Preparing for a Business Call.docx
+
+[2026-01-25 23:30:36] Output:
+Reading PDF file: Preparing for a Business Call.pdf
+
+[2026-01-25 23:30:36] Output:
+Reading DOCX file: Professional Term for Comprehensive Information.docx
+
+[2026-01-25 23:30:37] Output:
+Reading PDF file: Professional Term for Comprehensive Information.pdf
+
+[2026-01-25 23:30:38] Output:
+Reading DOCX file: Python dictionary copy method explanation.docx
+
+[2026-01-25 23:30:38] Output:
+Reading PDF file: Python dictionary copy method explanation.pdf
+
+[2026-01-25 23:30:38] Output:
+Reading DOCX file: Python Import Error - NoneType object has no attribute 'loader'.docx
+
+[2026-01-25 23:30:38] Output:
+Large content file found: Python Import Error - NoneType object has no attribute 'loader'.docx (1499 words)
+
+[2026-01-25 23:30:38] Output:
+Reading PDF file: Python Import Error - NoneType object has no attribute 'loader'.pdf
+
+[2026-01-25 23:30:40] Output:
+Large content file found: Python Import Error - NoneType object has no attribute 'loader'.pdf (1991 words)
+
+[2026-01-25 23:30:41] Output:
+Large content file found: Python Import Error - NoneType object has no attribute 'loader'.txt (1873 words)
+
+[2026-01-25 23:30:41] Output:
+Reading DOCX file: Python String Transformation.docx
+
+[2026-01-25 23:30:41] Output:
+Reading PDF file: Python String Transformation.pdf
+
+[2026-01-25 23:30:42] Output:
+Reading DOCX file: Python to Power Apps conversion.docx
+
+[2026-01-25 23:30:42] Output:
+Large content file found: Python to Power Apps conversion.docx (1633 words)
+
+[2026-01-25 23:30:42] Output:
+Reading PDF file: Python to Power Apps conversion.pdf
+
+[2026-01-25 23:30:43] Output:
+Large content file found: Python to Power Apps conversion.pdf (1840 words)
+
+[2026-01-25 23:30:44] Output:
+Large content file found: Python to Power Apps conversion.txt (1672 words)
+
+[2026-01-25 23:30:44] Output:
+Reading DOCX file: Randomizing Array Values into Stack in Java.docx
+
+[2026-01-25 23:30:44] Output:
+Large content file found: Randomizing Array Values into Stack in Java.docx (4909 words)
+
+[2026-01-25 23:30:44] Output:
+Reading PDF file: Randomizing Array Values into Stack in Java.pdf
+
+[2026-01-25 23:30:46] Output:
+Large content file found: Randomizing Array Values into Stack in Java.pdf (5262 words)
+
+[2026-01-25 23:30:46] Output:
+Large content file found: Randomizing Array Values into Stack in Java.txt (4956 words)
+
+[2026-01-25 23:30:46] Output:
+Reading DOCX file: Reality of Professional Programmers' Workday.docx
+
+[2026-01-25 23:30:46] Output:
+Reading PDF file: Reality of Professional Programmers' Workday.pdf
+
+[2026-01-25 23:30:47] Output:
+Reading DOCX file: Recording 'Names Only' Draft Challenge in Fc24 on Ps4.docx
+
+[2026-01-25 23:30:48] Output:
+Large content file found: Recording 'Names Only' Draft Challenge in Fc24 on Ps4.docx (1401 words)
+
+[2026-01-25 23:30:48] Output:
+Reading PDF file: Recording 'Names Only' Draft Challenge in Fc24 on Ps4.pdf
+
+[2026-01-25 23:30:48] Output:
+Large content file found: Recording 'Names Only' Draft Challenge in Fc24 on Ps4.pdf (1549 words)
+
+[2026-01-25 23:30:49] Output:
+Large content file found: Recording 'Names Only' Draft Challenge in Fc24 on Ps4.txt (1514 words)
+
+[2026-01-25 23:30:49] Output:
+Reading DOCX file: Referencing Input Fields in Power Apps Custom Component.docx
+
+[2026-01-25 23:30:49] Output:
+Reading PDF file: Referencing Input Fields in Power Apps Custom Component.pdf
+
+[2026-01-25 23:30:50] Output:
+Reading DOCX file: Repaying Student Loan while Studying.docx
+
+[2026-01-25 23:30:51] Output:
+Reading PDF file: Repaying Student Loan while Studying.pdf
+
+[2026-01-25 23:30:51] Output:
+Reading DOCX file: Rephrasing Fiverr Gig Description.docx
+
+[2026-01-25 23:30:52] Output:
+Reading PDF file: Rephrasing Fiverr Gig Description.pdf
+
+[2026-01-25 23:30:53] Output:
+Reading DOCX file: Resetting Textbox Inputs in Power Apps.docx
+
+[2026-01-25 23:30:53] Output:
+Reading PDF file: Resetting Textbox Inputs in Power Apps.pdf
+
+[2026-01-25 23:30:55] Output:
+Reading DOCX file: Resolving Android Resource Cycle Error.docx
+
+[2026-01-25 23:30:56] Output:
+Large content file found: Resolving Android Resource Cycle Error.docx (6287 words)
+
+[2026-01-25 23:30:56] Output:
+Reading PDF file: Resolving Android Resource Cycle Error.pdf
+
+[2026-01-25 23:30:58] Output:
+Large content file found: Resolving Android Resource Cycle Error.pdf (6890 words)
+
+[2026-01-25 23:30:58] Output:
+Large content file found: Resolving Android Resource Cycle Error.txt (6351 words)
+
+[2026-01-25 23:30:58] Output:
+Content analysis progress: 350 files processed
+
+[2026-01-25 23:30:58] Output:
+Reading DOCX file: Retrieving Chat ID in Microsoft Teams.docx
+
+[2026-01-25 23:30:59] Output:
+Reading PDF file: Retrieving Chat ID in Microsoft Teams.pdf
+
+[2026-01-25 23:31:00] Output:
+Reading DOCX file: Rewording Internship Feedback email to sound more Professional.docx
+
+[2026-01-25 23:31:01] Output:
+Reading PDF file: Rewording Internship Feedback email to sound more Professional.pdf
+
+[2026-01-25 23:31:02] Output:
+Reading DOCX file: Rewriting as concise bullet points.docx
+
+[2026-01-25 23:31:02] Output:
+Reading PDF file: Rewriting as concise bullet points.pdf
+
+[2026-01-25 23:31:03] Output:
+Reading DOCX file: Rewriting Python Function in Power Apps.docx
+
+[2026-01-25 23:31:03] Output:
+Reading PDF file: Rewriting Python Function in Power Apps.pdf
+
+[2026-01-25 23:31:04] Output:
+Reading DOCX file: Riddles and Solutions.docx
+
+[2026-01-25 23:31:05] Output:
+Reading PDF file: Riddles and Solutions.pdf
+
+[2026-01-25 23:31:06] Output:
+Reading DOCX file: Running Python Scripts in Power Automate.docx
+
+[2026-01-25 23:31:06] Output:
+Reading PDF file: Running Python Scripts in Power Automate.pdf
+
+[2026-01-25 23:31:07] Output:
+Reading DOCX file: Selection Sort with New Data Values.docx
+
+[2026-01-25 23:31:07] Output:
+Reading PDF file: Selection Sort with New Data Values.pdf
+
+[2026-01-25 23:31:07] Output:
+Reading DOCX file: Setting up Fiverr Account for Video Editing services.docx
+
+[2026-01-25 23:31:08] Output:
+Large content file found: Setting up Fiverr Account for Video Editing services.docx (1604 words)
+
+[2026-01-25 23:31:08] Output:
+Reading PDF file: Setting up Fiverr Account for Video Editing services.pdf
+
+[2026-01-25 23:31:09] Output:
+Large content file found: Setting up Fiverr Account for Video Editing services.pdf (1790 words)
+
+[2026-01-25 23:31:09] Output:
+Large content file found: Setting up Fiverr Account for Video Editing services.txt (1654 words)
+
+[2026-01-25 23:31:09] Output:
+Reading DOCX file: Setting Up Notifications Between Laptop and Phone.docx
+
+[2026-01-25 23:31:09] Output:
+Large content file found: Setting Up Notifications Between Laptop and Phone.docx (2173 words)
+
+[2026-01-25 23:31:09] Output:
+Reading PDF file: Setting Up Notifications Between Laptop and Phone.pdf
+
+[2026-01-25 23:31:10] Output:
+Large content file found: Setting Up Notifications Between Laptop and Phone.pdf (2392 words)
+
+[2026-01-25 23:31:10] Output:
+Large content file found: Setting Up Notifications Between Laptop and Phone.txt (2251 words)
+
+[2026-01-25 23:31:10] Output:
+Reading DOCX file: Setting Up Vertex AI Agent Builder for Document Processing and User File Uploads.docx
+
+[2026-01-25 23:31:10] Output:
+Reading PDF file: Setting Up Vertex AI Agent Builder for Document Processing and User File Uploads.pdf
+
+[2026-01-25 23:31:11] Output:
+Reading DOCX file: Sharing Gemini AI Code.docx
+
+[2026-01-25 23:31:11] Output:
+Large content file found: Sharing Gemini AI Code.docx (1563 words)
+
+[2026-01-25 23:31:11] Output:
+Reading PDF file: Sharing Gemini AI Code.pdf
+
+[2026-01-25 23:31:11] Output:
+Large content file found: Sharing Gemini AI Code.pdf (1675 words)
+
+[2026-01-25 23:31:11] Output:
+Large content file found: Sharing Gemini AI Code.txt (1583 words)
+
+[2026-01-25 23:31:11] Output:
+Reading DOCX file: Sharing GitHub Markdown files outside of GitHub.docx
+
+[2026-01-25 23:31:12] Output:
+Reading PDF file: Sharing GitHub Markdown files outside of GitHub.pdf
+
+[2026-01-25 23:31:14] Output:
+Reading DOCX file: Solving Color Arrangement with Decision Trees.docx
+
+[2026-01-25 23:31:14] Output:
+Reading PDF file: Solving Color Arrangement with Decision Trees.pdf
+
+[2026-01-25 23:31:14] Output:
+Reading DOCX file: SQL Query for Client and Staff Information.docx
+
+[2026-01-25 23:31:15] Output:
+Large content file found: SQL Query for Client and Staff Information.docx (1744 words)
+
+[2026-01-25 23:31:15] Output:
+Reading PDF file: SQL Query for Client and Staff Information.pdf
+
+[2026-01-25 23:31:16] Output:
+Large content file found: SQL Query for Client and Staff Information.pdf (1991 words)
+
+[2026-01-25 23:31:16] Output:
+Large content file found: SQL Query for Client and Staff Information.txt (1766 words)
+
+[2026-01-25 23:31:16] Output:
+Reading DOCX file: Steps Recorder File location and Format.docx
+
+[2026-01-25 23:31:16] Output:
+Large content file found: Steps Recorder File location and Format.docx (1413 words)
+
+[2026-01-25 23:31:16] Output:
+Reading PDF file: Steps Recorder File location and Format.pdf
+
+[2026-01-25 23:31:17] Output:
+Large content file found: Steps Recorder File location and Format.pdf (1570 words)
+
+[2026-01-25 23:31:17] Output:
+Large content file found: Steps Recorder File location and Format.txt (1437 words)
+
+[2026-01-25 23:31:17] Output:
+Reading DOCX file: Structuring AI Solutions for PA Team.docx
+
+[2026-01-25 23:31:18] Output:
+Reading PDF file: Structuring AI Solutions for PA Team.pdf
+
+[2026-01-25 23:31:20] Output:
+Reading DOCX file: Summarizing Machine Learning Classifiers.docx
+
+[2026-01-25 23:31:20] Output:
+Large content file found: Summarizing Machine Learning Classifiers.docx (4581 words)
+
+[2026-01-25 23:31:20] Output:
+Reading PDF file: Summarizing Machine Learning Classifiers.pdf
+
+[2026-01-25 23:31:22] Output:
+Large content file found: Summarizing Machine Learning Classifiers.pdf (5129 words)
+
+[2026-01-25 23:31:22] Output:
+Content analysis progress: 400 files processed
+
+[2026-01-25 23:31:22] Output:
+Large content file found: Summarizing Machine Learning Classifiers.txt (4619 words)
+
+[2026-01-25 23:31:22] Output:
+Reading DOCX file: Testing an AI Search System.docx
+
+[2026-01-25 23:31:23] Output:
+Reading PDF file: Testing an AI Search System.pdf
+
+[2026-01-25 23:31:24] Output:
+Reading DOCX file: Testing Power Apps with Test Studio.docx
+
+[2026-01-25 23:31:24] Output:
+Large content file found: Testing Power Apps with Test Studio.docx (1086 words)
+
+[2026-01-25 23:31:24] Output:
+Reading PDF file: Testing Power Apps with Test Studio.pdf
+
+[2026-01-25 23:31:25] Output:
+Large content file found: Testing Power Apps with Test Studio.pdf (1166 words)
+
+[2026-01-25 23:31:25] Output:
+Large content file found: Testing Power Apps with Test Studio.txt (1151 words)
+
+[2026-01-25 23:31:25] Output:
+Reading DOCX file: Troubleshooting 'setup.py' Error.docx
+
+[2026-01-25 23:31:26] Output:
+Reading PDF file: Troubleshooting 'setup.py' Error.pdf
+
+[2026-01-25 23:31:28] Output:
+Reading DOCX file: Troubleshooting AI Search Web App Issues.docx
+
+[2026-01-25 23:31:28] Output:
+Large content file found: Troubleshooting AI Search Web App Issues.docx (1693 words)
+
+[2026-01-25 23:31:28] Output:
+Reading PDF file: Troubleshooting AI Search Web App Issues.pdf
+
+[2026-01-25 23:31:29] Output:
+Large content file found: Troubleshooting AI Search Web App Issues.pdf (1698 words)
+
+[2026-01-25 23:31:30] Output:
+Large content file found: Troubleshooting AI Search Web App Issues.txt (1681 words)
+
+[2026-01-25 23:31:30] Output:
+Reading DOCX file: Troubleshooting Azure AI Studio Error - InvalidTemplateDeployment.docx
+
+[2026-01-25 23:31:30] Output:
+Large content file found: Troubleshooting Azure AI Studio Error - InvalidTemplateDeployment.docx (1149 words)
+
+[2026-01-25 23:31:30] Output:
+Reading PDF file: Troubleshooting Azure AI Studio Error - InvalidTemplateDeployment.pdf
+
+[2026-01-25 23:31:31] Output:
+Large content file found: Troubleshooting Azure AI Studio Error - InvalidTemplateDeployment.pdf (1050 words)
+
+[2026-01-25 23:31:31] Output:
+Large content file found: Troubleshooting Azure AI Studio Error - InvalidTemplateDeployment.txt (1019 words)
+
+[2026-01-25 23:31:31] Output:
+Reading DOCX file: Troubleshooting MySQL in XAMPP.docx
+
+[2026-01-25 23:31:32] Output:
+Large content file found: Troubleshooting MySQL in XAMPP.docx (11235 words)
+
+[2026-01-25 23:31:32] Output:
+Reading PDF file: Troubleshooting MySQL in XAMPP.pdf
+
+[2026-01-25 23:31:38] Output:
+Large content file found: Troubleshooting MySQL in XAMPP.pdf (12179 words)
+
+[2026-01-25 23:31:38] Output:
+Large content file found: Troubleshooting MySQL in XAMPP.txt (11554 words)
+
+[2026-01-25 23:31:38] Output:
+Reading DOCX file: Uploading Folders to OneDrive on Redmi Note 10.docx
+
+[2026-01-25 23:31:38] Output:
+Reading PDF file: Uploading Folders to OneDrive on Redmi Note 10.pdf
+
+[2026-01-25 23:31:39] Output:
+Reading DOCX file: Using a Table of Contents in Medium Articles.docx
+
+[2026-01-25 23:31:39] Output:
+Reading PDF file: Using a Table of Contents in Medium Articles.pdf
+
+[2026-01-25 23:31:40] Output:
+Reading DOCX file: Using Component Libraries in Power Apps.docx
+
+[2026-01-25 23:31:41] Output:
+Large content file found: Using Component Libraries in Power Apps.docx (1110 words)
+
+[2026-01-25 23:31:41] Output:
+Reading PDF file: Using Component Libraries in Power Apps.pdf
+
+[2026-01-25 23:31:41] Output:
+Reading DOCX file: Using Named Formulas in Power Apps.docx
+
+[2026-01-25 23:31:42] Output:
+Large content file found: Using Named Formulas in Power Apps.docx (1336 words)
+
+[2026-01-25 23:31:42] Output:
+Reading PDF file: Using Named Formulas in Power Apps.pdf
+
+[2026-01-25 23:31:42] Output:
+Large content file found: Using Named Formulas in Power Apps.pdf (1216 words)
+
+[2026-01-25 23:31:43] Output:
+Large content file found: Using Named Formulas in Power Apps.txt (1187 words)
+
+[2026-01-25 23:31:43] Output:
+Reading DOCX file: Using Relative URLs in SharePoint.docx
+
+[2026-01-25 23:31:43] Output:
+Reading PDF file: Using Relative URLs in SharePoint.pdf
+
+[2026-01-25 23:31:44] Output:
+Reading DOCX file: Using Variables in Power Automate.docx
+
+[2026-01-25 23:31:45] Output:
+Reading PDF file: Using Variables in Power Automate.pdf
+
+[2026-01-25 23:31:46] Output:
+Reading DOCX file: Using Vertex AI Vector Search API for Semantic Matching.docx
+
+[2026-01-25 23:31:46] Output:
+Reading PDF file: Using Vertex AI Vector Search API for Semantic Matching.pdf
+
+[2026-01-25 23:31:47] Output:
+Reading DOCX file: ValueError in Model - String to Float Conversion.docx
+
+[2026-01-25 23:31:47] Output:
+Reading PDF file: ValueError in Model - String to Float Conversion.pdf
+
+[2026-01-25 23:31:48] Output:
+Reading DOCX file: Vertex AI Agent Builder Error.docx
+
+[2026-01-25 23:31:49] Output:
+Reading PDF file: Vertex AI Agent Builder Error.pdf
+
+[2026-01-25 23:31:50] Output:
+Reading DOCX file: Vertex AI Agent Builder Service Account Format.docx
+
+[2026-01-25 23:31:50] Output:
+Reading PDF file: Vertex AI Agent Builder Service Account Format.pdf
+
+[2026-01-25 23:31:51] Output:
+Reading DOCX file: Voice Isolation Tools for Recordings.docx
+
+[2026-01-25 23:31:51] Output:
+Large content file found: Voice Isolation Tools for Recordings.docx (2618 words)
+
+[2026-01-25 23:31:51] Output:
+Content analysis progress: 450 files processed
+
+[2026-01-25 23:31:51] Output:
+Reading PDF file: Voice Isolation Tools for Recordings.pdf
+
+[2026-01-25 23:31:52] Output:
+Large content file found: Voice Isolation Tools for Recordings.pdf (2823 words)
+
+[2026-01-25 23:31:52] Output:
+Large content file found: Voice Isolation Tools for Recordings.txt (2556 words)
+
+[2026-01-25 23:31:52] Output:
+Reading DOCX file: Working with 24-Hour Time in Python.docx
+
+[2026-01-25 23:31:52] Output:
+Reading PDF file: Working with 24-Hour Time in Python.pdf
+
+[2026-01-25 23:31:53] Output:
+Reading DOCX file: Writing a Speculative Email for Placement Opportunities at EXA Networks.docx
+
+[2026-01-25 23:31:54] Output:
+Large content file found: Writing a Speculative Email for Placement Opportunities at EXA Networks.docx (4631 words)
+
+[2026-01-25 23:31:54] Output:
+Reading PDF file: Writing a Speculative Email for Placement Opportunities at EXA Networks.pdf
+
+[2026-01-25 23:31:55] Output:
+Large content file found: Writing a Speculative Email for Placement Opportunities at EXA Networks.pdf (5119 words)
+
+[2026-01-25 23:31:55] Output:
+Large content file found: Writing a Speculative Email for Placement Opportunities at EXA Networks.txt (4865 words)
+
+[2026-01-25 23:31:55] Output:
+Reading DOCX file: Writing Python code for a text-to-speech app in Google Colab Python.docx
+
+[2026-01-25 23:31:56] Output:
+Large content file found: Writing Python code for a text-to-speech app in Google Colab Python.docx (1354 words)
+
+[2026-01-25 23:31:56] Output:
+Reading PDF file: Writing Python code for a text-to-speech app in Google Colab Python.pdf
+
+[2026-01-25 23:31:57] Output:
+Large content file found: Writing Python code for a text-to-speech app in Google Colab Python.pdf (1545 words)
+
+[2026-01-25 23:31:57] Output:
+Large content file found: Writing Python code for a text-to-speech app in Google Colab Python.txt (1424 words)
+
+[2026-01-25 23:31:57] Output:
+Reading DOCX file: Youth Worker Responsibilities.docx
+
+[2026-01-25 23:31:57] Output:
+Reading PDF file: Youth Worker Responsibilities.pdf
+
+[2026-01-25 23:31:58] Output:
+Content analysis complete: 462 supported files
+
+[2026-01-25 23:31:58] Output:
+Total words: 547628
+
+[2026-01-25 23:31:58] Output:
+Total characters: 3942951
+
+[2026-01-25 23:31:58] Output:
+Average words per file: 1185.3
+
+[2026-01-27 20:26:30] Output:
+FileParser initialized with parsers: DOCX, PDF, Excel, PowerPoint
+
+[2026-01-27 20:26:30] Output:
+Supported extensions: .txt, .md, .py, .js, .html, .css, .json, .xml, .docx, .pdf, .xlsx, .xls, .pptx
+

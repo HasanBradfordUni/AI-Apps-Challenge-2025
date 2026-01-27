@@ -26,53 +26,62 @@ if march_src not in sys.path:
 try:
     # January - General AI Doc Search - FIXED IMPORT
     import importlib.util
+    import importlib.machinery
     
-    # Check what's in the utils folder
-    utils_path = os.path.join(january_src, 'utils')
-    if os.path.exists(utils_path):
-        utils_contents = os.listdir(utils_path)
-        print(f"Utils folder contents: {utils_contents}")
+    # Load modules using absolute file paths
+    january_utils_path = os.path.join(january_src, 'utils')
+    january_ai_path = os.path.join(january_src, 'ai')
     
-    # Try multiple import strategies
-    try:
-        # Strategy 1: Direct import
-        from utils.document_processing import handle_documents as january_handle_documents
-        from utils.search_algorithm import search_documents as january_search_documents
-        from ai.geminiPrompt import generate_ai_summary as january_generate_summary
-    except ImportError:
-        try:
-            # Strategy 2: Import specific files
-            doc_proc_path = os.path.join(january_src, 'utils', 'document_processing.py')
-            search_alg_path = os.path.join(january_src, 'utils', 'search_algorithm.py')
-            ai_prompt_path = os.path.join(january_src, 'ai', 'geminiPrompt.py')
-            
-            # Load modules directly
-            spec1 = importlib.util.spec_from_file_location("january_doc_proc", doc_proc_path)
-            doc_proc_module = importlib.util.module_from_spec(spec1)
-            spec1.loader.exec_module(doc_proc_module)
-            
-            spec2 = importlib.util.spec_from_file_location("january_search", search_alg_path)
-            search_module = importlib.util.module_from_spec(spec2)
-            spec2.loader.exec_module(search_module)
-            
-            spec3 = importlib.util.spec_from_file_location("january_ai", ai_prompt_path)
-            ai_module = importlib.util.module_from_spec(spec3)
-            spec3.loader.exec_module(ai_module)
-            
-            january_handle_documents = getattr(doc_proc_module, 'handle_documents', None)
-            january_search_documents = getattr(search_module, 'search_documents', None)
-            january_generate_summary = getattr(ai_module, 'generate_ai_summary', None)
-        except Exception as e2:
-            print(f"Strategy 2 failed: {e2}")
-            raise
+    # Add the utils and ai directories to sys.path temporarily
+    if january_utils_path not in sys.path:
+        sys.path.insert(0, january_utils_path)
+    if january_ai_path not in sys.path:
+        sys.path.insert(0, january_ai_path)
+    
+    doc_proc_path = os.path.join(january_src, 'utils', 'document_processing.py')
+    search_alg_path = os.path.join(january_src, 'utils', 'search_algorithm.py')
+    ai_prompt_path = os.path.join(january_src, 'ai', 'geminiPrompt.py')
+    
+    # Check files exist
+    print(f"Doc processing exists: {os.path.exists(doc_proc_path)}")
+    print(f"Search algorithm exists: {os.path.exists(search_alg_path)}")
+    print(f"AI prompt exists: {os.path.exists(ai_prompt_path)}")
+    
+    # Create a fake 'utils' package so imports work
+    import types
+    utils_package = types.ModuleType('utils')
+    utils_package.__path__ = [january_utils_path]
+    sys.modules['utils'] = utils_package
+    
+    # Load document processing module FIRST (since search_algorithm depends on it)
+    spec1 = importlib.util.spec_from_file_location("utils.document_processing", doc_proc_path)
+    doc_proc_module = importlib.util.module_from_spec(spec1)
+    sys.modules['utils.document_processing'] = doc_proc_module
+    spec1.loader.exec_module(doc_proc_module)
+    
+    # Now load search algorithm module (it can now find utils.document_processing)
+    spec2 = importlib.util.spec_from_file_location("utils.search_algorithm", search_alg_path)
+    search_module = importlib.util.module_from_spec(spec2)
+    sys.modules['utils.search_algorithm'] = search_module
+    spec2.loader.exec_module(search_module)
+    
+    # Load AI module
+    spec3 = importlib.util.spec_from_file_location("ai.geminiPrompt", ai_prompt_path)
+    ai_module = importlib.util.module_from_spec(spec3)
+    sys.modules['ai.geminiPrompt'] = ai_module
+    sys.modules['geminiPrompt'] = ai_module  # Also register without prefix
+    spec3.loader.exec_module(ai_module)
+    
+    # Get functions from loaded modules
+    january_handle_documents = getattr(doc_proc_module, 'handle_documents', None)
+    january_search_documents = getattr(search_module, 'search_documents', None)
+    january_generate_summary = getattr(ai_module, 'generate_ai_summary', None)
     
     print("✓ January AI Doc Search imported")
-except ImportError as e:
+except Exception as e:
     print(f"✗ January import failed: {e}")
-    print(f"January src path: {january_src}")
-    print(f"Path exists: {os.path.exists(january_src)}")
-    if os.path.exists(january_src):
-        print(f"Contents: {os.listdir(january_src)}")
+    import traceback
+    print(traceback.format_exc())
     january_handle_documents = None
     january_search_documents = None
     january_generate_summary = None
@@ -90,12 +99,37 @@ except ImportError as e:
     february_generate_summary = None
 
 try:
-    # March - AI Work Hours Calculator
-    from app import calculate_hours as march_calculate_hours
-    from ai.geminiPrompt import generate_work_hours_summary as march_generate_summary
+    # March - AI Work Hours Calculator - FIXED IMPORT
+    import importlib.util
+    
+    march_src = os.path.join(current_dir, 'c_march_ai_work_hours_calculator', 'src')
+    march_ai_path = os.path.join(march_src, 'ai', 'geminiPrompt.py')
+    
+    # Add March paths to sys.path
+    if march_src not in sys.path:
+        sys.path.insert(0, march_src)
+    
+    # Create fake 'ai' package for March
+    import types
+    ai_package = types.ModuleType('ai')
+    ai_package.__path__ = [os.path.join(march_src, 'ai')]
+    sys.modules['ai'] = ai_package
+    
+    # Load March AI module
+    spec_march = importlib.util.spec_from_file_location("ai.geminiPrompt", march_ai_path)
+    march_ai_module = importlib.util.module_from_spec(spec_march)
+    sys.modules['ai.geminiPrompt'] = march_ai_module
+    spec_march.loader.exec_module(march_ai_module)
+    
+    # Get the function
+    march_generate_summary = getattr(march_ai_module, 'generate_work_hours_summary', None)
+    march_calculate_hours = None  # We'll implement this ourselves
+    
     print("✓ March AI Work Hours Calculator imported")
-except ImportError as e:
+except Exception as e:
     print(f"✗ March import failed: {e}")
+    import traceback
+    print(traceback.format_exc())
     march_calculate_hours = None
     march_generate_summary = None
 
@@ -609,404 +643,596 @@ def register_routes(app):
         except Exception as e:
             return jsonify({'error': str(e), 'success': False}), 500
 
-    @app.route('/login')
+    @app.route('/api/run-test-comparison', methods=['POST'])
+    def api_run_test_comparison():
+        """Direct integration with February project - AI Testing Agent"""
+        try:
+            api_logger.addToLogs("Test comparison API called")
+            
+            if not february_generate_comparison:
+                error_logger.addToErrorLogs("Testing agent service unavailable")
+                return jsonify({'error': 'Testing agent not available'}), 503
+            
+            # Get form data - FIXED to handle multipart/form-data
+            project_name = request.form.get('project_name', '')
+            project_description = request.form.get('project_description', '')
+            test_query = request.form.get('test_query', '')
+            additional_context = request.form.get('additional_context', '')
+            
+            api_logger.addToInputLogs("Test comparison", f"Project: {project_name}, Query: {test_query}")
+            
+            # Get uploaded files
+            expected_results = request.files.get('expected_results')
+            actual_results = request.files.get('actual_results')
+            
+            if not project_name or not test_query:
+                error_logger.addToErrorLogs("Missing project name or test query")
+                return jsonify({'error': 'Project name and test query are required'}), 400
+            
+            if not expected_results or not actual_results:
+                error_logger.addToErrorLogs("Missing expected or actual results files")
+                return jsonify({'error': 'Both expected and actual results files are required'}), 400
+            
+            # Validate file types
+            expected_filename = expected_results.filename.lower()
+            actual_filename = actual_results.filename.lower()
+            
+            if not expected_filename.endswith('.pdf'):
+                return jsonify({'error': 'Expected results must be a PDF file'}), 400
+            
+            allowed_image_extensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp']
+            if not any(actual_filename.endswith(ext) for ext in allowed_image_extensions):
+                return jsonify({'error': 'Actual results must be an image file'}), 400
+            
+            api_logger.addToLogs(f"Processing files: {expected_filename}, {actual_filename}")
+            
+            # Process files using February's methods
+            try:
+                expected_text, actual_text = february_process_files(expected_results, actual_results)
+                api_logger.addToLogs(f"Files processed: Expected={len(expected_text)} chars, Actual={len(actual_text)} chars")
+            except Exception as e:
+                error_logger.addToErrorLogs(f"File processing error: {str(e)}")
+                import traceback
+                error_logger.addToErrorLogs(f"Traceback: {traceback.format_exc()}")
+                return jsonify({'error': f'File processing failed: {str(e)}'}), 500
+            
+            # Generate comparison
+            try:
+                comparison = february_generate_comparison(
+                    project_name,
+                    test_query,
+                    expected_text,
+                    actual_text,
+                    project_description,
+                    additional_context
+                )
+                api_logger.addToLogs(f"Comparison generated: {len(comparison)} chars")
+            except Exception as e:
+                error_logger.addToErrorLogs(f"Comparison generation error: {str(e)}")
+                return jsonify({'error': f'Comparison generation failed: {str(e)}'}), 500
+            
+            # Generate summary
+            try:
+                summary = february_generate_summary(
+                    comparison,
+                    project_name,
+                    test_query,
+                    project_description,
+                    additional_context
+                )
+                api_logger.addToLogs(f"Summary generated: {len(summary)} chars")
+            except Exception as e:
+                error_logger.addToErrorLogs(f"Summary generation error: {str(e)}")
+                # Continue without summary if it fails
+                summary = "Summary generation failed."
+            
+            # Convert markdown to HTML
+            try:
+                import markdown
+                comparison_html = markdown.markdown(comparison)
+                summary_html = markdown.markdown(summary)
+            except Exception as e:
+                error_logger.addToErrorLogs(f"Markdown conversion error: {str(e)}")
+                # Use plain text if markdown conversion fails
+                comparison_html = f"<pre>{comparison}</pre>"
+                summary_html = f"<pre>{summary}</pre>"
+            
+            api_logger.addToLogs(f"Test comparison completed successfully for {project_name}")
+            
+            return jsonify({
+                'comparison': comparison_html,
+                'summary': summary_html,
+                'project_name': project_name,
+                'success': True
+            }), 200
+            
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Test comparison error: {str(e)}")
+            import traceback
+            error_logger.addToErrorLogs(f"Traceback: {traceback.format_exc()}")
+            return jsonify({'error': str(e), 'success': False}), 500
+
+    @app.route('/api/convert-document', methods=['POST'])
+    def api_convert_document():
+        """Direct integration with April project - Document Extractor"""
+        try:
+            if not april_convert_file_format:
+                return jsonify({'error': 'Document converter not available'}), 503
+            
+            # Get uploaded file
+            document_file = request.files.get('document_file')
+            if not document_file:
+                return jsonify({'error': 'No document file provided'}), 400
+            
+            # Get conversion parameters
+            output_format = request.form.get('output_format', 'same')
+            table_handling = request.form.get('table_handling', 'keep')
+            field_mapping = request.form.get('field_mapping', '{}')
+            placeholder_text = request.form.get('placeholder_text', '')
+            page_range = request.form.get('page_range', 'all')
+            output_formatting = request.form.get('output_formatting', 'original')
+            additional_notes = request.form.get('additional_notes', '')
+            
+            # Save uploaded file temporarily
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(document_file.filename)[1]) as tmp:
+                document_file.save(tmp.name)
+                temp_path = tmp.name
+            
+            try:
+                # Parse field mapping JSON
+                import json
+                try:
+                    field_mapping_dict = json.loads(field_mapping) if field_mapping else {}
+                except:
+                    field_mapping_dict = {}
+                
+                # Convert document using April's function
+                conversion_config = {
+                    'output_format': output_format,
+                    'table_handling': table_handling,
+                    'field_mapping': field_mapping_dict,
+                    'placeholder_text': placeholder_text,
+                    'page_range': page_range,
+                    'output_formatting': output_formatting,
+                    'additional_notes': additional_notes
+                }
+                
+                # Process the file
+                converted_file_path = april_convert_file_format(
+                    temp_path,
+                    output_format if output_format != 'same' else os.path.splitext(document_file.filename)[1][1:],
+                    conversion_config
+                )
+                
+                # Generate insights if available
+                insights = ""
+                if april_generate_insights:
+                    insights = april_generate_insights(document_file.filename, conversion_config)
+                
+                # Read converted file
+                with open(converted_file_path, 'rb') as f:
+                    converted_content = f.read()
+                
+                # Encode as base64 for JSON response
+                import base64
+                converted_base64 = base64.b64encode(converted_content).decode('utf-8')
+                
+                api_logger.addToLogs(f"Document conversion completed: {document_file.filename}")
+                
+                return jsonify({
+                    'converted_file': converted_base64,
+                    'filename': os.path.basename(converted_file_path),
+                    'insights': insights,
+                    'success': True
+                })
+                
+            finally:
+                # Cleanup temp file
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+                if 'converted_file_path' in locals() and os.path.exists(converted_file_path):
+                    os.unlink(converted_file_path)
+            
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Document conversion error: {str(e)}")
+            import traceback
+            error_logger.addToErrorLogs(f"Traceback: {traceback.format_exc()}")
+            return jsonify({'error': str(e), 'success': False}), 500
+
+    @app.route('/api/generate-job-ad', methods=['POST'])
+    def api_generate_job_ad():
+        """Direct integration with June project - Job Ad Generator"""
+        try:
+            if not june_generate_ad:
+                return jsonify({'error': 'Job ad generator not available'}), 503
+            
+            # Collect all job details
+            job_data = {
+                'job_title': request.form.get('job_title', ''),
+                'employment_type': request.form.get('employment_type', 'full-time'),
+                'work_mode': request.form.get('work_mode', 'remote'),
+                'department': request.form.get('department', ''),
+                'location': request.form.get('location', ''),
+                'salary_range': request.form.get('salary_range', ''),
+                'min_education': request.form.get('min_education', ''),
+                'experience_reqs': request.form.get('experience_reqs', ''),
+                'job_responsibilities': request.form.get('job_responsibilities', ''),
+                'required_skills': request.form.get('required_skills', ''),
+                'preferred_skills': request.form.get('preferred_skills', ''),
+                'personality_traits': request.form.get('personality_traits', ''),
+                'company_name': request.form.get('company_name', ''),
+                'about_company': request.form.get('about_company', ''),
+                'diversity_statement': request.form.get('diversity_statement', ''),
+                'application_process': request.form.get('application_process', '')
+            }
+            
+            if not job_data['job_title']:
+                return jsonify({'error': 'Job title is required'}), 400
+            
+            # Generate job ad
+            job_ad = june_generate_ad(job_data)
+            
+            # Convert to HTML if markdown
+            import markdown
+            job_ad_html = markdown.markdown(job_ad)
+            
+            api_logger.addToLogs(f"Job ad generated for {job_data['job_title']}")
+            
+            return jsonify({
+                'job_ad': job_ad_html,
+                'job_ad_raw': job_ad,
+                'success': True
+            })
+            
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Job ad generation error: {str(e)}")
+            return jsonify({'error': str(e), 'success': False}), 500
+
+    @app.route('/api/transcribe-audio', methods=['POST'])
+    def api_transcribe_audio():
+        """Direct integration with July project - Speech to Text"""
+        try:
+            if not july_voice_methods:
+                return jsonify({'error': 'Speech-to-text not available'}), 503
+            
+            audio_file = request.files.get('audio_file')
+            if not audio_file:
+                return jsonify({'error': 'No audio file provided'}), 400
+            
+            # Save audio temporarily
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as tmp:
+                audio_file.save(tmp.name)
+                temp_path = tmp.name
+            
+            try:
+                # Transcribe using July's methods
+                voice_service = july_voice_methods()
+                transcription = voice_service.transcribe_audio(temp_path)
+                
+                # Generate summary if available
+                summary = ""
+                if july_generate_transcript:
+                    summary = july_generate_transcript(transcription)
+                
+                api_logger.addToLogs("Audio transcription completed")
+                
+                return jsonify({
+                    'transcription': transcription,
+                    'summary': summary,
+                    'success': True
+                })
+                
+            finally:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+            
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Audio transcription error: {str(e)}")
+            return jsonify({'error': str(e), 'success': False}), 500
+
+    @app.route('/api/create-calendar-event', methods=['POST'])
+    def api_create_calendar_event():
+        """Direct integration with August project - Calendar System"""
+        try:
+            if not august_ai_parser:
+                return jsonify({'error': 'Calendar system not available'}), 503
+            
+            event_title = request.json.get('event_title', '')
+            event_datetime = request.json.get('event_datetime', '')
+            
+            if not event_title or not event_datetime:
+                return jsonify({'error': 'Event title and datetime are required'}), 400
+            
+            # Parse event using August's AI parser
+            parser = august_ai_parser()
+            event_data = parser.parse_event_command(f"Create event '{event_title}' on {event_datetime}")
+            
+            api_logger.addToLogs(f"Calendar event created: {event_title}")
+            
+            return jsonify({
+                'event': event_data,
+                'message': f'Event "{event_title}" created successfully',
+                'success': True
+            })
+            
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Calendar event error: {str(e)}")
+            return jsonify({'error': str(e), 'success': False}), 500
+
+    @app.route('/api/analyze-directory', methods=['POST'])
+    def api_analyze_directory():
+        """Direct integration with October project - Directory Summarizer"""
+        try:
+            if not october_directory_analyzer:
+                return jsonify({'error': 'Directory analyzer not available'}), 503
+            
+            directory_path = request.json.get('directory_path', '')
+            
+            if not directory_path:
+                return jsonify({'error': 'Directory path is required'}), 400
+            
+            if not os.path.exists(directory_path):
+                return jsonify({'error': 'Directory does not exist'}), 400
+            
+            # Analyze directory using October's analyzer
+            analyzer = october_directory_analyzer()
+            analysis = analyzer.analyze_directory(directory_path)
+            
+            # Generate AI summary if available
+            summary = ""
+            if october_ai_summarizer:
+                summarizer = october_ai_summarizer()
+                summary = summarizer.generate_summary(analysis)
+            
+            api_logger.addToLogs(f"Directory analyzed: {directory_path}")
+            
+            return jsonify({
+                'analysis': analysis,
+                'summary': summary,
+                'success': True
+            })
+            
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Directory analysis error: {str(e)}")
+            return jsonify({'error': str(e), 'success': False}), 500
+
+    @app.route('/get_login')
     def get_login():
-        """Login page"""
+        """Get login page"""
+        chatbot_logger.addToLogs("Login page accessed")
         return render_template('login.html')
-    
-    @app.route('/login', methods=['POST'])
-    def login():
-        """Handle login"""
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        # Simple authentication (for demonstration purposes)
-        if username == 'admin' and password == 'password':
-            session['user_id'] = username
-            flash('Login successful!', 'success')
-            return redirect(url_for('chatbot_home'))
-        else:
-            flash('Invalid credentials', 'danger')
-            return redirect(url_for('get_login'))
 
     @app.route('/get_logs')
     def get_logs():
-        """View logs page"""
+        """Get logs page"""
+        chatbot_logger.addToLogs("Logs page accessed")
+        return render_template('logs.html')
+        
+    @app.route('/login', methods=['POST'])
+    def login():
+        """Handle login"""
+        username = request.form.get('username', '')
+        password = request.form.get('password', '')
+        
+        api_logger.addToInputLogs("Login attempt", f"Username: {username}")
+        
+        # Simple authentication (replace with your actual auth logic)
+        if username and password:
+            session['user_id'] = username
+            session['authenticated'] = True
+            chatbot_logger.addToLogs(f"User logged in: {username}")
+            flash('Login successful!', 'success')
+            return redirect(url_for('chatbot_home'))
+        else:
+            error_logger.addToErrorLogs(f"Failed login attempt for username: {username}")
+            flash('Invalid credentials', 'error')
+            return redirect(url_for('get_login'))
+    
+    @app.route('/logout')
+    def logout():
+        """Handle logout"""
+        user_id = session.get('user_id', 'Unknown')
+        session.clear()
+        chatbot_logger.addToLogs(f"User logged out: {user_id}")
+        flash('Logged out successfully', 'info')
+        return redirect(url_for('get_login'))
+    
+    # Logger viewing routes
+    @app.route('/logs')
+    def view_logs():
+        """View all logs"""
+        if not session.get('authenticated'):
+            return redirect(url_for('get_login'))
+        
         try:
-            chatbot_logger.addToLogs("Logs page accessed")
-            
-            # Get log files from December project
-            logs_dir = os.path.join(current_dir, 'l_december_ai_chatbot', 'logs')
-            
-            # Ensure logs directory exists
-            if not os.path.exists(logs_dir):
-                os.makedirs(logs_dir, exist_ok=True)
-                chatbot_logger.addToLogs(f"Created logs directory: {logs_dir}")
-                
-                # Create initial log files
-                initial_logs = ['chatbot.txt', 'api_requests.txt', 'errors.txt']
-                for log_file in initial_logs:
-                    log_path = os.path.join(logs_dir, log_file)
-                    with open(log_path, 'w', encoding='utf-8') as f:
-                        f.write(f"Logging started...\n{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            
-            available_logs = []
-            
-            # Safely list directory contents
-            try:
-                log_files = os.listdir(logs_dir)
-                if log_files is None:
-                    log_files = []
-            except Exception as list_error:
-                error_logger.addToErrorLogs(f"Error listing logs directory: {str(list_error)}")
-                log_files = []
-            
-            # Process log files
-            for filename in log_files:
-                if filename.endswith('.txt'):
-                    try:
-                        file_path = os.path.join(logs_dir, filename)
-                        
-                        # Check if file exists and is accessible
-                        if os.path.exists(file_path) and os.path.isfile(file_path):
-                            file_size = os.path.getsize(file_path)
-                            file_modified = os.path.getmtime(file_path)
-                            
-                            available_logs.append({
-                                'filename': filename,
-                                'path': file_path,
-                                'size': file_size,
-                                'size_formatted': f"{file_size / 1024:.2f} KB" if file_size < 1024*1024 else f"{file_size / (1024*1024):.2f} MB",
-                                'modified': datetime.fromtimestamp(file_modified).strftime('%Y-%m-%d %H:%M:%S')
-                            })
-                    except Exception as file_error:
-                        error_logger.addToErrorLogs(f"Error processing log file {filename}: {str(file_error)}")
-                        continue
-            
-            chatbot_logger.addToLogs(f"Logs page loaded with {len(available_logs)} log files")
+            # Get logs from logger
+            logs = chatbot_logger.getLogs()
+            api_logs = api_logger.getLogs()
+            error_logs = error_logger.getLogs()
             
             return render_template('logs.html', 
-                                 available_logs=available_logs,
-                                 search_results=None,
-                                 search_term='',
-                                 log_type='all',
-                                 selected_file='',
-                                 narrow_search='')
-                                 
+                                    logs=logs, 
+                                    api_logs=api_logs, 
+                                    error_logs=error_logs)
         except Exception as e:
-            error_logger.addToErrorLogs(f"Error loading logs page: {str(e)}")
-            import traceback
-            error_logger.addToErrorLogs(f"Traceback: {traceback.format_exc()}")
-            flash(f'Error loading logs: {str(e)}', 'error')
+            error_logger.addToErrorLogs(f"Error viewing logs: {str(e)}")
+            flash('Error loading logs', 'error')
             return redirect(url_for('chatbot_home'))
     
-    @app.route('/search_logs', methods=['POST'])
-    def search_logs():
-        """Search through logs"""
+    @app.route('/logs/chatbot')
+    def view_chatbot_logs():
+        """View chatbot logs only"""
+        if not session.get('authenticated'):
+            return redirect(url_for('get_login'))
+        
         try:
-            search_term = request.form.get('search_term', '').strip()
-            log_type = request.form.get('log_type', 'all')
-            log_file = request.form.get('log_file', '')
-            narrow_search = request.form.get('narrow_search', '').strip()
-            
-            chatbot_logger.addToInputLogs("Log search", f"User: {session.get('user_id', 'anonymous')}, Term: '{search_term}', Type: {log_type}, File: {log_file}")
-            
-            if not search_term:
-                flash('Please enter a search term', 'warning')
-                return redirect(url_for('get_logs'))
-            
-            if not log_file:
-                flash('Please select a log file', 'warning')
-                return redirect(url_for('get_logs'))
-            
-            logs_dir = os.path.join(current_dir, 'l_december_ai_chatbot', 'logs')
-            log_path = os.path.join(logs_dir, log_file)
-            
-            if not os.path.exists(log_path):
-                flash(f'Log file not found: {log_file}', 'error')
-                return redirect(url_for('get_logs'))
-            
-            # Get available logs for dropdown
-            available_logs = []
-            try:
-                log_files = os.listdir(logs_dir)
-                if log_files is None:
-                    log_files = []
-            except Exception as list_error:
-                error_logger.addToErrorLogs(f"Error listing logs directory: {str(list_error)}")
-                log_files = []
-            
-            for filename in log_files:
-                if filename.endswith('.txt'):
-                    try:
-                        file_path = os.path.join(logs_dir, filename)
-                        if os.path.exists(file_path) and os.path.isfile(file_path):
-                            file_size = os.path.getsize(file_path)
-                            available_logs.append({
-                                'filename': filename,
-                                'path': file_path,
-                                'size': file_size,
-                                'size_formatted': f"{file_size / 1024:.2f} KB" if file_size < 1024*1024 else f"{file_size / (1024*1024):.2f} MB",
-                                'modified': datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
-                            })
-                    except Exception as file_error:
-                        continue
-            
-            # Search logs using autoLogger method
-            try:
-                # Create a temporary logger instance for the file we're searching
-                from l_december_ai_chatbot.logger_setup import general_logger
-                temp_logger = general_logger(log_path)
-                
-                # Use the appropriate search method based on log type
-                results_data = []
-                
-                if log_type == 'output' or log_type == 'all':
-                    if narrow_search:
-                        results_data = temp_logger.searchWithNarrow('output', search_term, narrow_search)
-                    else:
-                        results_data = temp_logger.searchForLogs(search_term)
-                elif log_type == 'error':
-                    if narrow_search:
-                        results_data = temp_logger.searchWithNarrow('error', search_term, narrow_search)
-                    else:
-                        results_data = temp_logger.searchForErrors(search_term)
-                elif log_type == 'input':
-                    if narrow_search:
-                        results_data = temp_logger.searchWithNarrow('input', search_term, narrow_search)
-                    else:
-                        results_data = temp_logger.searchForInputs(search_term)
-                else:
-                    # Search all types
-                    results_data = temp_logger.searchForLogs(search_term)
-                    if narrow_search:
-                        # Filter results further
-                        results_data = [r for r in results_data if narrow_search.lower() in r.lower()]
-                
-                # Ensure results_data is a list
-                if results_data is None:
-                    results_data = []
-                
-                # Format results for template
-                search_results = []
-                for i, result in enumerate(results_data[:100], 1):  # Limit to first 100 results
-                    # Determine result type from content
-                    result_type = 'output'
-                    if 'Error:' in result or 'ERROR' in result:
-                        result_type = 'error'
-                    elif 'User Input:' in result or 'INPUT' in result:
-                        result_type = 'input'
-                    
-                    search_results.append({
-                        'line_number': i,
-                        'content': result.strip(),
-                        'file': log_file,
-                        'type': result_type
-                    })
-                
-                chatbot_logger.addToLogs(f"Log search completed: {len(search_results)} results found for '{search_term}' in {log_file}")
-                
-                if search_results:
-                    flash(f'Found {len(search_results)} results', 'success')
-                else:
-                    flash('No results found', 'info')
-                
-                return render_template('logs.html', 
-                                     available_logs=available_logs,
-                                     search_results=search_results, 
-                                     search_term=search_term,
-                                     log_type=log_type,
-                                     selected_file=log_file,
-                                     narrow_search=narrow_search)
-                
-            except Exception as search_error:
-                error_logger.addToErrorLogs(f"Search execution error: {str(search_error)}")
-                import traceback
-                error_logger.addToErrorLogs(f"Search traceback: {traceback.format_exc()}")
-                flash(f'Search error: {str(search_error)}', 'error')
-                return redirect(url_for('get_logs'))
-                
+            logs = chatbot_logger.getLogs()
+            return render_template('chatbot_logs.html', logs=logs)
         except Exception as e:
-            error_logger.addToErrorLogs(f"Error searching logs: {str(e)}")
-            import traceback
-            error_logger.addToErrorLogs(f"Traceback: {traceback.format_exc()}")
-            flash(f'Error searching logs: {str(e)}', 'error')
-            return redirect(url_for('get_logs'))
+            error_logger.addToErrorLogs(f"Error viewing chatbot logs: {str(e)}")
+            return jsonify({'error': str(e)}), 500
     
-    @app.route('/export_logs', methods=['POST'])
-    def export_logs():
-        """Export search results or entire log file"""
+    @app.route('/logs/api')
+    def view_api_logs():
+        """View API logs only"""
+        if not session.get('authenticated'):
+            return redirect(url_for('get_login'))
+        
         try:
-            export_type = request.form.get('export_type', 'results')
-            export_format = request.form.get('export_format', 'txt')
-            
-            chatbot_logger.addToLogs(f"User {session.get('user_id', 'anonymous')} exporting logs: type={export_type}, format={export_format}")
-            
-            # Get search results from session or form data
-            # For now, we'll export the current log file
-            log_file = request.form.get('log_file', 'chatbot.txt')
-            logs_dir = os.path.join(current_dir, 'l_december_ai_chatbot', 'logs')
-            log_path = os.path.join(logs_dir, log_file)
-            
-            if not os.path.exists(log_path):
-                flash('Log file not found', 'error')
-                return redirect(url_for('get_logs'))
-            
-            # Create export filename
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            export_filename = f"log_export_{timestamp}.{export_format}"
-            
-            if export_format == 'txt':
-                # Simple text export
-                with open(log_path, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
-                response = make_response(content)
-                response.headers['Content-Type'] = 'text/plain'
-                response.headers['Content-Disposition'] = f'attachment; filename={export_filename}'
-                
-                chatbot_logger.addToLogs(f"Log export completed: {export_filename}")
-                return response
-                
-            elif export_format == 'json':
-                import json
-                
-                # Read log file and convert to JSON
-                with open(log_path, 'r', encoding='utf-8') as f:
-                    lines = f.readlines()
-                
-                log_data = {
-                    'export_date': datetime.now().isoformat(),
-                    'source_file': log_file,
-                    'total_entries': len(lines),
-                    'entries': [{'line': i+1, 'content': line.strip()} for i, line in enumerate(lines)]
-                }
-                
-                response = make_response(json.dumps(log_data, indent=2))
-                response.headers['Content-Type'] = 'application/json'
-                response.headers['Content-Disposition'] = f'attachment; filename={export_filename}'
-                
-                chatbot_logger.addToLogs(f"Log export completed: {export_filename}")
-                return response
-            
-            else:
-                flash('Unsupported export format', 'error')
-                return redirect(url_for('get_logs'))
-                
+            logs = api_logger.getLogs()
+            return render_template('api_logs.html', logs=logs)
         except Exception as e:
-            error_logger.addToErrorLogs(f"Error exporting logs: {str(e)}")
-            flash(f'Export error: {str(e)}', 'error')
-            return redirect(url_for('get_logs'))
+            error_logger.addToErrorLogs(f"Error viewing API logs: {str(e)}")
+            return jsonify({'error': str(e)}), 500
     
-    @app.route('/clear_logs', methods=['POST'])
+    @app.route('/logs/errors')
+    def view_error_logs():
+        """View error logs only"""
+        if not session.get('authenticated'):
+            return redirect(url_for('get_login'))
+        
+        try:
+            logs = error_logger.getLogs()
+            return render_template('error_logs.html', logs=logs)
+        except Exception as e:
+            flash('Error loading error logs', 'error')
+            return redirect(url_for('chatbot_home'))
+    
+    @app.route('/logs/clear', methods=['POST'])
     def clear_logs():
-        """Clear a specific log file"""
+        """Clear all logs"""
+        if not session.get('authenticated'):
+            return jsonify({'error': 'Not authenticated'}), 401
+        
         try:
-            filename = request.form.get('log_file') or request.form.get('filename')
-            if not filename:
-                flash('No filename specified', 'error')
-                return redirect(url_for('get_logs'))
+            log_type = request.json.get('log_type', 'all')
             
-            logs_dir = os.path.join(current_dir, 'l_december_ai_chatbot', 'logs')
-            log_path = os.path.join(logs_dir, filename)
+            if log_type == 'all' or log_type == 'chatbot':
+                chatbot_logger.clearLogs()
+            if log_type == 'all' or log_type == 'api':
+                api_logger.clearLogs()
+            if log_type == 'all' or log_type == 'error':
+                error_logger.clearLogs()
             
-            if not os.path.exists(log_path):
-                flash(f'Log file not found: {filename}', 'error')
-                return redirect(url_for('get_logs'))
-            
-            # Create backup before clearing
-            backup_dir = os.path.join(logs_dir, 'backups')
-            os.makedirs(backup_dir, exist_ok=True)
-            
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            backup_path = os.path.join(backup_dir, f"{filename}.backup_{timestamp}")
-            
-            # Copy to backup
-            import shutil
-            shutil.copy2(log_path, backup_path)
-            
-            # Clear the file using autoLogger method
-            from l_december_ai_chatbot.logger_setup import general_logger
-            temp_logger = general_logger(log_path)
-            temp_logger.cleanLoggerFile()
-            
-            # Add cleared message
-            with open(log_path, 'w', encoding='utf-8') as f:
-                f.write(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Output:\nLog cleared on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                f.write(f"Backup created: {backup_path}\n\n")
-            
-            chatbot_logger.addToLogs(f"Log file cleared: {filename} (backup: {backup_path})")
-            flash(f'Log file cleared: {filename}. Backup created.', 'success')
-            return redirect(url_for('get_logs'))
-            
+            chatbot_logger.addToLogs(f"Logs cleared: {log_type}")
+            return jsonify({'success': True, 'message': f'{log_type} logs cleared'})
         except Exception as e:
-            error_logger.addToErrorLogs(f"Error clearing log: {str(e)}")
-            flash(f'Error clearing log: {str(e)}', 'error')
-            return redirect(url_for('get_logs'))
+            error_logger.addToErrorLogs(f"Error clearing logs: {str(e)}")
+            return jsonify({'error': str(e)}), 500
     
-    @app.route('/api/apps/status')
-    def api_apps_status():
-        """Get status of all available apps"""
-        return jsonify(get_available_apps())
+    @app.route('/logs/download/<log_type>')
+    def download_logs(log_type):
+        """Download logs as text file"""
+        if not session.get('authenticated'):
+            return redirect(url_for('get_login'))
+        
+        try:
+            if log_type == 'chatbot':
+                logs = chatbot_logger.getLogs()
+            elif log_type == 'api':
+                logs = api_logger.getLogs()
+            elif log_type == 'error':
+                logs = error_logger.getLogs()
+            else:
+                return jsonify({'error': 'Invalid log type'}), 400
+            
+            # Create text file
+            log_text = '\n'.join(logs)
+            
+            response = make_response(log_text)
+            response.headers['Content-Type'] = 'text/plain'
+            response.headers['Content-Disposition'] = f'attachment; filename={log_type}_logs_{datetime.now().strftime("%Y%m%d_%H%M%S")}.txt'
+            
+            chatbot_logger.addToLogs(f"Logs downloaded: {log_type}")
+            return response
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Error downloading logs: {str(e)}")
+            flash('Error downloading logs', 'error')
+            return redirect(url_for('view_logs'))
     
-    @app.route('/api/conversation/history', methods=['GET'])
-    def get_conversation_history():
-        """Get user's conversation history"""
-        if 'user_id' not in session:
-            return jsonify({'error': 'No active session'}), 401
+    @app.route('/api/logs/recent')
+    def get_recent_logs():
+        """Get recent logs via API"""
+        if not session.get('authenticated'):
+            return jsonify({'error': 'Not authenticated'}), 401
         
-        user_id = session['user_id']
-        history = chatbot_engine.conversation_history.get(user_id, [])
-        
-        return jsonify({
-            'history': history,
-            'user_id': user_id,
-            'success': True
-        })
+        try:
+            limit = request.args.get('limit', 50, type=int)
+            log_type = request.args.get('type', 'all')
+            
+            logs_data = {}
+            
+            if log_type == 'all' or log_type == 'chatbot':
+                logs_data['chatbot'] = chatbot_logger.getLogs()[-limit:]
+            if log_type == 'all' or log_type == 'api':
+                logs_data['api'] = api_logger.getLogs()[-limit:]
+            if log_type == 'all' or log_type == 'error':
+                logs_data['error'] = error_logger.getLogs()[-limit:]
+            
+            return jsonify({
+                'logs': logs_data,
+                'timestamp': datetime.now().isoformat(),
+                'success': True
+            })
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Error getting recent logs: {str(e)}")
+            return jsonify({'error': str(e), 'success': False}), 500
     
-    @app.route('/api/conversation/clear', methods=['POST'])
-    def clear_conversation():
-        """Clear conversation history"""
-        if 'user_id' not in session:
-            return jsonify({'error': 'No active session'}), 401
+    # Statistics and monitoring routes
+    @app.route('/stats')
+    def view_stats():
+        """View system statistics"""
+        if not session.get('authenticated'):
+            return redirect(url_for('get_login'))
         
-        user_id = session['user_id']
-        if user_id in chatbot_engine.conversation_history:
-            chatbot_engine.conversation_history[user_id] = []
-            chatbot_logger.addToLogs(f"Conversation cleared for user {user_id}")
-        
-        return jsonify({'success': True, 'message': 'Conversation cleared'})
+        try:
+            stats = {
+                'total_chatbot_logs': len(chatbot_logger.getLogs()),
+                'total_api_logs': len(api_logger.getLogs()),
+                'total_error_logs': len(error_logger.getLogs()),
+                'available_apps': sum(1 for app in get_available_apps().values() if app['available']),
+                'total_apps': len(get_available_apps()),
+                'active_sessions': len(chatbot_engine.conversation_history) if hasattr(chatbot_engine, 'conversation_history') else 0
+            }
+            
+            return render_template('stats.html', stats=stats)
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Error viewing stats: {str(e)}")
+            flash('Error loading statistics', 'error')
+            return redirect(url_for('chatbot_home'))
     
-    @app.route('/api/modes')
-    def get_prompt_modes():
-        """Get available prompt modes"""
-        return jsonify(prompt_manager.get_modes())
+    @app.route('/api/health')
+    def health_check():
+        """Health check endpoint"""
+        try:
+            available_apps = get_available_apps()
+            health_status = {
+                'status': 'healthy',
+                'timestamp': datetime.now().isoformat(),
+                'apps': {
+                    app_id: app['available'] 
+                    for app_id, app in available_apps.items()
+                },
+                'services': {
+                    'chatbot': chatbot_engine is not None,
+                    'ai_service': ai_service is not None,
+                    'prompt_manager': prompt_manager is not None,
+                    'logging': all([chatbot_logger, api_logger, error_logger])
+                }
+            }
+            
+            return jsonify(health_status)
+        except Exception as e:
+            error_logger.addToErrorLogs(f"Health check error: {str(e)}")
+            return jsonify({
+                'status': 'unhealthy',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }), 500
     
-    @app.route('/api/app/<app_id>/launch', methods=['POST'])
-    def launch_app(app_id):
-        """Launch a specific app with parameters"""
-        available_apps = get_available_apps()
-        
-        if app_id not in available_apps:
-            return jsonify({'error': 'App not found'}), 404
-        
-        if not available_apps[app_id]['available']:
-            return jsonify({'error': 'App not available'}), 503
-        
-        # Route to appropriate app endpoint
-        app_routes = {
-            'document_search': 'api_search_documents',
-            'work_hours_calculator': 'api_calculate_hours',
-            'cover_letter_writer': 'api_generate_cover_letter',
-            'doc_summariser': 'api_summarize_document',
-            'coding_assistant': 'api_code_assistance'
-        }
-        
-        if app_id in app_routes:
-            # Forward request to the appropriate API endpoint
-            return redirect(url_for(app_routes[app_id]), code=307)
-        
-        return jsonify({'error': 'App launch not implemented'}), 501
+    chatbot_logger.addToLogs("All routes registered successfully")    
 
 # Helper functions
 def get_available_apps():
