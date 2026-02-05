@@ -104,22 +104,9 @@
             {{ form.doc_type(class="form-control", id="doc_type") }}
           </div>
           
-          <!-- Action Buttons - Fixed Spacing -->
-          <div class="quick-actions-grid">
-            <button type="button" onclick="getCodeSuggestion()" class="btn btn-primary">💡 Get Suggestion</button>
-            <button type="button" onclick="explainError()" class="btn btn-info">🐛 Explain Error</button>
-            <button type="button" onclick="generateDocs()" class="btn btn-success">📚 Generate Docs</button>
-            <button type="button" onclick="completeCode()" class="btn btn-warning">🔄 Complete Code</button>
-            <button type="button" onclick="analyzeQuality()" class="btn btn-secondary">🔍 Analyze Quality</button>
-            <button type="button" onclick="generateTests()" class="btn btn-primary">🧪 Generate Tests</button>
-          </div>
-          
-          <!-- Utility Buttons - Fixed Spacing -->
-          <div class="quick-actions-grid">
-            <button type="button" onclick="clearCodeEditor()" class="btn btn-secondary">🗑️ Clear Editor</button>
-            <button type="button" onclick="copyCode()" class="btn btn-info">📋 Copy Code</button>
-            <button type="button" onclick="uploadCodeFile()" class="btn btn-success">📁 Upload File</button>
-            <button type="button" onclick="formatCode()" class="btn btn-warning">🎨 Format Code</button>
+          <!-- Submit button for normal AI Assistance form -->
+          <div class="form-actions" style="margin-top:12px;">
+            <button type="submit" class="btn btn-primary">🟢 Submit AI Assistance</button>
           </div>
         </form>
         
@@ -168,10 +155,26 @@
         </div>
         {% endif %}
 
-        <!-- Quick Actions Panel -->
+        <!-- Quick Actions Panel (moved here from the form) -->
         <div class="settings-panel" id="quick-actions-panel">
           <h4>⚡ Quick Actions</h4>
-          <p>Select code in the editor and use Ctrl+Space for context-aware suggestions, or use the buttons above for specific assistance types.</p>
+          <p>Select code in the editor and use Ctrl+Space for context-aware suggestions, or click the buttons below for one-click assistance.</p>
+          
+          <div class="quick-actions-grid" style="margin-top:8px;">
+            <button type="button" onclick="getCodeSuggestion()" class="btn btn-primary">💡 Get Suggestion</button>
+            <button type="button" onclick="explainError()" class="btn btn-info">🐛 Explain Error</button>
+            <button type="button" onclick="generateDocs()" class="btn btn-success">📚 Generate Docs</button>
+            <button type="button" onclick="completeCode()" class="btn btn-warning">🔄 Complete Code</button>
+            <button type="button" onclick="analyzeQuality()" class="btn btn-secondary">🔍 Analyze Quality</button>
+            <button type="button" onclick="generateTests()" class="btn btn-primary">🧪 Generate Tests</button>
+          </div>
+
+          <div class="quick-actions-grid" style="margin-top:10px;">
+            <button type="button" onclick="clearCodeEditor()" class="btn btn-secondary">🗑️ Clear Editor</button>
+            <button type="button" onclick="copyCode()" class="btn btn-info">📋 Copy Code</button>
+            <button type="button" onclick="uploadCodeFile()" class="btn btn-success">📁 Upload File</button>
+            <button type="button" onclick="formatCode()" class="btn btn-warning">🎨 Format Code</button>
+          </div>
         </div>
       </div>
 

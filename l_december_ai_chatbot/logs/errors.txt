@@ -27,3 +27,18 @@ Error loading logs page: object of type 'NoneType' has no len()
 [2026-01-24 11:49:10] Error:
 404 error: http://localhost:6922/favicon.ico
 
+[2026-01-27 20:35:09] Error:
+500 error: 500 Internal Server Error: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
+
+[2026-01-27 20:35:09] Error:
+404 error: http://localhost:6922/favicon.ico
+
+[2026-01-27 20:35:13] Error:
+404 error: http://localhost:6922/favicon.ico
+
+[2026-01-27 20:39:19] Error:
+Enhanced processing error for user user_1769546359.595999: 'AIIntegrationService' object has no attribute 'client'
+
+[2026-01-27 20:39:38] Error:
+Enhanced processing error for user user_1769546359.595999: 'AIIntegrationService' object has no attribute 'client'
+

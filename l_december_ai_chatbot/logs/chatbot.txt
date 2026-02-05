@@ -123,3 +123,54 @@ All routes registered successfully
 [2026-01-24 11:57:30] Output:
 Home page accessed
 
+[2026-01-27 20:31:29] Output:
+Chatbot engine initialized
+
+[2026-01-27 20:31:29] Output:
+ChatbotEngine instance created
+
+[2026-01-27 20:31:29] Output:
+All routes registered successfully
+
+[2026-01-27 20:35:00] Output:
+Home page accessed
+
+[2026-01-27 20:35:09] Output:
+Logs page accessed
+
+[2026-01-27 20:39:19] Output:
+New user session created: user_1769546359.595999
+
+[2026-01-27 20:39:19] Output:
+ChatbotEngine instance created
+
+[2026-01-27 20:39:19] User Input:
+User user_1769546359.595999: Mode: general, Apps context: 11
+
+[2026-01-27 20:39:38] Output:
+ChatbotEngine instance created
+
+[2026-01-27 20:39:38] User Input:
+User user_1769546359.595999: Mode: general, Apps context: 11
+
+[2026-01-27 20:59:35] Output:
+Chatbot engine initialized
+
+[2026-01-27 20:59:35] Output:
+ChatbotEngine instance created
+
+[2026-01-27 20:59:35] Output:
+All routes registered successfully
+
+[2026-01-27 21:01:13] Output:
+Home page accessed
+
+[2026-01-27 21:01:17] Output:
+ChatbotEngine instance created
+
+[2026-01-27 21:01:17] User Input:
+User user_1769546359.595999: Mode: general, Apps context: 11
+
+[2026-01-27 21:01:26] Output:
+Response generated with apps context for user user_1769546359.595999
+
